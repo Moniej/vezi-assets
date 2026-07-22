@@ -6,8 +6,18 @@
 redesign, expand, or re-plan anything — it inventories every remaining
 task against that frozen architecture and orders it for execution. C1
 (Pooled Momentum) and C4 (Size) are APPROVED as the next research wave;
-their pre-registration and execution are Critical items below, gated on
-two small Critical engineering tasks that don't exist yet.*
+their pre-registration and execution are Critical items below.*
+
+**Update 2026-07-22 (post-E1/E2/E3, platform capability review)**: R1/R2
+are now fully unblocked (E1/E2/E3 done, see below) and remain the
+recommended Wave 3 — considered and rejected the alternative of deferring
+them for infrastructure work first (see below); they're ready, rehearsed,
+and directly test the program's strongest open thread, and deferring
+ready low-risk research to build infrastructure that wouldn't change
+their outcome is delay, not platform-building. The review DID surface a
+genuinely new, non-factor infrastructure gap (**E15**, below) — queued as
+a parallel, non-gating track, positioned ahead of Wave 4's engineering
+prep rather than ahead of Wave 3's already-ready pair.
 
 ---
 
@@ -237,6 +247,36 @@ infrastructure)**
 - Completion criteria: capture runs automatically on trading days without
   manual intervention, with a visible log of successful runs.
 
+**E15 — Unified point-in-time company/security feature panel**
+- Description: one PIT-correct join across price, market cap,
+  dividend/closure events, earnings events, and corp-actions, keyed on
+  (ticker, date) — NOT a factor, computes no score, asserts no alpha.
+  Replaces the currently separate, overlapping loaders
+  (`load_panel`, `load_market_cap_panel`, `event_selections`'s internal
+  joins) with one shared substrate.
+- Why it matters: identified in the 2026-07-22 platform capability review
+  as the single highest-value gap that is NOT another factor. Every
+  future family (Value, Dividend, Corporate-Actions, Regime-conditioning)
+  currently requires its own bespoke data-wrangling; this makes all of
+  them cheaper simultaneously, and is the literal prerequisite substrate
+  for the eventual Company Intelligence Engine's schema.
+- Dependencies: none blocking. Deliberately NOT retrofitted under H-010/
+  H-011 — both are already built and rehearsed; disturbing working,
+  validated code purely for architectural tidiness right before using it
+  is the wrong sequencing. Queued for Wave 4's engineering prep instead.
+- Engineering effort: MODERATE (consolidation, not new capability per se
+  — the individual joins already exist and work; the task is unifying
+  them behind one PIT-correct interface).
+- Research impact: none directly; every future hypothesis's engineering
+  readiness improves.
+- Files/modules: likely `src/ngxrot/db.py` (a new `company_panel_asof`
+  reader) or a new `src/ngxrot/panel.py`; `backtest_xs.py`'s loaders
+  become callers of it, not owners of their own joins.
+- Completion criteria: `xs_vol`/`xs_size`/momentum all reproduce their
+  EXISTING rehearsal results unchanged when switched to the unified
+  panel (a regression check, not a new validation bar) before any new
+  factor family is built on top of it.
+
 **E5 — DOL EPS/dividend parser retry, scoped as its own session**
 - Description: per `reports/eps_pe_extraction_status.md`'s own
   recommendation — identify distinct DOL format eras precisely (probe
@@ -441,33 +481,38 @@ readers**
 Ordered for realistic, disciplined execution — Critical items unblock
 before the things they gate, not by calendar month.
 
-1. **E3** (version control) — first, before any further code changes,
-   so everything from this point forward has real history.
-2. **E1** and **E2** (engine extensions for C1/C4) — in parallel, both
-   LOW-MODERATE effort, both direct extensions of validated code.
-3. **R1** and **R2** (pre-register and run H-010, H-011) — the approved
-   research wave, now unblocked. Sequential per the ≤2-active-hypotheses
-   rule if both are drafted together, or run one first if bandwidth is
-   tight; either is consistent with governance.
+1. ~~**E3** (version control)~~ — DONE 2026-07-22.
+2. ~~**E1** and **E2** (engine extensions for C1/C4)~~ — DONE 2026-07-22,
+   both rehearsed.
+3. **R1** and **R2** (pre-register and run H-010, H-011) — UNBLOCKED,
+   the approved research wave, confirmed as the right next step after
+   the 2026-07-22 capability review (deferring them for E15 was
+   considered and rejected — see the update note at the top of this
+   document). Sequential per the ≤2-active-hypotheses rule if both are
+   drafted together, or run one first if bandwidth is tight.
 4. **E4** (daily capture scheduling) — can and should happen any time in
    parallel with the above; pure operational risk reduction, zero
    research dependency.
-5. **R3** (regime-classification methodology) — begins once an R1/R2
+5. **E15** (unified PIT company/security panel) — parallel, non-gating
+   infrastructure track; positioned for Wave 4's engineering prep, not
+   before Wave 3.
+6. **R3** (regime-classification methodology) — begins once an R1/R2
    slot frees up, or immediately as INFRASTRUCTURE work (the code and
-   its own validation) even before it becomes a live hypothesis.
-6. **E10** (minimal PIT regression tests) — after E3, opportunistically;
+   its own validation) even before it becomes a live hypothesis. Highest
+   long-term platform-value item identified across both reviews.
+7. **E10** (minimal PIT regression tests) — after E3, opportunistically;
    does not block research and should not be allowed to.
-7. **E5 / E6** (EPS-dividend parser retry; corp-actions extraction
+8. **E5 / E6** (EPS-dividend parser retry; corp-actions extraction
    validation) — scheduled as their own dedicated efforts when bandwidth
    allows; both have already failed once under-scoped, so do not squeeze
    them into leftover time between research waves.
-8. **R4** (corp-action event scoping) — a short task, can run any time
+9. **R4** (corp-action event scoping) — a short task, can run any time
    before a C3 decision is needed.
-9. **E7, E8, E9** (vwap triage, rename verification, DOL precision
-   restatement) — medium-priority hygiene, fill-in work between the
-   above.
-10. **R7** (H-002 ledger hygiene) — trivial, do whenever convenient.
-11. **E11, E12, E13, E14, R5, R6** — low priority / explicitly blocked;
+10. **E7, E8, E9** (vwap triage, rename verification, DOL precision
+    restatement) — medium-priority hygiene, fill-in work between the
+    above.
+11. **R7** (H-002 ledger hygiene) — trivial, do whenever convenient.
+12. **E11, E12, E13, E14, R5, R6** — low priority / explicitly blocked;
     revisit only after the above clears or a trigger condition (stated
     against each) is met.
 
