@@ -432,7 +432,7 @@ def pooled_rank_run(con, cfg, rates) -> tuple[XSResult, dict]:
     close = panel["close_ff"]
     lag = int(p["execution_lag_days"])
 
-    cohort_results, cohort_caps = [], []
+    cohort_results, cohort_caps, cohort_targets = [], [], []
     for c in range(n):
         cfg_c = {**cfg, "signal": {**s, "cohort_offset_months": c * offset_step}}
         scores_c = rank_scores(con, panel, cfg_c)
@@ -444,6 +444,7 @@ def pooled_rank_run(con, cfg, rates) -> tuple[XSResult, dict]:
         res_c = simulate(close, targets_c, rates["buy_rate"],
                          rates["sell_rate"], d["sim_start"], d["sim_end"])
         cohort_results.append(res_c)
+        cohort_targets.append(targets_c)
         # capacity per cohort at its OWN allocated slice of AUM (1/n) — a
         # single unified target vector across cohorts would corrupt
         # capacity_report's delta logic (it would see other cohorts'
@@ -467,8 +468,28 @@ def pooled_rank_run(con, cfg, rates) -> tuple[XSResult, dict]:
     bench = simulate(close, bt, rates["buy_rate"], rates["sell_rate"],
                      d["sim_start"], d["sim_end"])
 
+    # E16 fix (2026-07-22): weights was previously an empty DataFrame,
+    # which silently zeroed metrics.compute's n_rebalances (it reads
+    # len(result.weights.index)) and hit_rate_vs_benchmark for every
+    # pooled hypothesis — H-010's confidence rating showed "0 decisions"
+    # when the true count was ~36 (4 cohorts x ~9 formations each).
+    # Build the UNION of every cohort's own execution dates, each row
+    # showing whichever cohort(s) actually traded that day at their
+    # already-scaled (1/n) weight — genuine per-date trading metadata,
+    # not a placeholder, and correct for metrics.compute's purposes
+    # (which only reads the DataFrame's .index for dates; cell values
+    # are not used to reconstruct portfolio state elsewhere).
+    weight_rows: dict = {}
+    for targets_c in cohort_targets:
+        for dt, w in targets_c.items():
+            row = weight_rows.setdefault(dt, {})
+            for tick, wt in (w / n).items():
+                row[tick] = row.get(tick, 0.0) + wt
+    weights = (pd.DataFrame(weight_rows).T.fillna(0.0).sort_index()
+              if weight_rows else pd.DataFrame())
+
     result = XSResult(net_returns=net, gross_returns=gross,
-                      weights=pd.DataFrame(), turnover=turnover, costs=costs,
+                      weights=weights, turnover=turnover, costs=costs,
                       benchmark_returns=bench.net_returns)
 
     cohort_net = pd.concat([r.net_returns.rename(f"cohort_{i}")

@@ -102,6 +102,30 @@ def generate(bundle: dict) -> Path:
             f"NO parameter cell survives Holm correction across "
             f"{cor['n_tests']} tests (raw significant: {cor['raw']})")
 
+    # E16 (2026-07-22): pooled/multi-cohort hypotheses (xs_rank_pooled)
+    # carry cohort diagnostics in final_metrics['attribution'] — distinct
+    # from bundle['attribution'] above, which is phase4's PER-REGIME
+    # attribution and exists for every hypothesis. This section is empty/
+    # absent for every non-pooled hypothesis (H-006 through H-009, H-011).
+    pooled_diag = bundle["final_metrics"].get("attribution")
+    cohort_section = ""
+    if pooled_diag and "cohort_return_correlation" in pooled_diag:
+        corr = pooled_diag["cohort_return_correlation"]
+        cohorts = sorted(corr)
+        offdiag = [corr[a][b] for a in cohorts for b in cohorts if a != b]
+        mean_corr = sum(offdiag) / len(offdiag) if offdiag else None
+        turns = pooled_diag.get("cohort_ann_turnover_oneway", [])
+        cohort_section = f"""
+## Cohort diagnostics ({pooled_diag['n_cohorts']} cohorts, {pooled_diag['offset_months']}-month offset)
+
+- Mean pairwise cohort return correlation: {f'{mean_corr:.3f}' if mean_corr is not None else 'n/a'}
+  (measured on REAL data — not the synthetic rehearsal's figure; the
+  independence of pooled cohorts must be checked here every run, never
+  assumed from a prior rehearsal or a different hypothesis's result).
+- Per-cohort annualized one-way turnover: {turns}
+- Full correlation matrix: {corr}
+"""
+
     regime_lines = []
     for name, a in att.items():
         contrib = a["sector_contribution"]
@@ -142,7 +166,7 @@ best-cell minus median-cell excess: {bundle['plateau']['best_minus_median']:+.1%
 ## Regime attribution
 
 {chr(10).join(regime_lines)}
-
+{cohort_section}
 ## Data limitations
 
 {chr(10).join('- ' + s for s in bundle['data_limitations'])}

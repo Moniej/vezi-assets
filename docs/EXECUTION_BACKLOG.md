@@ -356,7 +356,25 @@ infrastructure)**
   verified/rejected, not left in an unverified state indefinitely.
 
 **E16 — Persist `result.attribution` for pooled/multi-cohort hypotheses;
-fix `n_rebalances` undercount**
+fix `n_rebalances` undercount — DONE 2026-07-22**
+- Resolution: `runner.py`'s xs branch now copies `result.attribution`
+  into the persisted metrics JSON when non-empty (guarded to not reuse
+  the `full` engine's flat-cost rounding transform, since this is a
+  nested diagnostics dict). `pooled_rank_run` now builds `result.weights`
+  from the real UNION of every cohort's own execution dates instead of
+  an empty DataFrame — fixes `n_rebalances` (0 → 35 on re-test, matching
+  the ~36 hand estimate) AND `hit_rate_vs_benchmark` (None → 0.457) as a
+  bonus, since both read the same previously-empty field. `ic_report.py`
+  gained a conditional "Cohort diagnostics" section (mean pairwise
+  correlation, per-cohort turnover, full matrix) that appears only for
+  pooled hypotheses. Verified end-to-end: re-ran H-010's base config
+  (a plumbing check, not a new verdict attempt — H-010's rejection
+  stands, unchanged; every verdict-relevant number — excess, turnover,
+  cost drag — was byte-identical before and after) and confirmed the
+  registry now holds `attribution.cohort_return_correlation` with mean
+  off-diagonal 0.755 (matches the 0.75 recovered by hand for the
+  Factor Registry writeup), and confirmed the IC memo template renders
+  the new section without error.
 - Description: two reporting gaps found while writing up H-010's verdict
   (2026-07-22), neither of which affected the mechanical verdict itself
   (both are reporting/wiring issues, not evidence issues), both worth

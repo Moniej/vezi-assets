@@ -210,6 +210,17 @@ def run_resolved(cfg: dict, label: str = "", config_path: str | None = None,
         m = metrics.compute(result, v["risk_free_annual_pct"])
         m["capacity"] = capacity
         m["sector_contribution"] = result.sector_contribution
+        if result.attribution:
+            # E16 fix (2026-07-22): pooled_rank_run's diagnostics (cohort
+            # return correlation, per-cohort turnover) were computed and
+            # attached to result.attribution but never persisted past
+            # this point — H-010's real correlation had to be recovered
+            # by hand after the fact. Persist verbatim (already the
+            # right shape/rounding from pooled_rank_run; unlike the
+            # `full` engine's cost_attribution_cum below, this is a
+            # nested diagnostics dict, not flat numeric costs — do not
+            # apply the same {k: round(v,5)} transform to it).
+            m["attribution"] = result.attribution
         fc_eval = failure_conditions.evaluate(
             cfg["failure_conditions"], m, capacity,
             result.sector_contribution, phase4_evidence)
