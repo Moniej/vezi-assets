@@ -48,10 +48,26 @@ artifact hypothesis for H-009's original near-miss).
    for pooled hypotheses into the registry (H-010's real cohort
    correlation had to be recovered by hand); fix `n_rebalances`
    undercounting for pooled results in the confidence rating.
-3. Company Intelligence Engine v0 scaffolding may now begin per the
-   roadmap's Year-1 exit condition (≥1 validated factor) — but Portfolio
-   Construction stays correctly GATED (needs ≥2 validated INDEPENDENT
-   factors; only 1 exists).
+3. ~~Company Intelligence Engine v0 scaffolding~~ — **STARTED 2026-07-22.**
+   `src/ngxrot/company_intelligence.py` (`CompanyProfile` dataclass +
+   `build_profile()`), CLI: `python scripts/company_profile.py TICKER
+   [TICKER...]`. Scaffolds every vision field (Financial Quality,
+   Valuation, Growth, Momentum, Risk, Corporate Events, Competitive
+   Position, Macro Sensitivity, Industry Exposure, Ownership, Factor
+   Exposures, Expected Return, Confidence) but populates ONLY from
+   evidence-grade data — everything else returns an explicit blocking
+   reason via `unavailable` (e.g. Industry Exposure: `securities.
+   sector_ngx` is 0/320 populated). Cites REJECTED factor families too
+   (Momentum/Low-Vol/PEAD, each with its finding) — a rejection is
+   evidence, not silence. Only Size (H-011) has a real computed value,
+   via the SAME `backtest_xs.size_scores` construction, unchanged, for
+   EVERY company (not just the current sleeve — that distinction from
+   `alpha_engine`'s adapter is deliberate). Verified: this module's
+   `in_current_sleeve` agrees exactly with `H011SizeAdapter`'s 20 actual
+   recommendations; a nonexistent ticker degrades gracefully with an
+   honest note, no crash. Portfolio Construction stays correctly GATED
+   (needs ≥2 validated INDEPENDENT factors; only 1 exists) — do not
+   start it.
 4. Wave 4 candidates and prioritization: unchanged from
    `docs/EXECUTION_BACKLOG.md`'s R3 (regime-conditioning) and the
    momentum/PEAD successor notes — re-evaluate in light of H-010's
