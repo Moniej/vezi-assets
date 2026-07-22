@@ -7,23 +7,49 @@ before assuming anything is uncommitted or lost. `.gitignore` excludes
 `data/archive/`, `data/staging/`, `data/capture/`, and all `*.sqlite`
 (rationale in the `.gitignore` file itself and the E3 commit message).
 
-**PROGRAM STATUS (2026-07-22): 9 hypotheses tested, 0 validated, 9
-rejected. Architecture is FROZEN as V1 — do not redesign it. C1 (Pooled
-Momentum) and C4 (Size) are APPROVED as the next research wave.
-E1/E2/E3 (the engineering blockers) are ALL DONE — H-010 and H-011 are
-UNBLOCKED. Drafting their pre-registrations (R1/R2 in
-`docs/EXECUTION_BACKLOG.md`) is the next concrete step, not yet done.**
+**PROGRAM STATUS (2026-07-22): 11 hypotheses tested. 1 CONFIRMED
+(H-011, Size), 9 rejected, 1 untested (H-002, still blocked on dividend
+data). THE FACTOR LIBRARY HAS ITS FIRST ENTRY.** Full writeup:
+`docs/FACTOR_REGISTRY.md`'s Validated section. Short version: long the
+smallest-cap quintile in IRU v2, quarterly, net excess +15.02% dev /
++53.0% untouched OOS, placebo p=0.0099 (real Sharpe beats even the max
+of 100 shuffled draws), confidence rating High (10/12, highest in the
+program's history) — BUT capacity is the worst measured on this
+platform (median leg ~₦694k, 100% legs rejected at ₦1bn AUM). This is a
+REAL, valid, SMALL-AUM effect, not a broadly scalable strategy — the
+severe capacity constraint is consistent with the factor's own
+friction-compensation rationale, not a contradiction of it.
+
+**H-010 (pooled momentum) was REJECTED**, decisively — placebo p=0.386,
+*worse* than H-009's near-miss (0.069). Real-data cohort correlation
+measured at ~0.75 (vs ~0.57 on the synthetic rehearsal) — pooling didn't
+add the independent bets it was designed to add. This closes the
+"pool more cohorts" successor path for NGX momentum; see
+`docs/FACTOR_REGISTRY.md` for the full diagnosis (calendar-alignment
+artifact hypothesis for H-009's original near-miss).
+
+**Architecture remains FROZEN as V1 — do not redesign it.**
+
+**Immediate next steps** (none started yet):
+1. Wire a `ModelAdapter` for H-011 in `src/ngxrot/alpha_engine.py`'s
+   `MODEL_ADAPTERS` — the engine's honest `no_position` shell finally
+   has something real to speak from.
+2. E16 (new, `docs/EXECUTION_BACKLOG.md`): persist `result.attribution`
+   for pooled hypotheses into the registry (H-010's real cohort
+   correlation had to be recovered by hand); fix `n_rebalances`
+   undercounting for pooled results in the confidence rating.
+3. Company Intelligence Engine v0 scaffolding may now begin per the
+   roadmap's Year-1 exit condition (≥1 validated factor) — but Portfolio
+   Construction stays correctly GATED (needs ≥2 validated INDEPENDENT
+   factors; only 1 exists).
+4. Wave 4 candidates and prioritization: unchanged from
+   `docs/EXECUTION_BACKLOG.md`'s R3 (regime-conditioning) and the
+   momentum/PEAD successor notes — re-evaluate in light of H-010's
+   result before drafting anything new.
 
 **START HERE: `docs/EXECUTION_BACKLOG.md`** — the current, actionable
-task list (Critical/High/Medium/Low, research vs engineering, technical
-debt ranked by risk, a 6-month execution sequence — E1/E2/E3 marked DONE
-in it). Read it before touching anything. Immediate next step: draft
-`docs/PREREG_H-010.md` (pooled momentum, `signal.method = "xs_rank_pooled"`
-in `src/ngxrot/backtest_xs.py`, rehearsed in
-`scripts/rehearse_xs_pooled.py`) and `docs/PREREG_H-011.md` (size,
-`signal.method = "xs_size"`, rehearsed in `scripts/rehearse_xs_size.py`),
-show both to the owner, then run the gauntlet — same convention as every
-prior wave.
+task list (now includes E16 above). `docs/FACTOR_REGISTRY.md` for the
+full evidence trail on every hypothesis, especially H-011.
 
 Background reading (all 2026-07-22, do not re-derive — cross-referenced
 from the backlog): `docs/LESSONS_LEARNED_FROM_WAVES_1_AND_2.md`
