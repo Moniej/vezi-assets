@@ -131,18 +131,23 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
   hypothesis, and it should address calendar-alignment risk explicitly
   in its own design, not assume it away.
 - Capacity: median leg capacity ₦9.6m; 88% legs rejected at ₦1bn.
-- Known weaknesses of the test: `result.attribution` (cohort correlation,
-  per-cohort turnover) is computed by the engine but not yet wired into
-  the persisted registry metrics or the IC memo template — recovered
-  here by re-running the base config directly. Tracked as a follow-up
-  engineering task (extend `runner.py`'s xs branch to persist
-  `result.attribution` when present). Confidence-rating's "sample" score
-  read 0 decisions — `n_rebalances` is computed from `result.weights`,
-  which is empty by construction for pooled results (see
-  `backtest_xs.pooled_rank_run`); the rating undercounts pooled
-  hypotheses' true decision count. Neither gap affected this verdict
-  (both are reporting/wiring issues, not evidence issues) but both
-  should be fixed before the NEXT `xs_rank_pooled`-based hypothesis.
+- Known weaknesses of the test AT THE TIME OF THIS VERDICT (both since
+  FIXED 2026-07-22, `docs/EXECUTION_BACKLOG.md` E16 — neither affected
+  the verdict itself, both were reporting/wiring issues, not evidence
+  issues): `result.attribution` (cohort correlation, per-cohort turnover)
+  was computed by the engine but not persisted to the registry or the IC
+  memo — the 0.75 figure above was recovered by manually re-running the
+  base config. Confidence-rating's "sample" score read 0 decisions
+  because `n_rebalances` came from `result.weights`, empty by
+  construction for pooled results. Both are now fixed at the engine
+  level (`runner.py` persists `result.attribution`; `pooled_rank_run`
+  populates real per-cohort execution-date weights) and reconfirmed on
+  a direct re-run of this same base config: n_rebalances=35,
+  hit_rate_vs_benchmark=0.457 (previously silently None), correlation
+  0.755 (matches the hand-recovered figure). This entry's verdict and
+  headline evidence are unchanged — this note documents that the
+  underlying data now traces cleanly through the registry, not just
+  through this document.
 - Interaction: n/a (library empty).
 
 ### H-009 — Turnover-Budgeted Momentum (family: Momentum) — REJECTED 2026-07-22
