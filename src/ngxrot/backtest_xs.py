@@ -9,6 +9,13 @@ Modes (signal.method):
                hold the top_n equal-weighted until the next formation
                (H-007 momentum: trailing formation-window return with a
                skip month).
+  xs_vol     — low-volatility: score = negative trailing realized vol.
+  xs_size    — size: score = negative market cap (long the SMALLEST names
+               by count, standard SMB convention). Cap series comes from
+               data/reference/market_cap_panel.csv (LIST2-derived,
+               validated 2026-07-22, full-issue/not float-adjusted — a
+               disclosed limitation, see load_market_cap_panel). Approved
+               2026-07-22 for H-011 (Wave 3 candidate C4).
   xs_event   — event book: pre-registered event set -> reaction-ranked
                selections enter at a fixed lag, hold a fixed number of
                sessions, sized 1/max_concurrent of NAV each; residual NAV
@@ -85,6 +92,33 @@ def load_panel(con, cfg) -> dict:
     adtv60 = val.sort_index().rolling(60, min_periods=10).mean()
     return {"close_ff": close.ffill(), "obs": obs, "adtv60": adtv60,
             "min_conf_seen": float(px.confidence.min())}
+
+
+def load_market_cap_panel(close_ff: pd.DataFrame) -> pd.DataFrame:
+    """Wide (trade_date x ticker) market cap (NGN millions, full-issue —
+    NOT float-adjusted; disclosed limitation, see module docstring).
+
+    The raw panel only has rows on days LIST2 existed (2016-03 onward,
+    ~77% of days per market_cap_validation.md). Rather than forward-fill
+    the CAP LEVEL itself (which would freeze it across price moves), we
+    forward-fill the IMPLIED SHARE COUNT (market_cap / close) — the
+    quantity market_cap_validation.md already validated as stable
+    between corporate actions (0.39% day-over-day jump rate >2%) — and
+    reconstruct cap_t = shares_ffilled_t * close_t. This tracks real
+    price movement on non-LIST2 days instead of freezing, without
+    asserting anything beyond what was already validated."""
+    path = PKG_ROOT / "data" / "reference" / "market_cap_panel.csv"
+    raw = pd.read_csv(path)
+    chain = universe.rename_chain()
+    raw["symbol"] = raw.symbol.map(lambda t: chain.get(t, t))
+    raw = raw.drop_duplicates(subset=["symbol", "trade_date"], keep="last")
+    mcap = raw.pivot(index="trade_date", columns="symbol", values="market_cap_nm")
+    mcap.index = pd.to_datetime(mcap.index)
+    close_aligned = close_ff.reindex(index=mcap.index.union(close_ff.index))
+    mcap = mcap.reindex(close_aligned.index)
+    shares = (mcap / close_aligned[mcap.columns.intersection(close_aligned.columns)]
+             ).ffill()
+    return (shares * close_aligned[shares.columns]).reindex(close_ff.index)
 
 
 def _month_ends(dates: pd.DatetimeIndex) -> list[pd.Timestamp]:
@@ -246,6 +280,40 @@ def vol_scores(con, panel, cfg) -> dict:
     return out
 
 
+def size_scores(con, panel, cfg) -> dict:
+    """{formation_date -> Series(score)} for xs_size. Score = NEGATIVE
+    standardized market cap at the formation date, so nlargest in
+    targets_from_scores selects the SMALLEST names (standard SMB
+    convention: size premium is long-small). Requires panel["mcap"]
+    (see load_market_cap_panel) — populated lazily by run_from_config /
+    placebo_stats only when this method is used, since it's a CSV read
+    the other signal methods don't need."""
+    s, d = cfg["signal"], cfg["data"]
+    mcap = panel["mcap"]
+    close = panel["close_ff"]
+    dates = close.loc[:d["sim_end"]].index
+    formations = _month_ends(dates)
+    step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
+    formations = formations[::step] if step == 1 else [
+        f for i, f in enumerate(formations) if i % step == 0]
+    iru_rules = universe.load_rules()
+    out = {}
+    for f in formations:
+        if f < pd.Timestamp(d["sim_start"]) or f not in mcap.index:
+            continue
+        elig = _eligible(con, panel, f, iru_rules,
+                         int(s.get("min_obs_formation", 120)),
+                         int(s.get("lookback_months", 12) * 31))
+        cap = mcap.loc[f, elig].dropna()
+        cap = cap[cap > 0]
+        if len(cap) < 10:
+            continue
+        z = (cap - cap.mean()) / cap.std()
+        if cap.std() > 0:
+            out[f] = -z          # smaller cap -> higher score
+    return out
+
+
 REBALANCE_STEP_MONTHS = {"monthly": 1, "quarterly": 3, "semiannual": 6,
                          "annual": 12}
 
@@ -256,6 +324,8 @@ def scores_for_method(con, panel, cfg) -> dict:
         return rank_scores(con, panel, cfg)
     if method == "xs_vol":
         return vol_scores(con, panel, cfg)
+    if method == "xs_size":
+        return size_scores(con, panel, cfg)
     raise ValueError(f"scores_for_method: unsupported method {method!r}")
 
 
@@ -464,7 +534,9 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
     bench = simulate(close, bt, rates["buy_rate"], rates["sell_rate"],
                      d["sim_start"], d["sim_end"])
 
-    if s["method"] in ("xs_rank", "xs_vol"):
+    if s["method"] in ("xs_rank", "xs_vol", "xs_size"):
+        if s["method"] == "xs_size":
+            panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)
         targets = targets_from_scores(scores, close.loc[:d["sim_end"]].index,
                                       int(p["top_n"]), lag)
@@ -513,7 +585,9 @@ def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
         res.benchmark_returns = bench.net_returns
         return _metrics.compute(res, rf)["sharpe_vs_rf"]
 
-    if s["method"] in ("xs_rank", "xs_vol"):
+    if s["method"] in ("xs_rank", "xs_vol", "xs_size"):
+        if s["method"] == "xs_size":
+            panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)
         idx = close.loc[:d["sim_end"]].index
         real = sharpe_of(targets_from_scores(scores, idx, int(p["top_n"]), lag))
