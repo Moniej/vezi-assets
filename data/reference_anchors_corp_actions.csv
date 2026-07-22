@@ -1,0 +1,6 @@
+symbol,fiscal_year,action,dividend_per_share,qualification_date,payment_date,source,verified
+GUARANTY,2023,final_dividend,2.70,2024-04-26,2024-05-09,"Nairametrics 2024-04-23 (https://nairametrics.com/2024/04/23/gtco-to-pay-shareholders-total-dividend-of-n94-billion-for-fy-2023/); Punch",2026-07-16
+GTCO,2023,final_dividend,2.70,2024-04-26,2024-05-09,"same as GUARANTY (symbol changed GUARANTY->GTCO in 2021; both may appear in filings)",2026-07-16
+ZENITHBANK,2023,final_dividend,3.50,,,"Nairametrics 2024-05-08 (https://nairametrics.com/2024/05/08/zenith-bank-pays-shareholders-n109-9-billion-in-final-dividend-for-fy-2023/); Zenith IR: total FY2023 N4.00 incl N0.50 interim; qualification/payment dates not press-verified",2026-07-16
+ZENITHBANK,2023,interim_dividend,0.50,,,"Zenith IR via Nairametrics: interim paid Dec 2023",2026-07-16
+GTCO,2024,final_dividend,7.03,,,"Punch: N7.03 final, N8.03 FY2024 total (https://punchng.com/gtco-shareholders-get-n7-03k-final-dividend-on-april-24/); payment on-or-around 2024-04-24 per headline - date to confirm from filing itself",2026-07-16

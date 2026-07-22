@@ -1,0 +1,20 @@
+# Coverage Gate v2 — data QUALITY within the Investable Research Universe.
+# Activated 2026-07-17 per IC approval of the IRU/gate separation:
+#   IRU (configs/iru.toml) decides WHICH securities are research-eligible;
+#   this gate decides whether sufficient HIGH-QUALITY DATA exists for them.
+# Thresholds may only be loosened by an explicit IC decision.
+# v1 (filing-universe coverage) retired 2026-07-17: it measured the market's
+# natural illiquidity, not data quality — audit trail in
+# reports/DOL_PIPELINE_COMPLETION_REPORT.md.
+
+[gate]
+min_iru_breadth = 40            # year-end IRU_v2 size (research power floor)
+min_day_completeness = 0.95     # trading days present / ~247 nominal per year
+max_unexplained_jump_rate = 0.02  # flagged IRU members / IRU size (adjacency
+                                  # jumps >12% with no corporate-action filing
+                                  # within ±5 business days)
+min_ready_years = 6
+require_recent_years = 2
+
+[dashboard]
+staleness_days = 7

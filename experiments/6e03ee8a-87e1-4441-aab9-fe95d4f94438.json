@@ -1,0 +1,198 @@
+{
+  "code_fingerprint": "2742acc6ec9119f4",
+  "config_hash": "db2cee0e2dae6921",
+  "config_json": {
+    "costs": {
+      "brokerage_override_pct": 1.35,
+      "line_items": [
+        {
+          "confidence": "assumed",
+          "fee": "brokerage",
+          "rate_pct": 1.35,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "cscs_fee",
+          "rate_pct": 0.06,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "ngx_fee",
+          "rate_pct": 0.3,
+          "side": "sell"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "sec_fee",
+          "rate_pct": 0.3,
+          "side": "buy"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "stamp_duty",
+          "rate_pct": 0.08,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "vat",
+          "rate_pct": 7.5,
+          "side": "both"
+        }
+      ],
+      "resolved_buy_rate": 0.018957500000000002,
+      "resolved_sell_rate": 0.018957500000000002,
+      "source": "db"
+    },
+    "data": {
+      "benchmark": "NGXASI",
+      "db_path": "data/ngx.sqlite",
+      "min_confidence": 0.0,
+      "sim_end": "2024-12-31",
+      "sim_start": "2016-06-01",
+      "sources": [
+        "synthetic_dev"
+      ],
+      "universe": [
+        "NGXBNK",
+        "NGXINS",
+        "NGXOILGAS",
+        "NGXINDUSTR",
+        "NGXCNSMRGDS",
+        "NGXPREMIUM",
+        "NGXPENSION"
+      ],
+      "vintage": ""
+    },
+    "experiment": {
+      "hypothesis_id": "H-001",
+      "name": "p2_cost_sensitivity",
+      "seed": 20260715,
+      "stage": "development"
+    },
+    "liquidity": {
+      "adtv_participation_cap_pct": 10.0,
+      "adtv_window_days": 60,
+      "enforced": false
+    },
+    "portfolio": {
+      "catalyst_filter": false,
+      "construction": "equal_weight",
+      "execution_lag_days": 1,
+      "impairment_window_months": 12,
+      "rebalance": "monthly",
+      "top_n": 3
+    },
+    "signal": {
+      "lookback_weights": [
+        0.5,
+        0.5
+      ],
+      "lookbacks_months": [
+        3,
+        6
+      ],
+      "method": "rank_average"
+    },
+    "validation": {
+      "holdout_start": "2025-01-02",
+      "risk_free_annual_pct": 0.0
+    }
+  },
+  "config_path": "configs/p2_cost_sensitivity.toml",
+  "construction": "equal_weight",
+  "cost_assumptions": {
+    "brokerage_override_pct": 1.35,
+    "line_items": [
+      {
+        "confidence": "assumed",
+        "fee": "brokerage",
+        "rate_pct": 1.35,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "cscs_fee",
+        "rate_pct": 0.06,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "ngx_fee",
+        "rate_pct": 0.3,
+        "side": "sell"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "sec_fee",
+        "rate_pct": 0.3,
+        "side": "buy"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "stamp_duty",
+        "rate_pct": 0.08,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "vat",
+        "rate_pct": 7.5,
+        "side": "both"
+      }
+    ],
+    "resolved_buy_rate": 0.018957500000000002,
+    "resolved_sell_rate": 0.018957500000000002,
+    "source": "db"
+  },
+  "created_at": "2026-07-15T13:20:20+00:00",
+  "experiment_id": "6e03ee8a-87e1-4441-aab9-fe95d4f94438",
+  "git_commit": null,
+  "hypothesis_id": "H-001",
+  "liquidity_constraints": {
+    "adtv_participation_cap_pct": 10.0,
+    "adtv_window_days": 60,
+    "enforced": false
+  },
+  "lookbacks_months": [
+    3,
+    6
+  ],
+  "metrics": {
+    "ann_cost_drag": 0.1297,
+    "ann_return": 0.1516,
+    "ann_return_benchmark": 0.2365,
+    "ann_turnover_oneway": 3.477,
+    "ann_vol": 0.2049,
+    "avg_oneway_turnover_per_rebalance": 0.3002,
+    "excess_return_ann": -0.0849,
+    "gross_ann_return": 0.3124,
+    "hit_rate_vs_benchmark": 0.277,
+    "max_drawdown": -0.474,
+    "n_rebalances": 101,
+    "period_days": 2197,
+    "rf_annual_pct_used": 0.0,
+    "sharpe_vs_rf": 0.74
+  },
+  "min_confidence": 0.0,
+  "notes": "sweep cell: rebalance=monthly, brokerage_override_pct=1.35",
+  "provider": "synthetic_dev",
+  "rebalance": "monthly",
+  "seed": 20260715,
+  "sim_end": "2024-12-31",
+  "sim_start": "2016-06-01",
+  "stage": "development",
+  "top_n": 3,
+  "validation_flags": {
+    "counts_as_evidence": false,
+    "data_min_confidence_seen": 0.0,
+    "is_holdout_clean": true,
+    "liquidity_constraint_enforced": false,
+    "price_index_only_no_dividends": true,
+    "risk_free_rate_is_placeholder": true,
+    "synthetic_data": true
+  },
+  "vintage": null
+}

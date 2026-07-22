@@ -1,0 +1,48 @@
+# Phase 2 turnover/cost sensitivity RERUN on real data (V1 universe).
+# Research parameters identical to p2_cost_sensitivity.toml; only provider
+# config changed per research mandate.
+
+[experiment]
+name = "p2_cost_sensitivity_real"
+hypothesis_id = "H-001"
+stage = "development"
+seed = 20260715
+
+[data]
+sources = ["investing_com"]
+db_path = "data/ngx.sqlite"
+min_confidence = 0.4
+vintage = ""
+universe = ["NGXBNK", "NGXINS", "NGXOILGAS"]
+benchmark = "NGXASI"
+sim_start = "2016-06-01"
+sim_end = "2024-12-31"
+
+[signal]
+lookbacks_months = [3, 6]
+lookback_weights = [0.5, 0.5]
+
+[portfolio]
+top_n = 2
+construction = "equal_weight"
+rebalance = "monthly"
+execution_lag_days = 1
+catalyst_filter = false
+impairment_window_months = 12
+
+[costs]
+brokerage_override_pct = -1.0
+
+[engine]
+type = "lite"
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0
+
+[diagnostics]
+run = false
+
+[sweep]
+"portfolio.rebalance" = ["monthly", "quarterly"]
+"costs.brokerage_override_pct" = [1.35, 0.75, 0.50]

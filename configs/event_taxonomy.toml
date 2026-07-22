@@ -1,0 +1,60 @@
+# Catalyst taxonomy for the NGX event database (H-003 and successors).
+# CONFIGURABLE: adding a category or event type here makes it valid for
+# ingestion — no code change. The pipeline rejects rows whose event_type is
+# not a leaf of this taxonomy (typo protection), and warns when a row's
+# category does not match the type's home category.
+#
+# default_scope / default_sectors are DEFAULTS for data entry, not truths:
+# every event row carries its own scope and sector(s).
+
+[monetary]
+description = "CBN monetary policy actions"
+types = ["mpc_decision", "mpr_change", "crr_change", "liquidity_ratio_change",
+         "omo_policy", "dev_finance_policy"]
+default_scope = "market"
+
+[banking]
+description = "Banking-sector regulation and structure"
+types = ["recapitalisation_directive", "recapitalisation_deadline",
+         "capital_requirement", "banking_directive", "dividend_directive",
+         "forbearance_directive", "license_action"]
+default_scope = "sector"
+default_sectors = ["NGXBNK"]
+
+[commodity]
+description = "Commodity price and policy shocks"
+types = ["oil_price_shock", "gas_policy", "energy_policy", "agri_policy",
+         "fuel_subsidy_change"]
+default_scope = "sector"
+default_sectors = ["NGXOILGAS"]
+
+[corporate]
+description = "Company corporate events (aggregated to sector where used)"
+types = ["earnings_release", "earnings_deadline", "dividend_declaration",
+         "rights_issue", "bonus_issue", "stock_split", "merger", "acquisition",
+         "listing", "delisting", "suspension", "resumption"]
+default_scope = "ticker"
+
+[macro]
+description = "Macroeconomic policy and data releases"
+types = ["fx_policy", "fx_regime_change", "inflation_release", "gdp_release",
+         "fiscal_policy", "tax_policy", "budget_announcement"]
+default_scope = "market"
+
+[market_structure]
+description = "Exchange and securities regulation"
+types = ["ngx_circular", "sec_directive", "index_review", "trading_rule_change",
+         "settlement_change"]
+default_scope = "market"
+
+[insurance]
+description = "Insurance-sector regulation (NAICOM)"
+types = ["insurance_recapitalisation", "naicom_directive"]
+default_scope = "sector"
+default_sectors = ["NGXINS"]
+
+[pension]
+description = "Pension regulation (PenCom)"
+types = ["pension_reform", "pencom_directive"]
+default_scope = "sector"
+default_sectors = ["NGXPENSION"]

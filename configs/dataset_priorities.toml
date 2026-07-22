@@ -1,0 +1,173 @@
+# Dataset priority scores — Fund Alpha data moat program.
+# OBJECTIVE (revised 2026-07-15): maximize decade-rate of alpha discovery.
+# Priority = gen * uniqueness * replication * maintenance * coverage (each 1-5;
+# maintenance is INVERTED cost: 5 = cheap to keep alive).
+#   gen = GENERATIVITY: how many future hypothesis families this dataset
+#   enables/improves. MUST be backed by the named families (see
+#   docs/HYPOTHESIS_FAMILY_MAP.md) — unmapped generativity is invalid.
+# Scores are revisable judgment. Edit -> rerun scripts/rank_datasets.py.
+# necessity = true marks table-stakes data active research needs regardless of moat.
+
+[ngx_daily_pricelist_forward]
+name = "NGX per-stock daily price list (volume, value, deals) — forward capture"
+gen = 5
+families = ["F2", "F3", "F4", "F5", "F6", "F8"]
+uniqueness = 4
+replication = 5  # time-gated: a competitor starting later can never backfill
+maintenance = 4
+coverage = 2     # starts at zero today; grows every trading day
+necessity = true
+mechanism = "M1"
+notes = "KEYSTONE (6 families) + time-gated. The single most valuable acquisition."
+
+[pricelist_wayback_backfill]
+name = "Historical NGX price lists via web archives (one-off reconstruction)"
+gen = 5
+families = ["F2", "F3", "F4", "F5", "F8"]
+uniqueness = 5
+replication = 4
+maintenance = 5  # one-off project, zero upkeep
+coverage = 2     # probe archive density before committing
+mechanism = "M2"
+notes = "Keystone's historical half. Probe density; commit if >40% of days recoverable."
+
+[index_membership_pit]
+name = "Historical index membership + announcement dates (review circulars, archives)"
+gen = 4
+families = ["F2", "F3"]
+uniqueness = 5
+replication = 5
+maintenance = 4
+coverage = 3
+mechanism = "M2"
+notes = "gen=4 not 2: correctness PRECONDITION for every constituent-level family (F4-F6, F8) — survivorship defense."
+
+[dividend_earnings_calendar]
+name = "Dividend/earnings calendar incl. qualification dates (registrars, X-Issuer)"
+gen = 5
+families = ["F2", "F5", "F6"]
+uniqueness = 4
+replication = 4
+maintenance = 3
+coverage = 3
+necessity = true
+mechanism = "M3"
+notes = "gen=5: three families directly + total-return construction feeds ALL return-based research."
+
+[pit_event_database]
+name = "PIT regulatory/macro event database with verification trails"
+gen = 4
+families = ["F1", "F7", "F11"]
+uniqueness = 4
+replication = 4
+maintenance = 3
+coverage = 4
+necessity = true
+mechanism = "M3"
+notes = "Also the context/conditioning layer for every other family. Under construction."
+
+[xissuer_disclosure_archive]
+name = "Full-text NGX company disclosure archive (forward + best-effort backfill)"
+gen = 4
+families = ["F5", "F9"]
+uniqueness = 3
+replication = 4
+maintenance = 4
+coverage = 3
+mechanism = "M1"
+notes = "gen=4: raw substrate for future NLP/tone families not yet conceived — cheap optionality. Blocked on endpoint discovery."
+
+[fx_parallel_market_history]
+name = "Parallel-market NGN/USD daily history + official spread"
+gen = 3
+families = ["F7", "F12"]
+uniqueness = 5
+replication = 5
+maintenance = 2
+coverage = 2
+mechanism = "M1"
+notes = "ETHICS/LEGAL GATE before acquisition: politically sensitive. Review first."
+
+[cbn_circulars_structured]
+name = "CBN circulars/directives, taxonomy-classified (banking, FX, prudential)"
+gen = 3
+families = ["F1", "F7"]
+uniqueness = 3
+replication = 3
+maintenance = 3
+coverage = 4
+necessity = true
+mechanism = "M3"
+
+[agm_governance_events]
+name = "AGM dates/outcomes, board & CEO changes, auditor changes"
+gen = 2
+families = ["F9"]
+uniqueness = 4
+replication = 4
+maintenance = 2
+coverage = 2
+mechanism = "M3"
+
+[naicom_pencom_events]
+name = "NAICOM insurance + PenCom pension regulatory event histories"
+gen = 2
+families = ["F1"]
+uniqueness = 3
+replication = 3
+maintenance = 4
+coverage = 3
+mechanism = "M3"
+
+[mpc_decision_history]
+name = "CBN MPC decision history (MPR/CRR, communiques)"
+gen = 3
+families = ["F1", "F11"]
+uniqueness = 1
+replication = 1
+maintenance = 5
+coverage = 5
+necessity = true
+mechanism = "table_stakes"
+
+[inflation_gdp_releases]
+name = "NBS inflation/GDP releases with release-date PIT"
+gen = 2
+families = ["F1", "F11"]
+uniqueness = 2
+replication = 2
+maintenance = 4
+coverage = 3
+mechanism = "M2"
+
+[broker_research_archive]
+name = "Nigerian broker research/analyst notes archive"
+gen = 2
+families = ["F10"]
+uniqueness = 4
+replication = 4
+maintenance = 2
+coverage = 2
+mechanism = "M1"
+notes = "LICENSING GATE: acquire only with written permission. Speculative family."
+
+[brent_daily]
+name = "Brent daily series + derived shock events"
+gen = 2
+families = ["F1", "F12"]
+uniqueness = 1
+replication = 1
+maintenance = 5
+coverage = 5
+necessity = true
+mechanism = "table_stakes"
+
+[sec_directives]
+name = "SEC Nigeria directives/circulars"
+gen = 1
+families = ["F1"]
+uniqueness = 2
+replication = 2
+maintenance = 4
+coverage = 3
+mechanism = "M3"

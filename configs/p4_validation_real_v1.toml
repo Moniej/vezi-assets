@@ -1,0 +1,97 @@
+# Phase 4 on REAL DATA (investing.com, confidence 0.5) — variant V1:
+# long history, narrow universe. Universe = the 3 sectors research-ready over
+# the ORIGINAL development window per data_completeness_2026-07-15.md.
+# DECLARED BEFORE ANY REAL-DATA BACKTEST RAN. All research parameters are
+# byte-identical to p4_validation_synthetic.toml. Permitted deltas only:
+# [data] provider/confidence/universe-per-completeness, [engine] lite (no
+# constituent data exists), [diagnostics] off (staging validation covered
+# index-level checks pre-ingestion; in-DB diagnostics target constituent data
+# which this provider does not supply).
+
+[experiment]
+name = "p4_validation_real_v1"
+hypothesis_id = "H-001"
+stage = "development"
+seed = 20260715
+
+[data]
+sources = ["investing_com"]
+db_path = "data/ngx.sqlite"
+min_confidence = 0.4                  # excludes all synthetic (0.0) rows
+vintage = ""
+universe = ["NGXBNK", "NGXINS", "NGXOILGAS"]
+benchmark = "NGXASI"
+sim_start = "2016-06-01"
+sim_end = "2024-12-31"
+
+[signal]
+lookbacks_months = [3, 6]
+lookback_weights = [0.5, 0.5]
+
+[portfolio]
+top_n = 2
+construction = "equal_weight"
+rebalance = "quarterly"
+execution_lag_days = 1
+catalyst_filter = false
+impairment_window_months = 12
+
+[costs]
+brokerage_override_pct = -1.0
+
+[liquidity]
+adtv_participation_cap_pct = 10.0
+adtv_window_days = 60
+enforced = false                      # no constituent data — not evaluable
+
+[engine]
+type = "lite"
+aum_ngn = 2e9
+slippage_bps = 30.0
+impact_coeff_bps = 15.0
+
+[rng]
+algorithm = "PCG64"
+seed = 42
+iterations = 100
+
+[failure_conditions]
+min_median_capacity_ngn = 1e9
+max_single_sector_share = 0.80
+placebo_alpha = 0.05
+min_oos_sharpe_retention = 0.25
+max_single_regime_share = 0.80
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0
+
+[diagnostics]
+run = false
+
+[phase4]
+[phase4.stability]
+lookbacks = [[3], [6], [12], [3, 6], [6, 12]]
+top_n = [2, 3]
+rebalance = ["monthly", "quarterly"]
+
+[phase4.placebo]
+iterations = 100
+
+[[phase4.regimes]]
+name = "pre2023"
+start = "2016-06-01"
+end = "2022-12-30"
+stage = "walk_forward"
+
+[[phase4.regimes]]
+name = "shock_2023_24"
+start = "2023-01-02"
+end = "2024-12-31"
+stage = "walk_forward"
+
+[[phase4.regimes]]
+name = "bull_2025_26"
+start = "2025-01-02"
+end = "2026-06-30"
+stage = "final_oos"

@@ -1,0 +1,33 @@
+# Investable Research Universe — IRU_v2 (permanent, rule-based, point-in-time)
+# v2 fixed 2026-07-17 per IC refinements, BEFORE activation and before any
+# per-stock hypothesis testing (v1 was never used by any hypothesis).
+# Changes require a new version + IC decision; hypotheses pre-register the
+# IRU version they use.
+#
+# v2 changes vs v1:
+#  - RELATIVE liquidity rule: rank by trailing-12m average daily traded value
+#    among frequency-qualified names, keep rank <= 100. Regime-stable across
+#    naira inflation/devaluation (a fixed ₦1m in 2014 is not ₦1m in 2026);
+#    deterministic and PIT.
+#  - IRU is ELIGIBILITY only. Data-quality gating lives in
+#    configs/coverage_thresholds.toml (separated per IC directive).
+#  - Symbol renames canonicalized via data/reference/symbol_renames.csv so
+#    corporate renames (GUARANTY->GTCO...) do not break membership continuity.
+
+version = "v2"
+
+[instrument]
+exclude_symbols = [
+  "GREENWETF", "LOTUSHAL15", "NEWGOLD", "SIAMLETF40", "STANBICETF30",
+  "VETBANK", "VETGRIF30", "VETINDETF", "VSPBONDETF", "MERVALUE",
+  "NREIT", "SFSREIT", "UHOMREIT", "UPDCREIT",
+  "VALUEFUND",
+]
+exclude_patterns = ["ETF", "REIT", "FUND", "BOND", "PREF"]
+
+[membership]
+trailing_days = 365
+min_trading_days = 100          # frequency floor (unchanged; plateau-robust)
+liquidity_rank_max = 100        # RELATIVE rule: top-100 by trailing avg value
+max_stale_sessions = 20
+rebalance = "monthly"

@@ -1,0 +1,45 @@
+# Phase 2 catalyst-filtered variant: identical to baseline except sectors under
+# an active structurally_impairing event are excluded from selection.
+# SYNTHETIC DATA (confidence 0.0) — plumbing/development only, never evidence.
+
+[experiment]
+name = "p2_catalyst_filtered"
+hypothesis_id = "H-001"
+stage = "development"
+seed = 20260715
+
+[data]
+sources = ["synthetic_dev"]
+db_path = "data/ngx.sqlite"
+min_confidence = 0.0
+vintage = ""
+universe = ["NGXBNK", "NGXINS", "NGXOILGAS", "NGXINDUSTR", "NGXCNSMRGDS", "NGXPREMIUM", "NGXPENSION"]
+benchmark = "NGXASI"
+sim_start = "2016-06-01"
+sim_end = "2024-12-31"
+
+[signal]
+lookbacks_months = [3, 6]
+lookback_weights = [0.5, 0.5]
+method = "rank_average"
+
+[portfolio]
+top_n = 3
+construction = "equal_weight"
+rebalance = "monthly"
+execution_lag_days = 1
+catalyst_filter = true
+impairment_window_months = 12
+
+[costs]
+source = "db"
+brokerage_override_pct = -1.0
+
+[liquidity]
+adtv_participation_cap_pct = 10.0
+adtv_window_days = 60
+enforced = false
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0

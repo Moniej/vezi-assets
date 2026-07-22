@@ -1,0 +1,30 @@
+{
+ "generated": "2026-07-21T22:17:11+00:00",
+ "gate_version": "v2_iru",
+ "iru_version": "v2",
+ "gate_pass": true,
+ "ready_years": [
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "n_ready_years": 12,
+ "recent_years_ok": true,
+ "covered_stocks": 308,
+ "thresholds": {
+  "min_iru_breadth": 40,
+  "min_day_completeness": 0.95,
+  "max_unexplained_jump_rate": 0.02,
+  "min_ready_years": 6,
+  "require_recent_years": 2
+ }
+}

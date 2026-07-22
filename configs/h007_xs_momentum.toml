@@ -1,0 +1,83 @@
+# H-007 — Cross-Sectional Momentum. Executable encoding of
+# docs/PREREG_H-007.md (frozen 2026-07-22). Any change after first results
+# = new hypothesis ID.
+
+[experiment]
+name = "h007_xs_momentum"
+hypothesis_id = "H-007"
+stage = "development"
+seed = 20260722
+
+[data]
+sim_start = "2016-01-02"
+sim_end = "2024-12-31"
+sources = ["ngx_pricelist_v1", "ngx_dol_v1", "ngx_list2_v1"]
+min_confidence = 0.9
+vintage = "2026-07-21"            # docs/DATA_FREEZE_2026-07-21.md
+requires_coverage_gate = true
+iru_version = "v2"
+universe = []                      # per-stock: IRU decides, not a list
+benchmark = "EW_IRU"               # investable null, computed in-engine
+
+[signal]
+method = "xs_rank"
+formation_months = 12              # base: 12-1
+skip_months = 1
+min_obs_formation = 120
+
+[portfolio]
+top_n = 20                         # base
+rebalance = "quarterly"
+execution_lag_days = 1
+construction = "equal_weight"
+
+[costs]
+source = "db"                      # retail schedule, single cost model
+
+[liquidity]
+adtv_participation_cap_pct = 10.0
+adtv_window_days = 60
+
+[validation]
+holdout_start = "2025-01-02"       # untouched OOS begins here
+risk_free_annual_pct = 0.0         # placeholder — flagged, per platform
+
+[engine]
+type = "cross_sectional"
+aum_ngn = 1e9
+
+[rng]
+algorithm = "PCG64"
+seed = 20260722
+
+[failure_conditions]
+placebo_alpha = 0.05
+max_single_regime_share = 0.8      # prereg criterion 5
+min_oos_sharpe_retention = 0.25    # platform standard
+max_single_sector_share = 1.0      # no single-name rule pre-registered
+
+[phase4]
+[phase4.stability.grid]
+"signal.formation_months" = [6, 12]
+"portfolio.top_n" = [10, 20, 30]
+
+[phase4.placebo]
+iterations = 100
+
+[[phase4.regimes]]
+name = "pre_float"
+stage = "development"
+start = "2016-01-02"
+end = "2023-05-31"
+
+[[phase4.regimes]]
+name = "float_shock"
+stage = "development"
+start = "2023-06-01"
+end = "2024-12-31"
+
+[[phase4.regimes]]
+name = "oos_2025_26"
+stage = "final_oos"
+start = "2025-01-02"
+end = "2026-06-30"

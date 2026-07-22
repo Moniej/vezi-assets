@@ -1,0 +1,394 @@
+{
+  "code_fingerprint": "a95a3fff2d2a3511",
+  "config_hash": "9be62c42151df44f",
+  "config_json": {
+    "costs": {
+      "brokerage_override_pct": -1.0,
+      "line_items": [
+        {
+          "confidence": "assumed",
+          "fee": "brokerage",
+          "rate_pct": 1.35,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "cscs_fee",
+          "rate_pct": 0.06,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "ngx_fee",
+          "rate_pct": 0.3,
+          "side": "sell"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "sec_fee",
+          "rate_pct": 0.3,
+          "side": "buy"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "stamp_duty",
+          "rate_pct": 0.08,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "vat",
+          "rate_pct": 7.5,
+          "side": "both"
+        }
+      ],
+      "resolved_buy_rate": 0.018957500000000002,
+      "resolved_sell_rate": 0.018957500000000002,
+      "source": "db"
+    },
+    "data": {
+      "benchmark": "EW_IRU",
+      "iru_version": "v2",
+      "min_confidence": 0.9,
+      "requires_coverage_gate": true,
+      "sim_end": "2024-12-31",
+      "sim_start": "2016-01-02",
+      "sources": [
+        "ngx_pricelist_v1",
+        "ngx_dol_v1",
+        "ngx_list2_v1"
+      ],
+      "universe": [],
+      "vintage": "2026-07-21"
+    },
+    "diagnostics": {
+      "params": {},
+      "run": true
+    },
+    "engine": {
+      "aum_ngn": 1000000000.0,
+      "impact_coeff_bps": 15.0,
+      "slippage_bps": 30.0,
+      "type": "cross_sectional"
+    },
+    "experiment": {
+      "hypothesis_id": "H-008",
+      "name": "p4_stability_vol_lookback_months=12_top_n=30",
+      "seed": 20260722,
+      "stage": "development"
+    },
+    "failure_conditions": {
+      "max_single_regime_share": 0.8,
+      "max_single_sector_share": 1.0,
+      "min_median_capacity_ngn": 0.0,
+      "min_oos_sharpe_retention": 0.25,
+      "placebo_alpha": 0.05
+    },
+    "liquidity": {
+      "adtv_participation_cap_pct": 10.0,
+      "adtv_window_days": 60,
+      "enforced": false
+    },
+    "portfolio": {
+      "catalyst_filter": false,
+      "construction": "equal_weight",
+      "execution_lag_days": 1,
+      "impairment_window_months": 12,
+      "rebalance": "quarterly",
+      "top_n": 30
+    },
+    "rng": {
+      "algorithm": "PCG64",
+      "iterations": 0,
+      "seed": 20260722
+    },
+    "signal": {
+      "method": "xs_vol",
+      "min_obs_formation": 120,
+      "vol_lookback_months": 12
+    },
+    "validation": {
+      "holdout_start": "2025-01-02",
+      "risk_free_annual_pct": 0.0
+    }
+  },
+  "config_path": null,
+  "construction": "equal_weight",
+  "cost_assumptions": {
+    "brokerage_override_pct": -1.0,
+    "line_items": [
+      {
+        "confidence": "assumed",
+        "fee": "brokerage",
+        "rate_pct": 1.35,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "cscs_fee",
+        "rate_pct": 0.06,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "ngx_fee",
+        "rate_pct": 0.3,
+        "side": "sell"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "sec_fee",
+        "rate_pct": 0.3,
+        "side": "buy"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "stamp_duty",
+        "rate_pct": 0.08,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "vat",
+        "rate_pct": 7.5,
+        "side": "both"
+      }
+    ],
+    "resolved_buy_rate": 0.018957500000000002,
+    "resolved_sell_rate": 0.018957500000000002,
+    "source": "db"
+  },
+  "created_at": "2026-07-22T06:27:50+00:00",
+  "experiment_id": "18ee49f9-5b3d-44df-a1e4-414d2b5efc06",
+  "git_commit": null,
+  "hypothesis_id": "H-008",
+  "liquidity_constraints": {
+    "adtv_participation_cap_pct": 10.0,
+    "adtv_window_days": 60,
+    "enforced": false
+  },
+  "lookbacks_months": {
+    "min_obs_formation": 120,
+    "vol_lookback_months": 12
+  },
+  "metrics": {
+    "ann_cost_drag": 0.0368,
+    "ann_return": 0.1717,
+    "ann_return_benchmark": 0.2707,
+    "ann_turnover_oneway": 1.028,
+    "ann_vol": 0.1071,
+    "avg_oneway_turnover_per_rebalance": 0.2565,
+    "capacity": {
+      "bottleneck_constituents": {
+        "FLOURMILL": 8,
+        "GLAXOSMITH": 8,
+        "TRANSCOHOT": 9,
+        "UBN": 10,
+        "UNILEVER": 8
+      },
+      "configured_aum_ngn": 1000000000.0,
+      "median_capacity_ngn": 10058313.844476193,
+      "n_legs": 398,
+      "p25_capacity_ngn": 759716.0610937502,
+      "pct_legs_rejected": 96.5,
+      "worst_capacity_date": "2016-10-04",
+      "worst_capacity_ngn": 7349.944444444444
+    },
+    "excess_return_ann": -0.099,
+    "excess_ttest": {
+      "n_obs": 2201,
+      "p_value": 0.00626,
+      "t_stat": -2.734
+    },
+    "gross_ann_return": 0.2159,
+    "hit_rate_vs_benchmark": 0.343,
+    "max_drawdown": -0.4842,
+    "n_rebalances": 35,
+    "period_days": 2201,
+    "rf_annual_pct_used": 0.0,
+    "sector_contribution": {
+      "7UP": -0.01705,
+      "ABCTRANS": 0.0,
+      "ACADEMY": 0.00341,
+      "ACCESSCORP": 0.03968,
+      "AFRIPRUD": 0.00988,
+      "AGLEVENT": -0.00191,
+      "AIICO": 0.02298,
+      "AIRSERVICE": 0.02972,
+      "AIRTELAFRI": 0.08709,
+      "ARDOVA": 0.00404,
+      "ASHAKACEM": -0.00428,
+      "BERGER": 0.04375,
+      "BETAGLAS": 0.03318,
+      "BOCGAS": 0.05462,
+      "BUACEMENT": 0.04331,
+      "BUAFOODS": 0.05407,
+      "CADBURY": 0.03139,
+      "CAP": 0.02043,
+      "CAPHOTEL": 0.00296,
+      "CCNN": 0.03082,
+      "CILEASING": -0.00364,
+      "CONOIL": 0.08712,
+      "CORNERST": -0.0124,
+      "COSTAIN": 0.0,
+      "COURTVILLE": 0.00531,
+      "CUSTODIAN": 0.03134,
+      "CUSTODYINS": 0.00256,
+      "CUTIX": -0.00484,
+      "DAARCOMM": -0.0016,
+      "DANGCEM": 0.05219,
+      "DANGSUGAR": 0.06189,
+      "DUNLOP": -0.01617,
+      "ELLAHLAKES": 0.0012,
+      "EQUITYASUR": -0.01331,
+      "ETI": -0.02601,
+      "ETRANZACT": 0.04525,
+      "EVANSMED": 0.0,
+      "FIDELITYBK": 0.02869,
+      "FIDSON": -0.01315,
+      "FIRSTALUM": 0.00336,
+      "FIRSTHOLDCO": 0.06418,
+      "FLOURMILL": 0.03491,
+      "FTNCOCOA": 0.0,
+      "GEREGU": 0.04699,
+      "GLAXOSMITH": 0.03885,
+      "GTCO": 0.03335,
+      "GUINNESS": -0.01558,
+      "IMG": 0.02285,
+      "INTBREW": 0.01926,
+      "JBERGER": 0.02835,
+      "JOHNHOLT": 0.02275,
+      "LASACO": -0.00945,
+      "LEARNAFRCA": 0.01206,
+      "LINKASSURE": 0.0,
+      "LIVINGTRUST": -0.00031,
+      "MANSARD": -0.0035,
+      "MAYBAKER": -0.00154,
+      "MBENEFIT": 0.00602,
+      "MCNICHOLS": 0.00069,
+      "MEDVIEWAIR": 0.00035,
+      "MEYER": -0.00569,
+      "MOBIL": 0.02998,
+      "MRS": 0.01565,
+      "MTNN": 0.02241,
+      "MULTIVERSE": 0.0,
+      "NAHCO": -0.0016,
+      "NASCON": 0.0671,
+      "NB": -0.04483,
+      "NESTLE": 0.02401,
+      "NGXGROUP": 0.00585,
+      "NIDF": -0.00065,
+      "NIGERINS": 0.00238,
+      "NNFM": -0.00955,
+      "NPFMCRFBK": -0.00082,
+      "OKOMUOIL": 0.08533,
+      "PHARMDEKO": 0.0,
+      "PORTPAINT": -0.00338,
+      "PRESCO": 0.09825,
+      "PRESTIGE": 0.00677,
+      "PZ": -0.00101,
+      "REDSTAREX": 0.0132,
+      "REGALINS": 0.00371,
+      "ROYALEX": 0.00105,
+      "RTBRISCOE": 0.0,
+      "SEPLAT": 0.09077,
+      "SKYAVN": 0.06892,
+      "SOVRENINS": 0.00686,
+      "STANBIC": -0.00893,
+      "STERLNBANK": -0.00119,
+      "SUNUASSUR": -1e-05,
+      "TOTAL": 0.07689,
+      "TRANSCOHOT": 0.08416,
+      "TRANSEXPR": 0.00057,
+      "TRANSPOWER": 0.00641,
+      "TRIPPLEG": 0.01217,
+      "UAC-PROP": -0.01345,
+      "UACN": -0.00747,
+      "UBA": 0.05011,
+      "UBN": 0.0097,
+      "UCAP": -0.00131,
+      "UNILEVER": -0.01448,
+      "UNIVINSURE": 0.0,
+      "UPL": -0.01955,
+      "VITAFOAM": 0.03934,
+      "WAPCO": 0.00265,
+      "WAPIC": 0.00502,
+      "WEMABANK": 0.02884,
+      "ZENITHBANK": 0.01559
+    },
+    "sharpe_vs_rf": 1.604
+  },
+  "min_confidence": 0.9,
+  "notes": "sweep cell: vol_lookback_months=12 top_n=30",
+  "provider": "ngx_pricelist_v1,ngx_dol_v1,ngx_list2_v1",
+  "rebalance": "quarterly",
+  "rng_algorithm": "PCG64",
+  "rng_iterations": 0,
+  "rng_seed": 20260722,
+  "seed": 20260722,
+  "sim_end": "2024-12-31",
+  "sim_start": "2016-01-02",
+  "stage": "development",
+  "top_n": 30,
+  "validation_flags": {
+    "counts_as_evidence": true,
+    "data_min_confidence_seen": 0.9,
+    "diagnostics": {
+      "errors": [
+        "unexplained_jump"
+      ],
+      "warnings": [
+        "duplicate_observation",
+        "extreme_index_return",
+        "liquidity_anomaly",
+        "missing_data",
+        "stale_price"
+      ]
+    },
+    "engine": "cross_sectional",
+    "failure_conditions": {
+      "_any_triggered": false,
+      "_scalability_limited": false,
+      "_signal_reject_recommended": false,
+      "capacity_below_minimum": {
+        "category": "scalability",
+        "evidence": "median capacity 10,058,314 NGN vs mandate 0; signal validity unaffected \u2014 deployable AUM is capped near the median capacity figure",
+        "triggered": false
+      },
+      "cost_drag_eliminates_excess": {
+        "category": "signal_quality",
+        "evidence": "gross excess -5.48%, net excess -9.90%",
+        "triggered": false
+      },
+      "oos_performance_collapses": {
+        "category": "signal_quality",
+        "evidence": "not evaluable until Phase 4 walk-forward",
+        "triggered": null
+      },
+      "placebo_performs_similarly": {
+        "category": "signal_quality",
+        "evidence": "not evaluable until Phase 4 placebo run",
+        "triggered": null
+      },
+      "single_regime_dependency": {
+        "category": "signal_quality",
+        "evidence": "not evaluable until Phase 4 walk-forward",
+        "triggered": null
+      },
+      "single_sector_dependency": {
+        "category": "signal_quality",
+        "evidence": "PRESCO contributes 5% of positive return (limit 100%)",
+        "triggered": false
+      }
+    },
+    "hypothesis_reject_recommended": false,
+    "is_holdout_clean": true,
+    "liquidity_constraint_enforced": false,
+    "price_index_only_no_dividends": true,
+    "risk_free_rate_is_placeholder": true,
+    "scalability_limited": false,
+    "synthetic_data": false,
+    "within_sector_weights_are_adtv_proxy": false
+  },
+  "vintage": "2026-07-21"
+}

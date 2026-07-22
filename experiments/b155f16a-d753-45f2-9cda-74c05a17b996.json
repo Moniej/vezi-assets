@@ -1,0 +1,268 @@
+{
+  "code_fingerprint": "209b72a18fb78d40",
+  "config_hash": "bba449dbd7dcda8f",
+  "config_json": {
+    "costs": {
+      "brokerage_override_pct": -1.0,
+      "line_items": [
+        {
+          "confidence": "assumed",
+          "fee": "brokerage",
+          "rate_pct": 1.35,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "cscs_fee",
+          "rate_pct": 0.06,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "ngx_fee",
+          "rate_pct": 0.3,
+          "side": "sell"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "sec_fee",
+          "rate_pct": 0.3,
+          "side": "buy"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "stamp_duty",
+          "rate_pct": 0.08,
+          "side": "both"
+        },
+        {
+          "confidence": "assumed",
+          "fee": "vat",
+          "rate_pct": 7.5,
+          "side": "both"
+        }
+      ],
+      "resolved_buy_rate": 0.018957500000000002,
+      "resolved_sell_rate": 0.018957500000000002,
+      "source": "db"
+    },
+    "data": {
+      "benchmark": "NGXASI",
+      "db_path": "data/ngx.sqlite",
+      "min_confidence": 0.4,
+      "sim_end": "2024-12-31",
+      "sim_start": "2016-06-01",
+      "sources": [
+        "investing_com"
+      ],
+      "universe": [
+        "NGXBNK",
+        "NGXASI"
+      ],
+      "vintage": ""
+    },
+    "diagnostics": {
+      "params": {},
+      "run": false
+    },
+    "engine": {
+      "aum_ngn": 2000000000.0,
+      "impact_coeff_bps": 15.0,
+      "slippage_bps": 30.0,
+      "type": "lite"
+    },
+    "experiment": {
+      "hypothesis_id": "H-005",
+      "name": "p4_final_evaluation",
+      "seed": 20260716,
+      "stage": "walk_forward"
+    },
+    "failure_conditions": {
+      "max_single_regime_share": 0.8,
+      "max_single_sector_share": 1.0,
+      "min_median_capacity_ngn": 0.0,
+      "min_oos_sharpe_retention": 0.25,
+      "placebo_alpha": 0.05
+    },
+    "liquidity": {
+      "adtv_participation_cap_pct": 10.0,
+      "adtv_window_days": 60,
+      "enforced": false
+    },
+    "portfolio": {
+      "catalyst_filter": false,
+      "construction": "equal_weight",
+      "execution_lag_days": 1,
+      "impairment_window_months": 12,
+      "rebalance": "monthly",
+      "top_n": 1
+    },
+    "rng": {
+      "algorithm": "PCG64",
+      "iterations": 100,
+      "seed": 42
+    },
+    "signal": {
+      "event_types": [
+        "mpc_decision"
+      ],
+      "lookback_weights": [
+        1.0
+      ],
+      "lookbacks_months": [
+        10
+      ],
+      "method": "event_window",
+      "neutral_index": "NGXASI",
+      "target_index": "NGXBNK"
+    },
+    "validation": {
+      "holdout_start": "2025-01-02",
+      "risk_free_annual_pct": 0.0
+    }
+  },
+  "config_path": null,
+  "construction": "equal_weight",
+  "cost_assumptions": {
+    "brokerage_override_pct": -1.0,
+    "line_items": [
+      {
+        "confidence": "assumed",
+        "fee": "brokerage",
+        "rate_pct": 1.35,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "cscs_fee",
+        "rate_pct": 0.06,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "ngx_fee",
+        "rate_pct": 0.3,
+        "side": "sell"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "sec_fee",
+        "rate_pct": 0.3,
+        "side": "buy"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "stamp_duty",
+        "rate_pct": 0.08,
+        "side": "both"
+      },
+      {
+        "confidence": "assumed",
+        "fee": "vat",
+        "rate_pct": 7.5,
+        "side": "both"
+      }
+    ],
+    "resolved_buy_rate": 0.018957500000000002,
+    "resolved_sell_rate": 0.018957500000000002,
+    "source": "db"
+  },
+  "created_at": "2026-07-16T15:40:16+00:00",
+  "experiment_id": "b155f16a-d753-45f2-9cda-74c05a17b996",
+  "git_commit": null,
+  "hypothesis_id": "H-005",
+  "liquidity_constraints": {
+    "adtv_participation_cap_pct": 10.0,
+    "adtv_window_days": 60,
+    "enforced": false
+  },
+  "lookbacks_months": [
+    10
+  ],
+  "metrics": {
+    "ann_cost_drag": 0.4081,
+    "ann_return": -0.2274,
+    "ann_return_benchmark": 0.171,
+    "ann_turnover_oneway": 10.822,
+    "ann_vol": 0.2051,
+    "avg_oneway_turnover_per_rebalance": 1.0,
+    "excess_return_ann": -0.3984,
+    "excess_ttest": {
+      "n_obs": 2119,
+      "p_value": 0.0,
+      "t_stat": -7.786
+    },
+    "gross_ann_return": 0.1696,
+    "hit_rate_vs_benchmark": 0.022,
+    "max_drawdown": -0.9074,
+    "n_rebalances": 91,
+    "period_days": 2119,
+    "rf_annual_pct_used": 0.0,
+    "sector_contribution": {
+      "NGXASI": 1.2473,
+      "NGXBNK": 0.1934
+    },
+    "sharpe_vs_rf": -1.108
+  },
+  "min_confidence": 0.4,
+  "notes": "sweep cell: final evaluation",
+  "provider": "investing_com",
+  "rebalance": "monthly",
+  "rng_algorithm": "PCG64",
+  "rng_iterations": 100,
+  "rng_seed": 42,
+  "seed": 20260716,
+  "sim_end": "2024-12-31",
+  "sim_start": "2016-06-01",
+  "stage": "walk_forward",
+  "top_n": 1,
+  "validation_flags": {
+    "counts_as_evidence": true,
+    "data_min_confidence_seen": 0.5,
+    "diagnostics": {},
+    "failure_conditions": {
+      "_any_triggered": true,
+      "_scalability_limited": false,
+      "_signal_reject_recommended": true,
+      "capacity_below_minimum": {
+        "category": "scalability",
+        "evidence": "no capacity records",
+        "triggered": false
+      },
+      "cost_drag_eliminates_excess": {
+        "category": "signal_quality",
+        "evidence": "gross excess -0.14%, net excess -39.84%",
+        "triggered": false
+      },
+      "oos_performance_collapses": {
+        "category": "signal_quality",
+        "evidence": "OOS Sharpe 0.77 vs IS -0.72 (retention floor 25%)",
+        "triggered": false
+      },
+      "placebo_performs_similarly": {
+        "category": "signal_quality",
+        "evidence": "placebo p=1.000 (alpha=0.05): real strategy NOT distinguishable from shuffled sector labels",
+        "triggered": true
+      },
+      "single_regime_dependency": {
+        "category": "signal_quality",
+        "evidence": "no positive regime excess to attribute",
+        "triggered": null
+      },
+      "single_sector_dependency": {
+        "category": "signal_quality",
+        "evidence": "NGXASI contributes 87% of positive return (limit 100%)",
+        "triggered": false
+      }
+    },
+    "hypothesis_reject_recommended": true,
+    "is_holdout_clean": true,
+    "liquidity_constraint_enforced": false,
+    "price_index_only_no_dividends": true,
+    "risk_free_rate_is_placeholder": true,
+    "scalability_limited": false,
+    "synthetic_data": false,
+    "within_sector_weights_are_adtv_proxy": false
+  },
+  "vintage": null
+}

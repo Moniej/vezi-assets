@@ -1,0 +1,87 @@
+# H-003 pre-registered validation config — executable form of docs/PREREG_H-003.md.
+# Registered BEFORE any H-003 experiment ran.
+# NOTE: lookbacks_months carries the catalyst ACTIVITY WINDOW W (months) so the
+# stability grid sweeps it. rebalance quarterly per the H-005 cost constraint.
+
+[experiment]
+name = "p4_validation_h003"
+hypothesis_id = "H-003"
+stage = "development"
+seed = 20260716
+
+[data]
+sources = ["investing_com"]
+db_path = "data/ngx.sqlite"
+min_confidence = 0.4
+vintage = ""
+universe = ["NGXBNK", "NGXINS", "NGXOILGAS", "NGXASI"]  # ASI = pre-registered fallback asset
+benchmark = "NGXASI"
+sim_start = "2016-06-01"
+sim_end = "2024-12-31"
+
+[signal]
+method = "catalyst_activity"
+neutral_index = "NGXASI"
+event_categories = ["banking", "insurance", "commodity"]  # sector-scoped structural only
+lookbacks_months = [12]              # BASE: activity window W = 12 months
+lookback_weights = [1.0]
+
+[portfolio]
+top_n = 4                            # all columns; score_weight zeroes non-qualifiers
+construction = "score_weight"
+rebalance = "quarterly"
+execution_lag_days = 1
+catalyst_filter = false              # impairment handled inside the score rule
+impairment_window_months = 12
+
+[costs]
+brokerage_override_pct = -1.0
+
+[engine]
+type = "lite"
+
+[rng]
+algorithm = "PCG64"
+seed = 42
+iterations = 100
+
+[failure_conditions]
+min_median_capacity_ngn = 0.0
+max_single_sector_share = 1.0        # disabled per prereg (small universe)
+placebo_alpha = 0.05
+min_oos_sharpe_retention = 0.25
+max_single_regime_share = 0.80
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0
+
+[diagnostics]
+run = false
+
+[phase4]
+[phase4.stability]
+lookbacks = [[6], [12], [18]]
+top_n = [4]
+rebalance = ["quarterly"]
+
+[phase4.placebo]
+iterations = 100
+
+[[phase4.regimes]]
+name = "pre2023"
+start = "2016-06-01"
+end = "2022-12-30"
+stage = "walk_forward"
+
+[[phase4.regimes]]
+name = "shock_2023_24"
+start = "2023-01-02"
+end = "2024-12-31"
+stage = "walk_forward"
+
+[[phase4.regimes]]
+name = "bull_2025_26"
+start = "2025-01-02"
+end = "2026-06-30"
+stage = "final_oos"

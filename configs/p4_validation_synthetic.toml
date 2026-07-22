@@ -1,0 +1,92 @@
+# Phase 4 validation suite: stability map, multiple-testing correction,
+# shuffled-label placebo, walk-forward across regimes, IC memo.
+# SYNTHETIC DATA — full-dress rehearsal of the validation machinery. The memo
+# it produces MUST come out "Insufficient Evidence" (synthetic override).
+
+[experiment]
+name = "p4_validation"
+hypothesis_id = "H-001"
+stage = "development"                 # per-run stages overridden by orchestrator
+seed = 20260715
+
+[data]
+sources = ["synthetic_dev"]
+db_path = "data/ngx.sqlite"
+min_confidence = 0.0
+vintage = ""
+universe = ["NGXBNK", "NGXINS", "NGXOILGAS", "NGXINDUSTR", "NGXCNSMRGDS"]
+benchmark = "NGXASI"
+sim_start = "2016-06-01"              # development window (stability/placebo)
+sim_end = "2024-12-31"
+
+[signal]
+lookbacks_months = [3, 6]
+lookback_weights = [0.5, 0.5]
+
+[portfolio]
+top_n = 2
+construction = "equal_weight"
+rebalance = "quarterly"
+execution_lag_days = 1
+catalyst_filter = false
+impairment_window_months = 12
+
+[costs]
+brokerage_override_pct = -1.0
+
+[liquidity]
+adtv_participation_cap_pct = 10.0
+adtv_window_days = 60
+enforced = true
+
+[engine]
+type = "full"
+aum_ngn = 2e9
+slippage_bps = 30.0
+impact_coeff_bps = 15.0
+
+[rng]
+algorithm = "PCG64"
+seed = 42
+iterations = 100                      # placebo iterations recorded here
+
+[failure_conditions]
+min_median_capacity_ngn = 1e9
+max_single_sector_share = 0.80
+placebo_alpha = 0.05
+min_oos_sharpe_retention = 0.25
+max_single_regime_share = 0.80
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0
+
+[diagnostics]
+run = true
+
+[phase4]
+[phase4.stability]
+lookbacks = [[3], [6], [12], [3, 6], [6, 12]]
+top_n = [2, 3]
+rebalance = ["monthly", "quarterly"]
+
+[phase4.placebo]
+iterations = 100
+
+[[phase4.regimes]]
+name = "pre2023"
+start = "2016-06-01"
+end = "2022-12-30"
+stage = "walk_forward"
+
+[[phase4.regimes]]
+name = "shock_2023_24"
+start = "2023-01-02"
+end = "2024-12-31"
+stage = "walk_forward"
+
+[[phase4.regimes]]
+name = "bull_2025_26"
+start = "2025-01-02"
+end = "2026-06-30"
+stage = "final_oos"
