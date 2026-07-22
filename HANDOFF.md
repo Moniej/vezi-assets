@@ -30,11 +30,21 @@ artifact hypothesis for H-009's original near-miss).
 
 **Architecture remains FROZEN as V1 — do not redesign it.**
 
-**Immediate next steps** (none started yet):
-1. Wire a `ModelAdapter` for H-011 in `src/ngxrot/alpha_engine.py`'s
-   `MODEL_ADAPTERS` — the engine's honest `no_position` shell finally
-   has something real to speak from.
-2. E16 (new, `docs/EXECUTION_BACKLOG.md`): persist `result.attribution`
+**Immediate next steps:**
+1. ~~Wire a `ModelAdapter` for H-011~~ — **DONE 2026-07-22.**
+   `H011SizeAdapter` in `src/ngxrot/alpha_engine.py`, reuses
+   `backtest_xs.size_scores`/`load_market_cap_panel` UNCHANGED at the
+   exact validated config (top_n=20, quarterly). Verified end-to-end via
+   `scripts/engine_status.py`: 20 actionable recommendations, correct
+   provenance, correct latest-formation date. Vintage semantics: the
+   VALIDATION is pinned to 2026-07-21 (immutable); this LIVE adapter
+   reads the latest available data — the model is frozen, the data it
+   reads is current. Headline expected-excess/drawdown figures use the
+   dev/full-evaluation numbers (+15.02%/-32.81%), not the flashier
+   untouched-OOS figure (+53.0%) — that's disclosed in caveats instead
+   of quoted as the headline, to avoid cherry-picking. The severe
+   capacity constraint (median leg ~₦694k) is the FIRST caveat listed.
+2. E16 (`docs/EXECUTION_BACKLOG.md`): persist `result.attribution`
    for pooled hypotheses into the registry (H-010's real cohort
    correlation had to be recovered by hand); fix `n_rebalances`
    undercounting for pooled results in the confidence rating.
