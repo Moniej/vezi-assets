@@ -60,6 +60,106 @@ class Recommendation:
 MODEL_ADAPTERS: dict = {}
 
 
+class H011SizeAdapter:
+    """H-011 — Size (confirmed 2026-07-22, the platform's first validated
+    factor). Long the smallest-cap quintile within IRU v2, quarterly,
+    equal-weighted — the EXACT construction validated in
+    docs/PREREG_H-011.md / configs/h011_size.toml. This adapter does not
+    invent a new parameter or reselect a "better-looking" cell; top_n=20
+    and rebalance="quarterly" are the base configuration that earned the
+    High confidence rating, not a discretionary choice made here.
+
+    Live vs. research vintage semantics, stated explicitly because it
+    differs from every prereg in this program on purpose: VALIDATION runs
+    pin vintage=2026-07-21 (the frozen dataset the gauntlet ran against,
+    immutable in the registry). This adapter uses vintage="" (latest
+    available) instead — a live recommendation that never sees data
+    ingested after validation would be useless for actually acting today.
+    The MODEL is frozen (top_n/rebalance/eligibility rules); the DATA it
+    reads is current.
+
+    Reuses backtest_xs.size_scores / load_market_cap_panel UNCHANGED —
+    the same code path exercised by the gauntlet, not a reimplementation.
+    """
+
+    hypothesis_id = "H-011"
+    TOP_N = 20
+    REBALANCE = "quarterly"
+    # Provenance: the final-evaluation experiment (the number the High
+    # confidence rating is built from) and the untouched-OOS experiment.
+    # docs/FACTOR_REGISTRY.md has the full evidence trail.
+    EXPERIMENT_IDS = ("2f6c7f95-ca50-4957-8299-22ca00308001",   # p4_final_evaluation
+                      "f20e6eb1-7aa4-414c-bad7-de1e87182d03")  # p4_wf_oos_2025_26
+    # Headline figures use the final-evaluation (dev+full-window) result,
+    # NOT the flashier untouched-OOS number (+53.0% over an 18-month
+    # window) — quoting the short, strong OOS window as "expected" would
+    # be cherry-picking; it is disclosed in caveats instead.
+    EXPECTED_EXCESS_ANN = 0.1502
+    EXPECTED_MAX_DRAWDOWN = -0.3281
+
+    CAVEATS = (
+        "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN "
+        "694,336; 100% of trade legs were rejected at NGN 1bn AUM during "
+        "validation — the worst of any hypothesis tested on this "
+        "platform. This is a small-AUM-only strategy by construction; "
+        "deploying it at institutional scale would itself move the "
+        "prices the backtest assumed were fixed.",
+        "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a "
+        "recommended share of total fund NAV.",
+        "Full-issue market cap, NOT float-adjusted (no shares-"
+        "outstanding/free-float dataset exists yet) — see "
+        "docs/PREREG_H-011.md known limitations.",
+        "Price-only returns (no dividend reinvestment).",
+        "Untouched-OOS net excess was materially higher (+53.0% over "
+        "2025-01 to 2026-06) than the figure quoted above — an 18-month "
+        "window, not extrapolated as a steady-state expectation.",
+        "Rebalances quarterly at month-end; this reflects the LATEST "
+        "completed formation on or before as_of, not necessarily today.",
+    )
+
+    def generate(self, as_of: str) -> list["Recommendation"]:
+        from . import backtest_xs, db
+        con = db.connect()
+        cfg = {
+            "data": {"sim_start": "2016-01-02", "sim_end": as_of,
+                     "min_confidence": 0.9, "vintage": ""},
+            "signal": {"method": "xs_size", "min_obs_formation": 120,
+                      "lookback_months": 12},
+            "portfolio": {"top_n": self.TOP_N, "rebalance": self.REBALANCE},
+        }
+        panel = backtest_xs.load_panel(con, cfg)
+        panel["mcap"] = backtest_xs.load_market_cap_panel(panel["close_ff"])
+        scores = backtest_xs.size_scores(con, panel, cfg)
+        if not scores:
+            return []   # unknown stays unknown — no eligible formation yet
+        latest = max(scores)
+        sel = scores[latest].nlargest(min(self.TOP_N, len(scores[latest])))
+        n = len(sel)
+        if n == 0:
+            return []
+        return [
+            Recommendation(
+                as_of=as_of, instrument=ticker, action="buy",
+                size_pct_nav=round(1.0 / n, 4), horizon=self.REBALANCE,
+                expected_excess_ann=self.EXPECTED_EXCESS_ANN,
+                expected_max_drawdown=self.EXPECTED_MAX_DRAWDOWN,
+                confidence_rating="High",
+                rationale=(
+                    f"Size factor (H-011, confirmed 2026-07-22): {ticker} "
+                    f"is in the smallest-cap quintile of IRU v2 as of the "
+                    f"{latest.date()} formation (latest completed "
+                    f"quarterly rebalance on or before {as_of})."),
+                hypothesis_id=self.hypothesis_id,
+                experiment_ids=self.EXPERIMENT_IDS,
+                caveats=self.CAVEATS,
+            )
+            for ticker in sel.index
+        ]
+
+
+MODEL_ADAPTERS["H-011"] = H011SizeAdapter()
+
+
 class AlphaEngine:
     def __init__(self):
         self.reg = registry.connect_registry()
