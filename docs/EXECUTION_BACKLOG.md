@@ -355,6 +355,40 @@ infrastructure)**
 - Completion criteria: each of the 49 candidates resolved to
   verified/rejected, not left in an unverified state indefinitely.
 
+**E16 — Persist `result.attribution` for pooled/multi-cohort hypotheses;
+fix `n_rebalances` undercount**
+- Description: two reporting gaps found while writing up H-010's verdict
+  (2026-07-22), neither of which affected the mechanical verdict itself
+  (both are reporting/wiring issues, not evidence issues), both worth
+  fixing before the next `xs_rank_pooled`-based hypothesis: (1)
+  `backtest_xs.pooled_rank_run`'s diagnostics (cohort return correlation,
+  per-cohort turnover) are computed and attached to `result.attribution`
+  but `runner.run_resolved`'s xs branch never persists `attribution` into
+  the registry metrics JSON or the IC memo template — H-010's real
+  cohort correlation (~0.75) had to be recovered by manually re-running
+  the base config after the fact. (2) `metrics.compute`'s
+  `n_rebalances` reads `len(result.weights.index)`, which is empty by
+  construction for pooled results (blending happens at the return level,
+  see the `pooled_rank_run` docstring) — H-010's confidence rating scored
+  "sample: 0 decisions" when the true count is ~36 formation events
+  across 4 cohorts.
+- Why it matters: the cohort-correlation number is exactly the evidence
+  that explained WHY H-010 failed (0.75 real vs 0.57 synthetic) — it
+  should be in the permanent, queryable record, not recovered by hand
+  each time. The decision-count bug systematically understates
+  confidence ratings for every future pooled hypothesis.
+- Dependencies: none.
+- Engineering effort: LOW (both are small, localized fixes).
+- Research impact: none directly; improves the accuracy of every future
+  pooled-momentum-family IC memo.
+- Files/modules: `src/ngxrot/runner.py` (persist `result.attribution`
+  when non-empty), `src/ngxrot/metrics.py` or `backtest_xs.py`
+  (`pooled_rank_run` should populate a synthetic `weights`-equivalent, or
+  `metrics.compute` should accept an explicit decision count).
+- Completion criteria: a future `xs_rank_pooled` IC memo shows the real
+  cohort correlation without manual recovery, and its confidence
+  rating's decision count is not 0.
+
 **E9 — DOL-day close precision restatement via gainers cross-check**
 - Description: the 177 single-source recovered days (DOL/LIST2 fallback)
   could have their close precision improved using the gainers

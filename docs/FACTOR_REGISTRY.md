@@ -13,17 +13,137 @@ promotes a factor through the unchanged gauntlet.
 
 ## Validated
 
-*(none — 0 validated factors; that is the honest current state)*
+### H-011 — Size (family: Size) — CONFIRMED 2026-07-22
+**The platform's first validated factor.** Long the smallest-cap quintile
+(top 20 by inverse market cap) within IRU v2, equal-weighted, quarterly
+rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
+
+- **Status**: Validated. Validation date: 2026-07-22.
+  Memo: `reports/IC_memo_H-011_h011_size_2026-07-22.md`. Prereg:
+  `docs/PREREG_H-011.md`. Config: `configs/h011_size.toml`.
+- **Statistical evidence (all six pre-registered criteria met)**:
+  placebo p=0.0099 (real Sharpe 2.244 exceeds even the MAXIMUM of 100
+  shuffled draws, 1.918); net excess positive in development (+15.02%
+  base cell, gross +20.94%) AND untouched OOS (+53.0%); plateau 6/6 grid
+  cells positive (best-median gap 4.9%, a clean plateau not a spike);
+  1/6 cells survives Holm (corrected p=0.049), 5/6 survive BH(FDR 0.10);
+  no single regime carries >80% of positive excess (float_shock 46.8%,
+  OOS 46.8%, pre_float 6.5%); zero signal-quality failure conditions
+  triggered. Confidence rating **High (10/12)** — the highest in the
+  program's history.
+- **Holding horizon**: quarterly rebalance (base configuration; grid also
+  tested semiannual — both cadences produced positive excess).
+- **Turnover**: 1.13×/yr one-way (base cell, from the registry), cost
+  drag 4.07%/yr, 35 decisions in the development window. Not the
+  low-turnover story H-008 hoped for and didn't get either — size ranks
+  are NOT dramatically stickier than momentum's on real NGX data — but
+  the gross effect (+20.94%) is large enough that this turnover cost
+  does not eliminate it, unlike H-007/H-005/H-006/H-003 where it did.
+- **Capacity — the central, honestly-stated caveat**: median leg
+  capacity ₦694,336 — roughly 10-15× WORSE than any other hypothesis
+  tested on this platform (H-010: ₦9.6m; H-009: ₦11.8m; H-006: ₦9.1m).
+  100% of trade legs rejected at ₦1bn AUM. This is NOT a contradiction
+  of the signal — per governance, `capacity_below_minimum` is a
+  scalability finding, evaluated separately from signal quality, and per
+  the factor's OWN economic rationale (compensation for the exact
+  liquidity friction this platform's capacity reports have documented in
+  every prior hypothesis) severe illiquidity is the expected, not
+  surprising, companion to this specific effect. **This is a real, valid,
+  but SMALL-AUM strategy — not a broadly scalable one.**
+- **Economic rationale**: capacity/liquidity-friction compensation, not
+  an "undervalued small companies get discovered" narrative claim — the
+  prereg was written and frozen to test specifically the friction
+  version of the size story, and the capacity result is consistent with
+  that framing, not in tension with it.
+- **Practical implementation notes**: per-regime top contributors were
+  consistently thin/illiquid names (LASACO in pre_float, MULTIVERSE in
+  float_shock, NCR in OOS) — the effect is genuinely concentrated in the
+  most illiquid tail of the universe, exactly where the economic
+  rationale predicts it should be, and exactly where real-world
+  implementation would be hardest.
+- **Known limitations**: full-issue market cap, NOT float-adjusted (no
+  shares-outstanding/free-float dataset exists yet — a stated
+  construct-validity limitation: could partly proxy cross-holding
+  structure rather than purely tradeable-float scarcity). Price-only
+  returns (no dividend reinvestment). 177 single-source close-only days
+  in the panel. Retail cost schedule 'assumed' confidence. rf=0%
+  placeholder. Turnover unmeasured/unasserted in this writeup (see above).
+- **Interaction with other validated factors**: none yet — this is the
+  library's only entry. Expected (not yet measured) correlation with a
+  future Momentum entry: low, per disjoint construction inputs. Expected
+  HIGH correlation with any future Liquidity factor (small-cap and
+  illiquidity are related by construction on NGX) — any future Liquidity
+  prereg must address this overlap explicitly, not claim independence.
+- **Confidence level**: High (10/12), per the platform's standard rating
+  scale — the strongest-evidenced result in the program's 11-hypothesis
+  history.
+- **What this unlocks**: per
+  `docs/PLATFORM_MATURITY_AND_3YEAR_ROADMAP.md`'s Year-1 exit condition
+  (≥1 validated factor), Company Intelligence Engine v0 scaffolding may
+  now begin. Portfolio Construction remains correctly GATED — the
+  charter milestone requires ≥2 validated INDEPENDENT factors, and only
+  one exists. Next engineering step: wire a `ModelAdapter` for H-011 in
+  `alpha_engine.py`'s `MODEL_ADAPTERS` registry so the engine's honest
+  `no_position` shell finally has something real to say.
 
 ---
 
 ## Under Research
 
-*(none — H-008 and H-009 both moved to Rejected, 2026-07-22)*
+*(none — H-010 moved to Rejected and H-011 moved to Validated, 2026-07-22)*
 
 ---
 
 ## Rejected — per-stock era
+
+### H-010 — Pooled Overlapping-Cohort Momentum (family: Momentum) — REJECTED 2026-07-22
+- Verdict (mechanical, per PREREG_H-010): placebo p=0.386 — a clean
+  failure, and notably WORSE than H-009's near-miss (0.069), not an
+  improvement. Cleanest plateau of the entire program (6/6 cells
+  positive, best-median gap 0.15%) but 0/6 survive Holm (corrected
+  p=0.853). Net excess +2.26% (matches the pre-run smoke test exactly)
+  but `single_regime_dependency` NOW triggers — pre_float alone carries
+  100% of positive excess; float_shock −10.0%; **OOS −6.6%**, flipping
+  the sign of H-009's OOS result (+9.4%). Confidence rating Moderate
+  (6/12). Memo: `reports/IC_memo_H-010_h010_pooled_momentum_2026-07-22.md`.
+- Evidence summary — the decisive number: **real-data cohort return
+  correlation averaged ~0.75** (recovered post-hoc from
+  `backtest_xs.pooled_rank_run`'s diagnostics, since `result.attribution`
+  is not yet persisted to the registry — see Known weaknesses), far
+  higher than the ~0.57 measured on the synthetic rehearsal panel
+  (`scripts/rehearse_xs_pooled.py`). The "4 independent cohorts" claim
+  overstated the true information gain substantially — 4 highly
+  correlated copies of the same bet, not 4 separate ones.
+- Interpretation, stated carefully: the OOS sign flip suggests H-009's
+  near-significant, all-regime-positive result was likely **partly a
+  calendar-alignment artifact** of its one specific annual formation date
+  landing favorably in the 2025-26 window, not a robust property of
+  low-turnover momentum in general. Pooling — designed specifically to
+  average out exactly this kind of timing luck — did so, and the
+  apparent edge did not survive averaging.
+- What is now KNOWN (do not retest without a materially different
+  design): **the "pool more cohorts" successor path for NGX momentum is
+  closed.** Turnover-fixing (H-009) was real progress on the cost
+  problem; pooling did not fix the power problem, because the added
+  cohorts are not independent enough to add power. A genuinely different
+  signal construction — not another turnover/power variant of 12-1
+  momentum — would be required for any further Momentum-family
+  hypothesis, and it should address calendar-alignment risk explicitly
+  in its own design, not assume it away.
+- Capacity: median leg capacity ₦9.6m; 88% legs rejected at ₦1bn.
+- Known weaknesses of the test: `result.attribution` (cohort correlation,
+  per-cohort turnover) is computed by the engine but not yet wired into
+  the persisted registry metrics or the IC memo template — recovered
+  here by re-running the base config directly. Tracked as a follow-up
+  engineering task (extend `runner.py`'s xs branch to persist
+  `result.attribution` when present). Confidence-rating's "sample" score
+  read 0 decisions — `n_rebalances` is computed from `result.weights`,
+  which is empty by construction for pooled results (see
+  `backtest_xs.pooled_rank_run`); the rating undercounts pooled
+  hypotheses' true decision count. Neither gap affected this verdict
+  (both are reporting/wiring issues, not evidence issues) but both
+  should be fixed before the NEXT `xs_rank_pooled`-based hypothesis.
+- Interaction: n/a (library empty).
 
 ### H-009 — Turnover-Budgeted Momentum (family: Momentum) — REJECTED 2026-07-22
 - Verdict (mechanical, per PREREG_H-009): placebo p=0.069 — a NEAR-MISS
