@@ -44,10 +44,14 @@ artifact hypothesis for H-009's original near-miss).
    untouched-OOS figure (+53.0%) — that's disclosed in caveats instead
    of quoted as the headline, to avoid cherry-picking. The severe
    capacity constraint (median leg ~₦694k) is the FIRST caveat listed.
-2. E16 (`docs/EXECUTION_BACKLOG.md`): persist `result.attribution`
-   for pooled hypotheses into the registry (H-010's real cohort
-   correlation had to be recovered by hand); fix `n_rebalances`
-   undercounting for pooled results in the confidence rating.
+2. ~~E16: persist `result.attribution` / fix `n_rebalances`~~ — **DONE
+   2026-07-22.** `runner.py` now persists cohort diagnostics into the
+   registry; `pooled_rank_run` builds real per-cohort execution-date
+   weights (fixes `n_rebalances` 0→35 and `hit_rate_vs_benchmark`
+   None→0.457 as a bonus, same root cause). `ic_report.py` shows a
+   "Cohort diagnostics" section for pooled hypotheses. Reconfirmed on a
+   direct re-run of H-010's base config — verdict unchanged (every
+   verdict-relevant number was byte-identical before/after).
 3. ~~Company Intelligence Engine v0 scaffolding~~ — **STARTED 2026-07-22.**
    `src/ngxrot/company_intelligence.py` (`CompanyProfile` dataclass +
    `build_profile()`), CLI: `python scripts/company_profile.py TICKER
