@@ -204,15 +204,24 @@ def _eligible(con, panel, f: pd.Timestamp, iru_rules,
 def rank_scores(con, panel, cfg) -> dict:
     """{formation_date -> Series(score)} for xs_rank. Formation return =
     close[f - skip months] / close[f - formation months] - 1 on stitched
-    (ffilled) closes, eligibility on actual observations."""
+    (ffilled) closes, eligibility on actual observations.
+
+    cohort_offset_months (default 0, backward-compatible): shifts WHICH
+    month-ends are selected by the rebalance step, without changing the
+    step itself. Used by pooled_rank_run to give each cohort in a
+    multi-cohort design its own staggered formation calendar — e.g.
+    step=12 (annual) with offset=3 selects month-ends 3, 15, 27, ... .
+    offset=0 (every prior xs_rank config) reproduces the ORIGINAL
+    calendar exactly — this is a strict extension, not a behavior change."""
     s, d = cfg["signal"], cfg["data"]
     fm, skip = int(s["formation_months"]), int(s["skip_months"])
+    offset = int(s.get("cohort_offset_months", 0))
     close = panel["close_ff"]
     dates = close.loc[:d["sim_end"]].index
     formations = _month_ends(dates)
     step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
     formations = formations[::step] if step == 1 else [
-        f for i, f in enumerate(formations) if i % step == 0]
+        f for i, f in enumerate(formations) if (i - offset) % step == 0]
     iru_rules = universe.load_rules()
     out = {}
     for f in formations:
@@ -363,6 +372,115 @@ def benchmark_targets(con, panel, cfg, lag: int) -> dict:
             continue
         out[dates[i + lag]] = pd.Series(1.0 / len(elig), index=elig)
     return out
+
+
+# ---------------------------------------------------------------------------
+# pooled overlapping-cohort momentum (E1, 2026-07-22 — unlocks H-010 /
+# Wave-3 candidate C1). Design decision, stated explicitly because it was
+# not the only option: N independent, equally-sized (1/N of NAV each)
+# sub-portfolios, each running the EXACT same single-cohort xs_rank
+# machinery (rank_scores + targets_from_scores + simulate, UNCHANGED) on
+# its own formation calendar, offset by (rebalance_step_months / N) from
+# the others. The aggregate portfolio's returns are the equal-weighted
+# BLEND of the N cohorts' own return series.
+#
+# This was chosen over a single unified target-weight vector with partial
+# per-date rebalancing (only cohort c's slice changes, others hold their
+# CURRENT DRIFTED weights) because that design requires the simulator to
+# track live drifted state at arbitrary rebalance dates and inject it back
+# into a "full target vector" correctly -- a real correctness trap. The
+# blend-at-return-level design achieves the identical economic exposure
+# (N staggered sleeves, each low-turnover on its own annual/semiannual
+# cycle) while reusing simulate() completely unchanged and avoiding that
+# trap entirely.
+#
+# Cohort correlation is measured and returned explicitly, never assumed
+# — this is the specific failure risk PREREG_H-010 (once drafted) must
+# report: if offset formation dates just reproduce near-identical
+# rankings, the "N independent bets" claim is false regardless of how
+# clean the code is.
+
+def pooled_rank_run(con, cfg, rates) -> tuple[XSResult, dict]:
+    """Returns (blended XSResult, diagnostics) where diagnostics includes
+    the actual measured pairwise cohort return-correlation matrix and a
+    per-cohort turnover breakdown — required reading before trusting any
+    power gain this construction appears to produce."""
+    d, s, p = cfg["data"], cfg["signal"], cfg["portfolio"]
+    n = int(s["n_cohorts"])
+    step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
+    if step % n != 0:
+        raise ValueError(f"n_cohorts={n} must evenly divide the rebalance "
+                         f"step ({cfg['portfolio']['rebalance']} = "
+                         f"{step} months) — refusing to silently "
+                         f"mis-space cohorts")
+    offset_step = step // n
+    panel = load_panel(con, cfg)
+    close = panel["close_ff"]
+    lag = int(p["execution_lag_days"])
+
+    cohort_results, cohort_caps = [], []
+    for c in range(n):
+        cfg_c = {**cfg, "signal": {**s, "cohort_offset_months": c * offset_step}}
+        scores_c = rank_scores(con, panel, cfg_c)
+        targets_c = targets_from_scores(
+            scores_c, close.loc[:d["sim_end"]].index, int(p["top_n"]), lag)
+        if not targets_c:
+            raise RuntimeError(f"cohort {c} (offset {c * offset_step}mo) "
+                               f"produced no target dates")
+        res_c = simulate(close, targets_c, rates["buy_rate"],
+                         rates["sell_rate"], d["sim_start"], d["sim_end"])
+        cohort_results.append(res_c)
+        # capacity per cohort at its OWN allocated slice of AUM (1/n) — a
+        # single unified target vector across cohorts would corrupt
+        # capacity_report's delta logic (it would see other cohorts'
+        # untouched holdings as "sold"); computing per-cohort keeps each
+        # cohort's own full target dict internally consistent.
+        cohort_caps.append(capacity_report(
+            targets_c, panel["adtv60"], cfg["engine"]["aum_ngn"] / n,
+            cfg["liquidity"]["adtv_participation_cap_pct"]))
+
+    net = pd.concat([r.net_returns for r in cohort_results], axis=1).mean(axis=1)
+    gross = pd.concat([r.gross_returns for r in cohort_results], axis=1).mean(axis=1)
+    # aggregate turnover/cost as a FRACTION OF TOTAL NAV: each cohort only
+    # represents 1/n of NAV, so its own (100%-of-its-slice) turnover/cost
+    # series must be divided by n before summing across cohorts' dates
+    turnover = (pd.concat([r.turnover for r in cohort_results])
+               .groupby(level=0).sum() / n)
+    costs = (pd.concat([r.costs for r in cohort_results])
+            .groupby(level=0).sum() / n)
+
+    bt = benchmark_targets(con, panel, cfg, lag)
+    bench = simulate(close, bt, rates["buy_rate"], rates["sell_rate"],
+                     d["sim_start"], d["sim_end"])
+
+    result = XSResult(net_returns=net, gross_returns=gross,
+                      weights=pd.DataFrame(), turnover=turnover, costs=costs,
+                      benchmark_returns=bench.net_returns)
+
+    cohort_net = pd.concat([r.net_returns.rename(f"cohort_{i}")
+                           for i, r in enumerate(cohort_results)], axis=1)
+    valid_caps = [c for c in cohort_caps if c]
+    agg_cap = {}
+    if valid_caps:
+        agg_cap = {
+            "median_capacity_ngn": float(np.median(
+                [c["median_capacity_ngn"] for c in valid_caps])),
+            "worst_capacity_ngn": float(min(
+                c["worst_capacity_ngn"] for c in valid_caps)),
+            "pct_legs_rejected": float(np.mean(
+                [c["pct_legs_rejected"] for c in valid_caps])),
+            "configured_aum_ngn": cfg["engine"]["aum_ngn"],
+            "per_cohort": cohort_caps,
+        }
+    diagnostics = {
+        "n_cohorts": n, "offset_months": offset_step,
+        "cohort_return_correlation": cohort_net.corr().round(3).to_dict(),
+        "cohort_ann_turnover_oneway": [
+            round(float(r.turnover.sum() / (len(r.net_returns) / 252)), 3)
+            for r in cohort_results],
+        "capacity": agg_cap,
+    }
+    return result, diagnostics
 
 
 # ---------------------------------------------------------------------------
@@ -526,6 +644,12 @@ def capacity_report(targets: dict, adtv60: pd.DataFrame, aum: float,
 
 def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
     d, s, p = cfg["data"], cfg["signal"], cfg["portfolio"]
+    if s["method"] == "xs_rank_pooled":
+        result, diag = pooled_rank_run(con, cfg, rates)
+        result.attribution = diag        # cohort correlation + turnover
+        panel = load_panel(con, cfg)     # cheap re-read, just for min_conf
+        return result, diag.get("capacity", {}), panel["min_conf_seen"]
+
     panel = load_panel(con, cfg)
     close = panel["close_ff"]
     lag = int(p["execution_lag_days"])
@@ -564,13 +688,67 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
 # placebo (seeded; identical dates/costs/construction, shuffled labels)
 # ---------------------------------------------------------------------------
 
-def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
-    """Real sharpe + n_iter placebo sharpes. xs_rank/xs_vol: scores
-    relabeled by one fixed ticker permutation per iteration (preserves
-    temporal persistence — see note below); xs_event: z shuffled within
-    cohorts (via shuffling the selection among that cohort's events)."""
+def _placebo_pooled(con, cfg, rates, n_iter, gen) -> tuple[float, list]:
     from . import metrics as _metrics
     d, s, p = cfg["data"], cfg["signal"], cfg["portfolio"]
+    n = int(s["n_cohorts"])
+    step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
+    offset_step = step // n
+    panel = load_panel(con, cfg)
+    close = panel["close_ff"]
+    lag = int(p["execution_lag_days"])
+    idx = close.loc[:d["sim_end"]].index
+    rf = cfg["validation"]["risk_free_annual_pct"]
+
+    cohort_scores = []
+    for c in range(n):
+        cfg_c = {**cfg, "signal": {**s, "cohort_offset_months": c * offset_step}}
+        cohort_scores.append(rank_scores(con, panel, cfg_c))
+
+    def blended_sharpe(scores_list):
+        nets = []
+        for sc in scores_list:
+            tgt = targets_from_scores(sc, idx, int(p["top_n"]), lag)
+            res = simulate(close, tgt, rates["buy_rate"], rates["sell_rate"],
+                          d["sim_start"], d["sim_end"])
+            nets.append(res.net_returns)
+        blended = pd.concat(nets, axis=1).mean(axis=1)
+        vol = float(blended.std() * (252 ** 0.5))
+        ann = float((1 + blended).prod() ** (252 / len(blended)) - 1)
+        return (ann - rf / 100.0) / vol if vol > 0 else 0.0
+
+    real = blended_sharpe(cohort_scores)
+    all_ticks = sorted({t for sc in cohort_scores for s_ in sc.values()
+                        for t in s_.index})
+    placebo = []
+    for _ in range(n_iter):
+        perm = dict(zip(all_ticks,
+                        [all_ticks[j] for j in gen.permutation(len(all_ticks))]))
+        shuffled = []
+        for sc in cohort_scores:
+            sh = {}
+            for f, s_ in sc.items():
+                vals = {t: s_[perm[t]] for t in s_.index if perm[t] in s_.index}
+                if len(vals) >= 10:
+                    sh[f] = pd.Series(vals)
+            shuffled.append(sh)
+        placebo.append(blended_sharpe(shuffled))
+    return real, placebo
+
+
+def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
+    """Real sharpe + n_iter placebo sharpes. xs_rank/xs_vol/xs_size: scores
+    relabeled by one fixed ticker permutation per iteration (preserves
+    temporal persistence — see note below); xs_rank_pooled: the SAME
+    single relabeling applied to EVERY cohort in a given iteration (tests
+    aggregate pooled selection skill under the null, not cross-cohort
+    composition — a per-cohort-independent relabeling would test a
+    different, wrong question); xs_event: z shuffled within cohorts (via
+    shuffling the selection among that cohort's events)."""
+    from . import metrics as _metrics
+    d, s, p = cfg["data"], cfg["signal"], cfg["portfolio"]
+    if s["method"] == "xs_rank_pooled":
+        return _placebo_pooled(con, cfg, rates, n_iter, gen)
     panel = load_panel(con, cfg)
     close = panel["close_ff"]
     lag = int(p["execution_lag_days"])
