@@ -114,11 +114,18 @@ def load_market_cap_panel(close_ff: pd.DataFrame) -> pd.DataFrame:
     raw = raw.drop_duplicates(subset=["symbol", "trade_date"], keep="last")
     mcap = raw.pivot(index="trade_date", columns="symbol", values="market_cap_nm")
     mcap.index = pd.to_datetime(mcap.index)
+    # LIST2 carries a few symbols (bonds/REITs/pre-merger names) absent
+    # from the validated price panel — restrict BEFORE any arithmetic:
+    # DataFrame division aligns on the UNION of columns, so dividing by a
+    # column-subset silently widens the result back to the mismatched
+    # full set (columns missing from the divisor become all-NaN, not
+    # dropped) rather than restricting to the intersection as intended.
+    common = mcap.columns.intersection(close_ff.columns)
+    mcap = mcap[common]
     close_aligned = close_ff.reindex(index=mcap.index.union(close_ff.index))
     mcap = mcap.reindex(close_aligned.index)
-    shares = (mcap / close_aligned[mcap.columns.intersection(close_aligned.columns)]
-             ).ffill()
-    return (shares * close_aligned[shares.columns]).reindex(close_ff.index)
+    shares = (mcap / close_aligned[common]).ffill()
+    return (shares * close_aligned[common]).reindex(close_ff.index)
 
 
 def _month_ends(dates: pd.DatetimeIndex) -> list[pd.Timestamp]:
@@ -313,7 +320,14 @@ def size_scores(con, panel, cfg) -> dict:
         elig = _eligible(con, panel, f, iru_rules,
                          int(s.get("min_obs_formation", 120)),
                          int(s.get("lookback_months", 12) * 31))
-        cap = mcap.loc[f, elig].dropna()
+        # elig comes from the price panel; mcap is restricted to symbols
+        # LIST2 ever covered (from 2016-03) — pre-2016/never-covered IRU
+        # members must be filtered here, not assumed present (.loc with a
+        # missing label raises; .reindex would silently invent NaN rows,
+        # which is fine too but filtering first keeps the eligibility
+        # count in the diagnostics honest about what was actually usable)
+        avail = [t for t in elig if t in mcap.columns]
+        cap = mcap.loc[f, avail].dropna()
         cap = cap[cap > 0]
         if len(cap) < 10:
             continue
