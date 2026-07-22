@@ -1,22 +1,29 @@
 # FUND ALPHA — SESSION HANDOFF (2026-07-22)
 
 Read this first in a fresh context. Strategic history: `docs/` + auto-memory.
-Working dir: `C:\Users\nonso\Desktop\vezi assets\ngx-rotation` (not a git repo).
+Working dir: `C:\Users\nonso\Desktop\vezi assets\ngx-rotation`.
+**This IS now a git repository** (E3, `git init` 2026-07-22) — `git log`
+before assuming anything is uncommitted or lost. `.gitignore` excludes
+`data/archive/`, `data/staging/`, `data/capture/`, and all `*.sqlite`
+(rationale in the `.gitignore` file itself and the E3 commit message).
 
 **PROGRAM STATUS (2026-07-22): 9 hypotheses tested, 0 validated, 9
 rejected. Architecture is FROZEN as V1 — do not redesign it. C1 (Pooled
-Momentum) and C4 (Size) are APPROVED as the next research wave, but
-BLOCKED on two small engineering tasks that don't exist yet (E1/E2 below)
-— draft neither H-010 nor H-011 until those land.**
+Momentum) and C4 (Size) are APPROVED as the next research wave.
+E1/E2/E3 (the engineering blockers) are ALL DONE — H-010 and H-011 are
+UNBLOCKED. Drafting their pre-registrations (R1/R2 in
+`docs/EXECUTION_BACKLOG.md`) is the next concrete step, not yet done.**
 
 **START HERE: `docs/EXECUTION_BACKLOG.md`** — the current, actionable
 task list (Critical/High/Medium/Low, research vs engineering, technical
-debt ranked by risk, a 6-month execution sequence). Read it before
-touching anything. Immediate next 3 items per its sequence: (1) `git
-init` — this repo has NO version control, a present-tense risk,
-(2) build the multi-cohort extension to `backtest_xs.py` (unblocks
-H-010), (3) build the market-cap-panel loader + `xs_size` method
-(unblocks H-011).
+debt ranked by risk, a 6-month execution sequence — E1/E2/E3 marked DONE
+in it). Read it before touching anything. Immediate next step: draft
+`docs/PREREG_H-010.md` (pooled momentum, `signal.method = "xs_rank_pooled"`
+in `src/ngxrot/backtest_xs.py`, rehearsed in
+`scripts/rehearse_xs_pooled.py`) and `docs/PREREG_H-011.md` (size,
+`signal.method = "xs_size"`, rehearsed in `scripts/rehearse_xs_size.py`),
+show both to the owner, then run the gauntlet — same convention as every
+prior wave.
 
 Background reading (all 2026-07-22, do not re-derive — cross-referenced
 from the backlog): `docs/LESSONS_LEARNED_FROM_WAVES_1_AND_2.md`

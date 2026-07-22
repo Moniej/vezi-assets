@@ -22,9 +22,9 @@ two small Critical engineering tasks that don't exist yet.*
 - Why it matters: APPROVED next research step; the strongest evidentiary
   lead in the program (H-009: right sign, clean plateau, positive in
   every regime including OOS, missing only statistical power).
-- Dependencies: **E1** (multi-cohort engine capability — does not exist
-  yet; C1 cannot be pre-registered with real parameters until this
-  exists, since the prereg must state the cohort design precisely).
+- Dependencies: **E1 — DONE 2026-07-22.** UNBLOCKED. Prereg can now state
+  the exact cohort design (`xs_rank_pooled`, n_cohorts, offset spacing)
+  against real, working code.
 - Engineering effort: LOW (prereg drafting only, once E1 exists).
 - Research impact: HIGH — closes the program's most promising open
   thread either way (validates the first factor, or definitively rules
@@ -39,8 +39,7 @@ two small Critical engineering tasks that don't exist yet.*
 - Why it matters: APPROVED; zero new datasets needed; opens a genuinely
   untested family; explicitly expected to be capacity-constrained by its
   own economic logic (disclosed up front, not discovered after).
-- Dependencies: **E2** (market-cap panel loader + size signal method in
-  `backtest_xs.py` — does not exist yet).
+- Dependencies: **E2 — DONE 2026-07-22.** UNBLOCKED.
 - Engineering effort: LOW (prereg drafting only, once E2 exists).
 - Research impact: MODERATE-HIGH — best-readiness candidate in the
   program; even a rejection is informative (tests whether the
@@ -145,10 +144,18 @@ infrastructure)**
 
 ### Critical
 
-**E1 — Multi-cohort target-blending extension for `backtest_xs.py`**
+**E1 — Multi-cohort target-blending extension for `backtest_xs.py`
+— DONE 2026-07-22**
 - Description: extend the cross-sectional rank engine to support
   multiple staggered formation cohorts blended into one target-weight
   series, with per-cohort AND aggregate turnover reporting.
+- Resolution: implemented as `xs_rank_pooled` (return-level blend of N
+  independent single-cohort sub-portfolios, not a unified partial-
+  rebalance target vector — see module docstring for why). Rehearsed
+  3/3 (`scripts/rehearse_xs_pooled.py`): planted momentum recovered, null
+  panel stays null, cohort correlation measured directly (~0.57 mean
+  off-diagonal on the planted panel — genuinely decorrelated, not
+  assumed). H-010 is now unblocked.
 - Why it matters: hard blocker for R1 (H-010) — the design cannot be
   pre-registered with real parameters until the mechanism exists to
   execute it.
@@ -166,10 +173,14 @@ infrastructure)**
   direct test that cohort correlation is measured (not assumed) on a
   synthetic panel with KNOWN correlation, before any real config is run.
 
-**E2 — Market-cap panel loader + size signal method**
+**E2 — Market-cap panel loader + size signal method — DONE 2026-07-22**
 - Description: add a `load_market_cap_panel` loader and an `xs_size`
   signal method to `backtest_xs.py`, following the exact pattern
   `xs_vol` already established.
+- Resolution: implemented; cap reconstructed via ffilled implied-share-
+  count × dense close (reuses the invariant `market_cap_validation.md`
+  already validated, rather than naively ffilling cap level). Rehearsed
+  2/2 (`scripts/rehearse_xs_size.py`). H-011 is now unblocked.
 - Why it matters: hard blocker for R2 (H-011).
 - Dependencies: none (`data/reference/market_cap_panel.csv` already
   validated).
@@ -180,7 +191,7 @@ infrastructure)**
   (`scripts/rehearse_xs_engine_v2.py`-style planted-effect + null checks)
   before any real config is run.
 
-**E3 — Initialize version control**
+**E3 — Initialize version control — DONE 2026-07-22**
 - Description: `git init`, commit the current repository state as the
   V1 baseline, establish a `.gitignore` for `data/archive/` and other
   large/binary paths (commit the DATABASE'S SCHEMA and small reference
