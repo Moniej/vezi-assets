@@ -1,4 +1,53 @@
-# FUND ALPHA — SESSION HANDOFF (2026-07-26)
+# FUND ALPHA — SESSION HANDOFF (2026-07-27)
+
+**STABILIZATION PASS COMPLETE (2026-07-27), owner-mandated pause before
+Phase G.** Owner asked for CoverageAssessment/EvidenceRanking (verify or
+build per spec — a full codebase/docs/memory search found neither had
+actually been specified anywhere before; owner confirmed treating the
+request's own bullet points as the spec), a complete real-data end-to-end
+validation, high-priority tech-debt fixes, and a stable, committed,
+tagged baseline before any new phase starts. Full report:
+`reports/stabilization_validation_report.md`.
+
+Built `src/ngxrot/documents/coverage_assessment.py` (10-dimension mechanical
+coverage checklist -> `coverage_score`, a `confidence_ceiling` that scales
+`UNREVIEWED_LLM_CONFIDENCE_FLOOR` down further via owner-adjustable bands,
+and named reasons) and `evidence_ranking.py` (trust tiers per evidence
+source; `assess_implication_conflict` recomputes a trust-tier-aware
+preference for every contradiction `extract.py`'s `_cross_reference` already
+recorded on a confidence-only basis, and discloses when the two disagree).
+Both are read-only/descriptive — neither mutates a stored confidence or any
+existing gate. Wired additively into `ReasoningContext`/`ReasoningResult`.
+No schema migration. 28 new tests (154/154 total pass).
+
+Ran the Phase E/F orchestrator (`reason_about_company`) LIVE against real
+NGX filings for the first time ever (TD13/TD16 had flagged this as
+untested) — 6 new real documents across 4 tickers, real Gemini calls: 5
+correctly abstained (no material fact, not fabricated), 1 (a real CILEASING
+dividend filing) ran the full chain for real and was correctly
+`blocked_by_self_critique` on a genuine `insufficient_information` fail.
+Full-corpus real-data metrics: 90.0% extraction precision / 100.0% recall,
+100% grounding + citation integrity on live re-verification, 22.2%
+self-critique rejection rate, coverage scores 0.5-0.6 across all 12 real
+tickers (both permanent gaps — no financial-statements dataset, no
+news/analyst ingestion — correctly capping every ceiling at 0.225 today).
+
+Found and fixed one real gap during validation: `reasoning_engine.py`'s
+orchestrator never wrote to `document_processing_status` (only
+`run_phase_c_pilot.py` did), so `pilot_summary.py`'s processed/failed
+counters silently under-counted real orchestrator-driven work. Fixed
+(observability only — `should_skip()`/`resume_point()` never depended on
+this table) and backfilled the 6 documents this pass processed before the
+fix landed. No other finding rose to high-priority; TD12 (entity-resolution
+merge-queue gap) remains disclosed, unchanged, MEDIUM.
+
+Real database backed up before any live run:
+`data/ngx.sqlite.pre_stabilization_backup_2026-07-27` (untracked, local
+safety copy). All AI Intelligence Layer work (Phases A-F, never committed
+incrementally, plus this pass) is now committed with a phase-by-phase
+history; this milestone is tagged `ai-layer-stable-baseline-2026-07-27`.
+**Do not start Phase G or any new AI Intelligence Layer capability without
+fresh owner direction — this pass was explicitly a freeze, not a new phase.**
 
 **PHASE F BUILT AND TESTED (2026-07-26): Industry Reasoning Engine —
 peer/competitor propagation via the knowledge graph, stopped for review

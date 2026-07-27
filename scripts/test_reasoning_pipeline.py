@@ -40,6 +40,10 @@ from ngxrot.documents.context import build_reasoning_context, historical_event_r
 from ngxrot.documents.entities import record_relationship, resolve_or_create_entity  # noqa: E402
 from ngxrot.documents import reasoning_engine  # noqa: E402
 from ngxrot.documents import industry_reasoning  # noqa: E402
+from ngxrot.documents.coverage_assessment import assess_coverage  # noqa: E402
+from ngxrot.documents.evidence_ranking import (  # noqa: E402
+    assess_implication_conflict, assign_trust_tier, evidence_ranking_summary,
+    rank_evidence_for_fact)
 
 FAILURES = []
 TEST_CACHE_DIR = Path(tempfile.mkdtemp())  # isolated from the real
@@ -591,6 +595,136 @@ def test_reasoning_context_coverage_and_assembly():
          len(ctx_after.historical_implications) == 1)
 
 
+def test_coverage_assessment_before_and_after_extraction():
+    con = make_test_db()
+    ctx_before = build_reasoning_context(con, "TESTCO")
+    ca_before = ctx_before.coverage_assessment
+    check("coverage: assessment attached automatically by build_reasoning_context",
+         ca_before is not None)
+    check("coverage: score is 0 before any extraction", ca_before.coverage_score == 0.0)
+    check("coverage: has_facts absent before extraction", "has_facts" in ca_before.dimensions_missing)
+    check("coverage: permanent gap (financial statements) always disclosed",
+         any("financial-statements dataset" in r for r in ca_before.reasons_confidence_limited))
+    check("coverage: permanent gap (secondary sources) always disclosed",
+         any("news/analyst ingestion" in r for r in ca_before.reasons_confidence_limited))
+    from ngxrot.documents.extract import UNREVIEWED_LLM_CONFIDENCE_FLOOR
+    check("coverage: ceiling never exceeds the platform-wide unreviewed floor",
+         ca_before.confidence_ceiling <= UNREVIEWED_LLM_CONFIDENCE_FLOOR)
+
+    provider = MockProvider({"Draft conclusion to critique": CRITIQUE_RESPONSE_ALL_PASS},
+                           default=GOOD_DRAFT_RESPONSE)
+    financial_reasoning(con, provider, doc_id=1, cache_dir=TEST_CACHE_DIR)
+    ctx_after = build_reasoning_context(con, "TESTCO")
+    ca_after = ctx_after.coverage_assessment
+    check("coverage: score increases after real extraction", ca_after.coverage_score > ca_before.coverage_score)
+    check("coverage: has_facts present after extraction", "has_facts" in ca_after.dimensions_present)
+    check("coverage: has_grounded_evidence present (the fixture's quote is real and grounded)",
+         "has_grounded_evidence" in ca_after.dimensions_present)
+    check("coverage: has_multiple_source_documents still missing (single fixture doc)",
+         "has_multiple_source_documents" in ca_after.dimensions_missing)
+    check("coverage: dimensions checklist matches vocab.COVERAGE_DIMENSIONS exactly",
+         set(ca_after.dimensions_present) | set(ca_after.dimensions_missing) == set(vocab.COVERAGE_DIMENSIONS))
+
+
+def test_evidence_ranking_tiers_and_conflict_disagreement():
+    con = make_test_db()
+    check("trust tier: primary filing + passed grounding -> tier 1",
+         assign_trust_tier(source_type="filing", grounding_check="passed", is_propagated=False).tier == 1)
+    check("trust tier: failed grounding forced to tier 4 regardless of source_type",
+         assign_trust_tier(source_type="filing", grounding_check="failed", is_propagated=False).tier == 4)
+    check("trust tier: propagated implication forced to tier 4",
+         assign_trust_tier(source_type=None, grounding_check=None, is_propagated=True).tier == 4)
+
+    today = date.today().isoformat()
+    fact_a = con.execute(
+        "INSERT INTO extracted_facts (doc_id, fact_type, description, extraction_confidence, "
+        "model_id, prompt_version, grounding_check, extracted_at) VALUES "
+        "(1,'dividend','fact A — grounded, tier 1',0.3,'manual-test','test','passed',?)",
+        (today,)).lastrowid
+    ev_a = con.execute(
+        "INSERT INTO evidence (doc_id, quoted_text, source_confidence) VALUES "
+        "(1,'a final dividend of N1.90 per share',0.85)").lastrowid
+    con.execute("UPDATE extracted_facts SET evidence_id = ? WHERE fact_id = ?", (ev_a, fact_a))
+    fact_b = con.execute(
+        "INSERT INTO extracted_facts (doc_id, fact_type, description, extraction_confidence, "
+        "model_id, prompt_version, grounding_check, extracted_at) VALUES "
+        "(1,'dividend','fact B — no evidence of its own, will be marked propagated',0.3,"
+        "'manual-test','test','not_run',?)", (today,)).lastrowid
+
+    impl_a = con.execute(
+        "INSERT INTO investment_implications (fact_id, ticker, duration_bucket, magnitude, "
+        "confidence, confidence_rationale, direction, action_recommendation, status, "
+        "generated_at) VALUES (?,'TESTCO','medium','small',0.5,'rationale A','bullish',"
+        "'no_action','unvalidated_ai_interpretation',?)", (fact_a, today)).lastrowid
+    impl_b = con.execute(
+        "INSERT INTO investment_implications (fact_id, ticker, duration_bucket, magnitude, "
+        "confidence, confidence_rationale, direction, action_recommendation, status, "
+        "propagated_from_implication_id, contradicts_implication_id, generated_at) VALUES "
+        "(?,'TESTCO','medium','small',0.8,'rationale B','bearish','no_action','under_review',"
+        "?,?,?)", (fact_b, impl_a, impl_a, today)).lastrowid
+    con.commit()
+
+    ranked = rank_evidence_for_fact(con, fact_a)
+    check("evidence ranking: fact A's evidence ranks as tier 1",
+         len(ranked) == 1 and ranked[0]["tier"] == 1)
+
+    no_conflict = assess_implication_conflict(con, impl_a)
+    check("conflict: implication with no contradicts_implication_id returns None",
+         no_conflict is None)
+
+    conflict = assess_implication_conflict(con, impl_b)
+    check("conflict: contradiction detected", conflict is not None)
+    if conflict is not None:
+        check("conflict: higher STATED confidence (0.8) prefers 'this' (impl_b)",
+             conflict.confidence_preferred == "this")
+        check("conflict: higher TRUST TIER prefers 'prior' (impl_a, tier 1 vs impl_b's tier 4)",
+             conflict.trust_tier_preferred == "prior")
+        check("conflict: disagreement correctly flagged (confidence and trust tier diverge)",
+             conflict.agreement is False)
+        check("conflict: note names the disagreement explicitly", "DISAGREEMENT" in conflict.note)
+
+    ctx = build_reasoning_context(con, "TESTCO")
+    summary = ctx.evidence_ranking_summary
+    check("evidence_ranking_summary: attached automatically by build_reasoning_context",
+         bool(summary))
+    check("evidence_ranking_summary: detects at least one conflict",
+         summary["n_conflicts_detected"] >= 1)
+    check("evidence_ranking_summary: detects the trust/confidence disagreement",
+         summary["n_conflicts_where_trust_and_confidence_disagree"] >= 1)
+
+
+def test_reasoning_result_confidence_ceiling_breach():
+    con = make_test_db()
+    today = date.today().isoformat()
+    fact_id = con.execute(
+        "INSERT INTO extracted_facts (doc_id, fact_type, description, extraction_confidence, "
+        "model_id, prompt_version, grounding_check, extracted_at) VALUES "
+        "(1,'dividend','artificially high-confidence fact for breach testing',0.3,"
+        "'manual-test','test','not_run',?)", (today,)).lastrowid
+    # Confidence of 0.8 could never be produced by extract.py itself (capped at
+    # UNREVIEWED_LLM_CONFIDENCE_FLOOR=0.3) — constructed directly here purely to
+    # exercise the breach-detection path against a value that exceeds every
+    # possible coverage-derived ceiling (max ceiling == the floor itself).
+    con.execute(
+        "INSERT INTO investment_implications (fact_id, ticker, duration_bucket, magnitude, "
+        "confidence, confidence_rationale, direction, action_recommendation, status, "
+        "generated_at) VALUES (?,'TESTCO','medium','small',0.8,'artificial for testing',"
+        "'bullish','no_action','unvalidated_ai_interpretation',?)", (fact_id, today))
+    con.commit()
+
+    provider = MockProvider({}, default="{}")  # never called — doc 1 already "extracted"
+                                               # (model_id set on the manual fact above)
+    result = reasoning_engine.reason_about_company(con, provider, "TESTCO", cache_dir=TEST_CACHE_DIR)
+    check("orchestrator: coverage_assessment attached to ReasoningResult",
+         result.coverage_assessment is not None)
+    check("orchestrator: evidence_ranking_summary attached to ReasoningResult",
+         isinstance(result.evidence_ranking_summary, dict) and bool(result.evidence_ranking_summary))
+    check("orchestrator: no new document retrieved (manual fact already marks doc 1 extracted)",
+         result.newly_processed_doc_ids == [])
+    check("orchestrator: the artificially high-confidence implication is flagged as a breach",
+         any(b["stored_confidence"] == 0.8 for b in result.confidence_ceiling_breaches))
+
+
 def test_entity_relationships_populated_from_grounded_effect():
     con = make_test_db(doc_text=DOC_TEXT_WITH_COMPETITOR)
     provider = MockProvider({"Draft conclusion to critique": CRITIQUE_RESPONSE_ALL_PASS},
@@ -855,6 +989,9 @@ if __name__ == "__main__":
     test_pilot_summary_generation()
     test_retrieval_layer()
     test_reasoning_context_coverage_and_assembly()
+    test_coverage_assessment_before_and_after_extraction()
+    test_evidence_ranking_tiers_and_conflict_disagreement()
+    test_reasoning_result_confidence_ceiling_breach()
     test_entity_relationships_populated_from_grounded_effect()
     test_record_relationship_rejects_self_and_ungrounded()
     test_historical_event_reaction()

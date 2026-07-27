@@ -40,6 +40,13 @@ docs/REASONING_ENGINE_SPECIFICATION.md):
                      orchestrator (retrieve-if-needed, then aggregate).
   industry_reasoning.py  Phase F: peer/competitor propagation via the
                      knowledge graph (entity_relationships).
+  coverage_assessment.py  Stabilization pass: quantifies evidence coverage
+                     per ticker (coverage_score, confidence_ceiling, named
+                     gaps) — descriptive, never mutates a stored confidence.
+  evidence_ranking.py  Stabilization pass: trust tiers per evidence source,
+                     plus a trust-tier-aware re-check of every contradiction
+                     already on record (agrees/disagrees with the
+                     confidence-only preference extract.py recorded).
 
 Nothing here is imported by alpha_engine.py, runner.py, or any portfolio
 -facing module — that boundary is a design requirement, not an accident.

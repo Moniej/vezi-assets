@@ -78,3 +78,51 @@ MIN_EVIDENCE_COUNT_FLOOR = 1            # a fact backed by zero evidence rows
                                           # stricter floor is an owner call
                                           # once real disagreement rates are
                                           # observed, not invented now.
+
+# --- Stabilization pass (2026-07-27): CoverageAssessment + EvidenceRanking ---
+# Both are read-only/descriptive additions — neither mutates
+# investment_implications.confidence or any existing gate (self_critique.py,
+# extract.py's _cross_reference) in place. They attach structured,
+# mechanically-computed findings to ReasoningContext/ReasoningResult for the
+# owner to review, same "disclosed, never silently patched" posture as every
+# other ad hoc constant on this page.
+
+# Trust tiers for evidence sources, lowest number = most trusted. Only tier 1
+# is reachable on real data today (every ingested document is source_type=
+# 'filing' via the governed X-Issuer/NGX pipeline); tiers 2-3 are named now so
+# the architecture doc's already-planned news/analyst sources (§10, `news_
+# outlets.reliability_tier`) slot in without a future rename. Tier 4 is
+# reachable today (an ungrounded quote, or a Phase F peer-propagated
+# implication that copies a source's claim rather than citing its own).
+EVIDENCE_TRUST_TIERS = {
+    1: "primary_filing",          # source_type='filing' AND grounding_check='passed'
+    2: "primary_regulatory_other",  # reserved: CBN/SEC/NBS primary releases, not yet ingested
+    3: "secondary_reputable",       # reserved: news/analyst source with a verified reliability tier
+    4: "ai_derived_or_ungrounded",  # propagated (Phase F) or grounding_check != 'passed'
+}
+
+# Coverage dimensions CoverageAssessment checks — a mechanical, auditable
+# checklist (each either present or absent, no continuous scoring) rather
+# than an invented composite metric. coverage_score = present / len(this
+# list). Two dimensions (has_financial_statements, has_secondary_sources)
+# are permanently absent platform-wide today (no financial-statements
+# dataset, no news/analyst ingestion built yet — see docs/EXECUTION_BACKLOG.
+# md) — included anyway so the assessment states the ceiling honestly
+# instead of only scoring on dimensions that happen to be achievable now.
+COVERAGE_DIMENSIONS = (
+    "has_facts", "has_grounded_evidence", "has_multiple_source_documents",
+    "has_multiple_fact_types", "has_entity_relationships", "has_event_history",
+    "has_factor_exposures", "has_cross_ticker_corroboration",
+    "has_financial_statements", "has_secondary_sources",
+)
+
+# Confidence-ceiling bands keyed on coverage_score, applied multiplicatively
+# to the existing UNREVIEWED_LLM_CONFIDENCE_FLOOR anchor (extract.py) — ad
+# hoc thresholds, same status as CONFIDENCE_DISCOUNT_PER_CONCERN above: an
+# owner call once real disagreement/coverage rates are observed across more
+# tickers, not a validated statistical cutoff.
+COVERAGE_CONFIDENCE_CEILING_BANDS = (
+    (0.7, 1.00),   # coverage_score >= 0.7: no additional restriction
+    (0.4, 0.75),   # 0.4 <= coverage_score < 0.7
+    (0.0, 0.50),   # coverage_score < 0.4
+)

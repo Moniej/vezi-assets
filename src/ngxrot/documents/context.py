@@ -16,7 +16,8 @@ from datetime import date
 
 import pandas as pd
 
-from . import retrieval
+from . import evidence_ranking, retrieval
+from .coverage_assessment import CoverageAssessment, assess_coverage
 from .retrieval import RetrievalQuery, RetrievedDocument
 
 
@@ -38,6 +39,12 @@ class ReasoningContext:
     peer_propagations: list[dict] = field(default_factory=list)  # received AS a peer (Phase F)
 
     coverage_notes: list[str] = field(default_factory=list)
+    # Stabilization pass (2026-07-27): structured counterparts to
+    # coverage_notes' free text. Populated last in build_reasoning_context
+    # (after everything above exists) — both are descriptive-only, neither
+    # mutates any row.
+    coverage_assessment: CoverageAssessment | None = None
+    evidence_ranking_summary: dict = field(default_factory=dict)
 
     @property
     def has_llm_facts(self) -> bool:
@@ -164,5 +171,8 @@ def build_reasoning_context(con, ticker: str, as_of: str | None = None,
         ctx.coverage_notes.append("no persisted entity relationships for this ticker yet")
     if not ctx.events:
         ctx.coverage_notes.append("no events on record for this ticker as of this date")
+
+    ctx.coverage_assessment = assess_coverage(con, ctx)
+    ctx.evidence_ranking_summary = evidence_ranking.evidence_ranking_summary(con, ctx)
 
     return ctx

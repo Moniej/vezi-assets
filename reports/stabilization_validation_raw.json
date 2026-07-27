@@ -1,0 +1,361 @@
+{
+  "generated_at": "2026-07-27",
+  "live_run": null,
+  "grounding_reverification": {
+    "n_checked": 18,
+    "n_agree": 18,
+    "n_disagree": 0,
+    "n_missing_source_text": 0,
+    "disagreements": [],
+    "citation_accuracy": 1.0
+  },
+  "citation_integrity": {
+    "n_facts": 18,
+    "n_missing_evidence_row": 0,
+    "n_doc_id_mismatch": 0,
+    "citation_integrity_rate": 1.0
+  },
+  "coverage_and_ranking": {
+    "n_tickers_assessed": 12,
+    "mean_coverage_score": 0.5333,
+    "platform_tier_distribution": {
+      "primary_filing": 79,
+      "ai_derived_or_ungrounded": 2
+    },
+    "n_conflicts_detected_total": 1,
+    "n_conflicts_where_trust_and_confidence_disagree_total": 0,
+    "per_ticker": {
+      "BUAFOODS": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 7
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "CILEASING": {
+        "coverage_score": 0.6,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures",
+          "has_cross_ticker_corroboration"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 9,
+          "ai_derived_or_ungrounded": 1
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "GTCO": {
+        "coverage_score": 0.6,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_multiple_fact_types",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 4
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "LIVINGTRUST": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 5
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "MOFIREIF": {
+        "coverage_score": 0.6,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures",
+          "has_cross_ticker_corroboration"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 7
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "NASCON": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 4
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "NGXGROUP": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 7
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "REDSTAREX": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 4
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "STANBICETF30": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 6
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "TOTAL": {
+        "coverage_score": 0.6,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures",
+          "has_cross_ticker_corroboration"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 12,
+          "ai_derived_or_ungrounded": 1
+        },
+        "n_conflicts_detected": 1,
+        "n_conflicts_disagree": 0
+      },
+      "UCAP": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 9
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      },
+      "UNILEVER": {
+        "coverage_score": 0.5,
+        "confidence_ceiling": 0.225,
+        "dimensions_present": [
+          "has_facts",
+          "has_grounded_evidence",
+          "has_multiple_source_documents",
+          "has_event_history",
+          "has_factor_exposures"
+        ],
+        "dimensions_missing": [
+          "has_multiple_fact_types",
+          "has_entity_relationships",
+          "has_cross_ticker_corroboration",
+          "has_financial_statements",
+          "has_secondary_sources"
+        ],
+        "tier_distribution": {
+          "primary_filing": 5
+        },
+        "n_conflicts_detected": 0,
+        "n_conflicts_disagree": 0
+      }
+    }
+  },
+  "pilot_summary": {
+    "generated_at": "2026-07-27",
+    "documents": {
+      "processed": 23,
+      "skipped_on_rerun": 23,
+      "failed": 0,
+      "quota_exceeded_current": 0,
+      "in_progress_interrupted": 0,
+      "status_breakdown": {
+        "completed": 19,
+        "blocked_by_self_critique": 4
+      }
+    },
+    "extraction": {
+      "llm_facts_total": 18,
+      "deterministic_facts_total": 143,
+      "precision": 0.9,
+      "recall": 1.0,
+      "overlap_with_ground_truth": 10,
+      "agree": 9,
+      "llm_found_extra": 7,
+      "recall_misses": 0
+    },
+    "grounding": {
+      "failures": 2,
+      "failure_rate": 0.1111
+    },
+    "self_critique": {
+      "implications_total": 18,
+      "blocked": 4,
+      "rejection_rate": 0.2222,
+      "finding_counts": {
+        "concern": 71,
+        "pass": 65,
+        "fail": 8
+      }
+    },
+    "schema_completeness": {
+      "facts_with_complete_impact_categories": 18,
+      "facts_missing_causal_chain": 0
+    },
+    "performance": {
+      "avg_latency_s": 14.395,
+      "total_input_tokens": 113981,
+      "total_output_tokens": 42913,
+      "total_llm_calls": 41,
+      "cache_hits": 3,
+      "cache_hit_rate": 0.0732,
+      "estimated_api_cost_usd": 0.0,
+      "cost_rate_confidence": "assumed",
+      "cost_rate_note": "Placeholder zero rate \u2014 free-tier pilot cost is genuinely $0. Replace with confirmed paid-tier pricing before this figure is used for budgeting."
+    }
+  }
+}

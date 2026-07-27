@@ -31,6 +31,7 @@ from dataclasses import dataclass, field
 
 from . import industry_reasoning, retrieval
 from .context import ReasoningContext, build_reasoning_context
+from .coverage_assessment import CoverageAssessment
 from .llm_providers import LLMProvider
 from .reasoning import resumable_financial_reasoning
 
@@ -71,6 +72,16 @@ class ReasoningResult:
     peer_propagations_received: list[dict] = field(default_factory=list)  # this ticker AS a peer
     propagated_implication_ids: list[int] = field(default_factory=list)   # this ticker's NEW
                                                                           # implications propagated OUT
+    # Stabilization pass (2026-07-27): CoverageAssessment/EvidenceRanking,
+    # attached from the ReasoningContext they were computed against.
+    coverage_assessment: CoverageAssessment | None = None
+    evidence_ranking_summary: dict = field(default_factory=dict)
+    # Descriptive only — an implication whose STORED confidence exceeds what
+    # its own coverage_assessment.confidence_ceiling supports. Never
+    # auto-corrected (same "disclosed, not silently patched" rule as every
+    # self-critique concern); an owner reviewing this list decides whether a
+    # confidence value should be revisited.
+    confidence_ceiling_breaches: list[dict] = field(default_factory=list)
 
 
 _RISK_CATEGORIES = {"execution_risk", "regulatory_risk", "liquidity"}
@@ -158,17 +169,37 @@ def reason_about_company(con, provider: LLMProvider, ticker: str, as_of: str | N
     warnings: list[str] = []
 
     if _needs_retrieval(ctx):
+        from . import pipeline_status as pstatus  # stabilization pass (2026-07-27):
+                                                   # see the note on this loop below
+
         candidates = [d for d in ctx.documents if d.has_text and not d.already_extracted]
         for doc in candidates[:max_new_documents]:
+            # document_processing_status was, until this pass, only ever written
+            # by run_phase_c_pilot.py — this orchestrator's own retrieval
+            # -triggered extraction left no trace there, so pilot_summary.py's
+            # "documents processed/failed" counters (and hence any reported
+            # pipeline success rate) silently under-counted every document the
+            # orchestrator processed. resume_point()/should_skip() never
+            # depended on this table anyway (they cross-check extracted_facts
+            # directly), so writing it here is purely an observability fix —
+            # no resumability behavior changes.
+            pstatus.mark_status(con, doc.doc_id, "processing",
+                               model_id=provider.info.model_id, prompt_version=None)
             try:
                 result = resumable_financial_reasoning(
                     con, provider, doc.doc_id, force=force, cache_dir=cache_dir)
                 newly_processed.append(doc.doc_id)
                 warnings.extend(result.extraction.warnings)
+                final_status = pstatus.determine_final_status(con, result.extraction.fact_ids)
+                pstatus.mark_status(con, doc.doc_id, final_status,
+                                   fact_count=len(result.extraction.fact_ids),
+                                   implication_count=len(result.extraction.implication_ids),
+                                   model_id=provider.info.model_id)
             except Exception as e:  # noqa: BLE001 — one bad document must not
                                     # abort reasoning about the rest of the
                                     # company's evidence; disclosed, not swallowed
                 warnings.append(f"doc_id {doc.doc_id}: extraction failed, skipped ({e!r})")
+                pstatus.mark_status(con, doc.doc_id, "failed", error_detail=str(e)[:500])
         if len(candidates) > max_new_documents:
             warnings.append(
                 f"{len(candidates) - max_new_documents} additional unretrieved candidate "
@@ -184,7 +215,9 @@ def reason_about_company(con, provider: LLMProvider, ticker: str, as_of: str | N
                              coverage_notes=ctx.coverage_notes,
                              newly_processed_doc_ids=newly_processed,
                              retrieval_warnings=warnings,
-                             peer_propagations_received=ctx.peer_propagations)
+                             peer_propagations_received=ctx.peer_propagations,
+                             coverage_assessment=ctx.coverage_assessment,
+                             evidence_ranking_summary=ctx.evidence_ranking_summary)
 
     seen_fact_ids = set()
     for f in ctx.facts:
@@ -192,6 +225,19 @@ def reason_about_company(con, provider: LLMProvider, ticker: str, as_of: str | N
             continue
         seen_fact_ids.add(f["fact_id"])
         result.facts.append(_fact_summary(con, f))
+
+    if ctx.coverage_assessment is not None:
+        ceiling = ctx.coverage_assessment.confidence_ceiling
+        for fs in result.facts:
+            if fs.implication is not None and fs.implication["confidence"] > ceiling:
+                result.confidence_ceiling_breaches.append({
+                    "implication_id": fs.implication["implication_id"],
+                    "stored_confidence": fs.implication["confidence"],
+                    "confidence_ceiling": ceiling,
+                    "coverage_score": ctx.coverage_assessment.coverage_score,
+                    "note": "stored confidence exceeds this ticker's coverage-derived "
+                           "ceiling — flagged for review, not auto-corrected",
+                })
 
     # Phase F: propagate any implication that came from a document THIS
     # call newly processed — not every existing implication on every call,
