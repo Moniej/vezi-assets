@@ -46,6 +46,33 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
         con.execute("ALTER TABLE events ADD COLUMN event_uid TEXT")
     except sqlite3.OperationalError:
         pass
+    # additive migration for pre-Phase-C documents tables (2026-07-22,
+    # docs/REASONING_ENGINE_SPECIFICATION.md §2) — schema.sql's CREATE TABLE
+    # IF NOT EXISTS already carries these columns for fresh databases; this
+    # covers the database that already existed before Phase C.
+    for col, decl in [("sector", "TEXT"), ("exchange", "TEXT DEFAULT 'NGX'"),
+                      ("country", "TEXT DEFAULT 'NG'"), ("event_date", "TEXT"),
+                      ("news_classification", "TEXT")]:
+        try:
+            con.execute(f"ALTER TABLE documents ADD COLUMN {col} {decl}")
+        except sqlite3.OperationalError:
+            pass
+    # additive migration, 2026-07-22 pipeline hardening: investment_
+    # implications/llm_calls already held real pilot data by this point, so
+    # this is ALTER (never DROP+recreate) — same reasoning as every prior
+    # migration in this function.
+    try:
+        con.execute("ALTER TABLE investment_implications ADD COLUMN model_id TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE investment_implications ADD COLUMN prompt_version TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE llm_calls ADD COLUMN document_hash TEXT")
+    except sqlite3.OperationalError:
+        pass
     con.executescript((SCHEMA_DIR / "schema.sql").read_text(encoding="utf-8"))
     if seed:
         con.executescript((SCHEMA_DIR / "seed_reference.sql").read_text(encoding="utf-8"))

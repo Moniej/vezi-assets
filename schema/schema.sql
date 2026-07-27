@@ -293,6 +293,317 @@ CREATE TABLE IF NOT EXISTS data_quality_log (
 );
 
 -- ----------------------------------------------------------------------------
+-- 10. AI Intelligence Layer — Phase A foundation (docs/AI_INTELLIGENCE_LAYER_
+--     ARCHITECTURE.md). documents = one row per filing/document, whether or
+--     not its text has been extracted yet. entities/entity_mentions are
+--     schema-only in Phase A (populated starting Phase C) — created now so
+--     later phases are additive-column migrations, not new tables.
+--     ticker is nullable + a REFERENCES constraint: many archived filings use
+--     pre-rename symbols (GUARANTY, FBNH, ...) not in `securities` yet; only
+--     VERIFIED renames (data/reference/symbol_renames.csv, status='verified')
+--     resolve to ticker, everything else stays NULL with raw_symbol preserved
+--     verbatim — "unknown stays unknown", never a guessed match.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS documents (
+    doc_id            INTEGER PRIMARY KEY,
+    ticker            TEXT REFERENCES securities(ticker),
+    raw_symbol        TEXT,                      -- as disclosed, pre-rename-resolution
+    doc_type          TEXT NOT NULL,              -- configs/document_taxonomy.toml leaf
+    source_type       TEXT NOT NULL DEFAULT 'filing',
+    filing_date       TEXT NOT NULL,              -- announced/created date (market's knowledge date)
+    retrieved_date    TEXT NOT NULL,
+    source_url        TEXT,
+    local_path        TEXT NOT NULL,
+    text_path         TEXT,                       -- NULL until text is extracted
+    extraction_method TEXT CHECK (extraction_method IN ('native','ocr')),
+                                                   -- NULL = not yet extracted (OCR-pending)
+    char_count        INTEGER,
+    source_confidence REAL NOT NULL DEFAULT 0.0 CHECK (source_confidence BETWEEN 0.0 AND 1.0),
+                                                   -- 0.0 until text is usably extracted
+    source_id         INTEGER NOT NULL REFERENCES sources(source_id),
+    as_of_date        TEXT NOT NULL,
+    -- Phase C additions (docs/REASONING_ENGINE_SPECIFICATION.md §2, Step 1
+    -- "Identify"). Native here for fresh databases; existing populated
+    -- databases get these via the ALTER-with-try/except in db.py's
+    -- init_db() (CREATE TABLE IF NOT EXISTS does not add columns to a
+    -- table that already exists — same reason event_uid is handled both
+    -- places for `events`).
+    sector             TEXT,
+    exchange           TEXT DEFAULT 'NGX',
+    country            TEXT DEFAULT 'NG',
+    event_date         TEXT,
+    news_classification TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_documents_ticker ON documents (ticker);
+CREATE INDEX IF NOT EXISTS ix_documents_doc_type ON documents (doc_type);
+
+CREATE TABLE IF NOT EXISTS entities (
+    entity_id         INTEGER PRIMARY KEY,
+    entity_type       TEXT NOT NULL CHECK (entity_type IN
+                        ('company','executive','competitor_mention','regulator','sector')),
+    canonical_name    TEXT NOT NULL,
+    ticker            TEXT REFERENCES securities(ticker),
+    first_seen_doc_id INTEGER REFERENCES documents(doc_id)
+);
+
+CREATE TABLE IF NOT EXISTS entity_mentions (
+    mention_id   INTEGER PRIMARY KEY,
+    doc_id       INTEGER NOT NULL REFERENCES documents(doc_id),
+    entity_id    INTEGER NOT NULL REFERENCES entities(entity_id)
+);
+
+-- ----------------------------------------------------------------------------
+-- 11. AI Intelligence Layer — Phase B (docs/AI_INTELLIGENCE_LAYER_
+--     ARCHITECTURE.md §4.4, docs/REASONING_ENGINE_SPECIFICATION.md §3-4).
+--     evidence = the exact citation backing a fact (architecture doc §4.4).
+--     extracted_facts = one row per material fact (spec §3), extended here
+--     with numeric_value/qualification_date/payment_date/agm_date/
+--     closure_date — a Phase B refinement: the design sketch had no place
+--     to put a REGEX-extracted number/date, only a prose `description`.
+--     Kept nullable/generic rather than one column per fact_type so the
+--     table doesn't grow a column per future taxonomy leaf; qualification_
+--     date/payment_date/agm_date/closure_date are specific to corporate
+--     -action facts today but are generic enough to be reused as-is by any
+--     future fact_type with an analogous shape (e.g. AGM date for a
+--     governance fact) rather than adding parallel fact_type-specific ones.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS evidence (
+    evidence_id       INTEGER PRIMARY KEY,
+    doc_id            INTEGER NOT NULL REFERENCES documents(doc_id),
+    event_id          INTEGER,               -- reserved for Phase C+ (events table linkage)
+    quoted_text       TEXT NOT NULL,
+    page_number       INTEGER,
+    char_start        INTEGER,
+    char_end          INTEGER,
+    source_confidence REAL NOT NULL CHECK (source_confidence BETWEEN 0.0 AND 1.0)
+);
+
+CREATE TABLE IF NOT EXISTS extracted_facts (
+    fact_id               INTEGER PRIMARY KEY,
+    doc_id                INTEGER NOT NULL REFERENCES documents(doc_id),
+    fact_type             TEXT NOT NULL,      -- configs/fact_taxonomy.toml leaf
+    description           TEXT NOT NULL,
+    numeric_value         REAL,               -- e.g. dividend_per_share
+    qualification_date    TEXT,
+    payment_date          TEXT,
+    agm_date              TEXT,
+    closure_date          TEXT,
+    evidence_id           INTEGER REFERENCES evidence(evidence_id),
+    extraction_confidence REAL NOT NULL CHECK (extraction_confidence BETWEEN 0.0 AND 1.0),
+    model_id              TEXT,               -- NULL for regex/manual
+    prompt_version        TEXT,               -- NULL for regex/manual
+    grounding_check        TEXT NOT NULL DEFAULT 'not_run'
+                             CHECK (grounding_check IN ('not_run','passed','failed','overridden')),
+    extracted_at          TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_extracted_facts_doc ON extracted_facts (doc_id);
+CREATE INDEX IF NOT EXISTS ix_extracted_facts_type ON extracted_facts (fact_type);
+
+-- ----------------------------------------------------------------------------
+-- 12. AI Intelligence Layer — Phase C (docs/REASONING_ENGINE_SPECIFICATION.md
+--     §2-3, §12). Step-1 identification columns on `documents`, plus the full
+--     reasoning chain: causal_chain_steps, impact_assessments,
+--     investment_implications (fact_id-keyed — supersedes the architecture
+--     doc's older event_id-keyed sketch, per the reasoning spec's revision),
+--     effect_chains, research_task_candidates, self_critique_reviews.
+--     entity_relationships (architecture doc §8) added for schema completeness
+--     even though this pilot's single-document scope is unlikely to populate
+--     it much. All additive; nothing above this line is touched.
+--     NOTE: documents' new Step-1 identification columns (sector/exchange/
+--     country/event_date/news_classification) are added via ALTER TABLE in
+--     db.py's init_db(), NOT here — ALTER TABLE is not idempotent under
+--     sqlite (no "ADD COLUMN IF NOT EXISTS"), so it can't live inside this
+--     executescript-run file; it follows the exact try/except OperationalError
+--     pattern already used there for events.event_uid.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS entity_relationships (
+    relationship_id     INTEGER PRIMARY KEY,
+    subject_entity_id   INTEGER NOT NULL REFERENCES entities(entity_id),
+    relation_type       TEXT NOT NULL,
+    object_entity_id    INTEGER NOT NULL REFERENCES entities(entity_id),
+    valid_from          TEXT,
+    valid_to            TEXT,
+    source_evidence_id  INTEGER REFERENCES evidence(evidence_id),
+    confidence          REAL NOT NULL CHECK (confidence BETWEEN 0.0 AND 1.0)
+);
+
+CREATE TABLE IF NOT EXISTS causal_chain_steps (
+    chain_id      INTEGER PRIMARY KEY,
+    fact_id       INTEGER NOT NULL REFERENCES extracted_facts(fact_id),
+    step_order    INTEGER NOT NULL,
+    statement     TEXT NOT NULL,
+    inferred      INTEGER NOT NULL DEFAULT 0,
+    evidence_id   INTEGER REFERENCES evidence(evidence_id),
+    UNIQUE (fact_id, step_order)
+);
+
+CREATE TABLE IF NOT EXISTS impact_assessments (
+    assessment_id  INTEGER PRIMARY KEY,
+    fact_id        INTEGER NOT NULL REFERENCES extracted_facts(fact_id),
+    category       TEXT NOT NULL CHECK (category IN
+                     ('revenue','margins','cash_flow','capital_allocation','balance_sheet',
+                      'growth','competitive_advantage','execution_risk','regulatory_risk',
+                      'liquidity','valuation','market_expectations','long_term_moat')),
+    direction      TEXT NOT NULL CHECK (direction IN
+                     ('positive','negative','neutral','mixed','unknown')),
+    explanation    TEXT NOT NULL,
+    evidence_id    INTEGER REFERENCES evidence(evidence_id),
+    UNIQUE (fact_id, category)
+);
+
+CREATE TABLE IF NOT EXISTS investment_implications (
+    implication_id              INTEGER PRIMARY KEY,
+    fact_id                     INTEGER NOT NULL REFERENCES extracted_facts(fact_id),
+    ticker                      TEXT REFERENCES securities(ticker),
+    index_code                  TEXT REFERENCES indices(index_code),
+    model_id                    TEXT,        -- 2026-07-22 hardening: the draft
+                                             -- model/prompt that produced THIS
+                                             -- reasoning record, not just the
+                                             -- parent fact (queryable without
+                                             -- a join; a future prompt version
+                                             -- never overwrites this — it is a
+                                             -- new row, this stays put)
+    prompt_version               TEXT,
+    duration_bucket             TEXT NOT NULL CHECK (duration_bucket IN
+                                  ('very_short','short','medium','long','structural','permanent')),
+    magnitude                   TEXT NOT NULL CHECK (magnitude IN
+                                  ('tiny','small','medium','large','transformational')),
+    confidence                  REAL NOT NULL CHECK (confidence BETWEEN 0.0 AND 1.0),
+    confidence_rationale        TEXT NOT NULL,
+    direction                   TEXT NOT NULL DEFAULT 'unknown'
+                                  CHECK (direction IN ('bullish','bearish','neutral','unknown')),
+    assumptions                 TEXT,             -- explicit statement of what's being assumed —
+                                                    -- "never fabricate missing data" made checkable:
+                                                    -- an assumption stated here, not silently baked
+                                                    -- into a conclusion
+    bull_case_delta             TEXT,
+    bear_case_delta             TEXT,
+    base_case_delta             TEXT,
+    intrinsic_value_direction   TEXT CHECK (intrinsic_value_direction IN
+                                  ('increase','decrease','unclear')),
+    intrinsic_value_reasoning   TEXT,
+    expected_earnings_direction TEXT CHECK (expected_earnings_direction IN
+                                  ('increase','decrease','unclear')),
+    target_multiple_direction   TEXT CHECK (target_multiple_direction IN
+                                  ('increase','decrease','unclear','not_assessed')),
+    risk_profile_direction      TEXT CHECK (risk_profile_direction IN
+                                  ('increase','decrease','unclear','not_assessed')),
+    portfolio_sizing_note       TEXT,
+    action_recommendation       TEXT NOT NULL CHECK (action_recommendation IN
+                                  ('no_action','watchlist','research_task','model_update',
+                                   'valuation_update','factor_candidate','immediate_review')),
+    corroborates_implication_id INTEGER REFERENCES investment_implications(implication_id),
+    contradicts_implication_id  INTEGER REFERENCES investment_implications(implication_id),
+    consistency_note             TEXT,
+    market_reaction_assessment  TEXT CHECK (market_reaction_assessment IN
+                                  ('underreacting','overreacting','fairly_priced','unclear')),
+    market_reaction_reasoning   TEXT,
+    status                      TEXT NOT NULL DEFAULT 'draft_pending_self_critique'
+                                  CHECK (status IN ('draft_pending_self_critique',
+                                                     'blocked_by_self_critique',
+                                                     'unvalidated_ai_interpretation','under_review',
+                                                     'promoted_to_discovery_candidate','rejected_by_review')),
+    propagated_from_implication_id INTEGER REFERENCES investment_implications(implication_id),
+    generated_at                TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_implications_fact ON investment_implications (fact_id);
+CREATE INDEX IF NOT EXISTS ix_implications_ticker ON investment_implications (ticker);
+CREATE INDEX IF NOT EXISTS ix_implications_status ON investment_implications (status);
+
+CREATE TABLE IF NOT EXISTS effect_chains (
+    effect_id          INTEGER PRIMARY KEY,
+    implication_id     INTEGER NOT NULL REFERENCES investment_implications(implication_id),
+    order_n            INTEGER NOT NULL CHECK (order_n IN (1, 2, 3)),
+    description        TEXT NOT NULL,
+    affected_entity_id INTEGER REFERENCES entities(entity_id),
+    evidence_id        INTEGER REFERENCES evidence(evidence_id)
+);
+
+CREATE TABLE IF NOT EXISTS research_task_candidates (
+    task_id        INTEGER PRIMARY KEY,
+    implication_id INTEGER NOT NULL REFERENCES investment_implications(implication_id),
+    description    TEXT NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'open'
+                     CHECK (status IN ('open','in_review','promoted','dismissed')),
+    created_at     TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS self_critique_reviews (
+    critique_id      INTEGER PRIMARY KEY,
+    implication_id   INTEGER NOT NULL REFERENCES investment_implications(implication_id),
+    question         TEXT NOT NULL CHECK (question IN
+                        ('unevidenced_inference', 'correlation_vs_causation',
+                         'ignored_alternative_explanation', 'single_document_overreaction',
+                         'contradicts_prior_evidence', 'insufficient_information',
+                         'confidence_improving_information', 'market_noise_check')),
+    finding          TEXT NOT NULL CHECK (finding IN ('pass', 'concern', 'fail')),
+    explanation      TEXT NOT NULL,
+    resulting_action TEXT NOT NULL CHECK (resulting_action IN
+                        ('none', 'confidence_lowered', 'status_downgraded',
+                         'research_task_created', 'flagged_for_human_review')),
+    model_id         TEXT NOT NULL,
+    prompt_version   TEXT NOT NULL,
+    reviewed_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_critique_implication ON self_critique_reviews (implication_id);
+
+-- Full audit trail of every LLM call (draft reasoning AND self-critique),
+-- whether served from cache or a live request — "store every prompt,
+-- response, token usage and model version" as a queryable table, not just
+-- the on-disk JSON cache (data/staging/llm_cache/) which is a performance/
+-- reproducibility mechanism, not the audit record of truth.
+CREATE TABLE IF NOT EXISTS llm_calls (
+    call_id         INTEGER PRIMARY KEY,
+    doc_id          INTEGER REFERENCES documents(doc_id),
+    purpose         TEXT NOT NULL CHECK (purpose IN ('draft_reasoning', 'self_critique')),
+    model_id        TEXT NOT NULL,
+    prompt_version  TEXT NOT NULL,
+    document_hash   TEXT,        -- 2026-07-22 hardening: sha256 of the source
+                                 -- document text alone (distinct from
+                                 -- cache_key, which hashes the full prompt) —
+                                 -- makes "did this document's TEXT change
+                                 -- since it was last processed" an explicit,
+                                 -- auditable query instead of an implicit
+                                 -- side-effect of the cache key
+    system_prompt   TEXT NOT NULL,
+    user_prompt     TEXT NOT NULL,
+    response_text   TEXT NOT NULL,
+    input_tokens    INTEGER NOT NULL,
+    output_tokens   INTEGER NOT NULL,
+    stop_reason     TEXT,
+    request_id      TEXT,
+    cache_key       TEXT NOT NULL,
+    served_from_cache INTEGER NOT NULL DEFAULT 0,
+    latency_s       REAL,
+    called_at       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_llm_calls_doc ON llm_calls (doc_id);
+CREATE INDEX IF NOT EXISTS ix_llm_calls_cache_key ON llm_calls (cache_key);
+CREATE INDEX IF NOT EXISTS ix_llm_calls_document_hash ON llm_calls (document_hash);
+
+-- 2026-07-22 hardening: per-document pilot processing lifecycle — what
+-- makes run_phase_c_pilot.py resumable. The status here is the fast,
+-- authoritative "should I skip this document" signal; the actual
+-- extracted_facts/investment_implications rows remain the source of truth
+-- for what was actually produced (a resume checks BOTH — see
+-- pipeline_status.py — so a stale/crashed status row can never cause a
+-- document to be silently re-extracted and duplicated).
+CREATE TABLE IF NOT EXISTS document_processing_status (
+    doc_id            INTEGER PRIMARY KEY REFERENCES documents(doc_id),
+    status            TEXT NOT NULL CHECK (status IN
+                        ('pending', 'processing', 'completed', 'failed',
+                         'quota_exceeded', 'blocked_by_self_critique')),
+    fact_count        INTEGER,
+    implication_count INTEGER,
+    error_detail      TEXT,
+    model_id          TEXT,
+    prompt_version    TEXT,
+    started_at        TEXT,
+    updated_at        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_doc_status_status ON document_processing_status (status);
+
+-- ----------------------------------------------------------------------------
 -- Point-in-time views: latest as_of per (entity, trade_date).
 -- The Python layer exposes as-of-a-knowledge-date variants of these.
 -- ----------------------------------------------------------------------------
