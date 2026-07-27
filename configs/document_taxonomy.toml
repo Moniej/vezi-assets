@@ -1,0 +1,26 @@
+# Document-type taxonomy for the AI Intelligence Layer
+# (docs/AI_INTELLIGENCE_LAYER_ARCHITECTURE.md, Phase A).
+# CONFIGURABLE: adding a doc_type here makes it valid for ingestion — no code
+# change, same pattern as configs/event_taxonomy.toml.
+#
+# Phase A leaves = the doc_class labels already produced by
+# scripts/build_corp_actions_db.py's classifier
+# (data/staging/xissuer/corporate_actions_calendar_classified.csv) — reused
+# as-is rather than re-classified, since that classification already exists
+# and has not been shown to be wrong.
+
+[capital_actions]
+description = "Dividends, bonus/rights issues — direct capital-allocation disclosures"
+types = ["dividend", "bonus_split", "rights_capital"]
+
+[financial_results]
+description = "Results submissions and results-approval notices"
+types = ["results_notice"]
+
+[corporate_governance]
+description = "Board, AGM, closed-period, and insider-dealing notices"
+types = ["board_meeting", "agm", "closed_period", "dealing", "governance"]
+
+[uncategorized]
+description = "Filings not yet assigned a specific type by the classifier"
+types = ["other"]
