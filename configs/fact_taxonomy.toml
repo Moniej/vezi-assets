@@ -1,0 +1,29 @@
+# Fact taxonomy for the AI Intelligence Layer's extracted_facts table
+# (docs/REASONING_ENGINE_SPECIFICATION.md §4). CONFIGURABLE: adding a leaf
+# is a config change, not a code change — same pattern as
+# event_taxonomy.toml/document_taxonomy.toml.
+
+[operating_performance]
+types = ["earnings", "guidance", "margin_change", "market_share_change",
+         "customer_loss", "supplier_issue", "competition_change"]
+
+[corporate_events]
+types = ["management_change", "ceo_resignation", "acquisition", "asset_sale",
+         "major_contract", "product_launch", "factory_shutdown", "capacity_expansion"]
+
+[capital_and_balance_sheet]
+types = ["capital_raise", "share_buyback", "dividend", "rights_issue",
+         "bonus_issue", "private_placement", "debt_change", "cash_change",
+         "capex", "credit_rating_change"]
+
+[legal_and_regulatory]
+types = ["litigation", "regulation_change", "government_policy", "tax_change"]
+
+[macro_exposure]
+types = ["fx_exposure", "commodity_exposure", "interest_rate_change", "inflation_release"]
+
+[security_and_operational_risk]
+types = ["cyber_attack", "operational_disruption"]
+
+[uncategorized]
+types = ["other"]   # catch-all; a fact landing here is a taxonomy-triage flag, never dropped
