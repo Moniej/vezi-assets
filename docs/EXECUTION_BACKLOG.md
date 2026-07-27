@@ -489,6 +489,12 @@ readers**
 | TD8 | `vwap_inconsistent` 469-row backlog, 2 unexplained zero-value days | **LOW** | Warn-level, small relative to 320k-row panel. Addressed by E7. |
 | TD9 | Full-issue (not float-adjusted) market cap | **LOW** | Disclosed limitation, not a bug; a known simplification with a clear upgrade path (E12) if ever needed. |
 | TD10 | rf=0% Sharpe placeholder throughout every IC memo | **LOW** | Disclosed consistently everywhere; no rejection verdict in the program has hinged on a marginal Sharpe threshold this would flip. |
+| TD11 | `entity_relationships.relation_type` is a literal `affects_order_N` label, not a semantic taxonomy (competitor_of/supplier_to/...) | **LOW-MEDIUM** | Honest given the draft prompt never asks the model to classify relationship nature; limits graph queries to "named as affected" rather than "is a competitor of." Upgrading needs a prompt change first. See `reports/phase_e_completion.md`. |
+| TD12 | Entity resolution (exact case-insensitive name match, no merge queue, inherited from Phase C) now has a higher blast radius since Phase E persists a relationship graph on top of it | **MEDIUM** | A wrong non-merge now fragments/wrongly-consolidates the persisted graph, not just a mention count. Worth revisiting before real-scale use. See `entities.py`'s docstring. |
+| TD13 | `historical_event_reaction` (Phase E) is new, single-purpose, and untested against any real NGX anchor | **LOW** | Engineering-correctness tested only (synthetic price series). Evidence-only, never feeds `alpha_engine`/`runner`, so the validation bar is lower than a quant parser's — but no real sanity check has been run yet. See `reports/phase_e_completion.md`. |
+| TD14 | Peer ticker resolution (Phase F) is exact-match-only against `securities.name`, so propagation coverage will likely be low against real filings | **LOW-MEDIUM** | Disclosed trade-off, not a defect — "never guess a match." A verified alias table (mirroring `symbol_renames.csv`) would raise coverage; not built, no trigger yet. See `reports/phase_f_completion.md`. |
+| TD15 | Industry propagation (Phase F) never assesses peer-specific direction — every propagated implication copies the source's direction unchanged, paired with a research task instead | **LOW** | Deliberate: direction inversion is an economic-mechanism inference this platform has never allowed a hardcoded rule to make. The research-task queue this creates has no automated consumer yet. See `reports/phase_f_completion.md`. |
+| TD16 | `industry_reasoning.propagate_implication` untested against real production data | **LOW** | Same class of caveat as TD13 — MockProvider/synthetic-DB tested only, real-world behavior (actual entity-name match rate, real propagation volume) not yet observed. |
 
 ---
 
@@ -567,6 +573,68 @@ before the things they gate, not by calendar month.
 12. **E11, E12, E13, E14, R5, R6** — low priority / explicitly blocked;
     revisit only after the above clears or a trigger condition (stated
     against each) is met.
+
+## AI Intelligence Layer Tasks (2026-07-22, separate track — not a V1
+architecture change; the quantitative research engine above is unaffected)
+
+**AI-1 — Resume the Phase C pilot past Gemini's free-tier quota — DONE
+2026-07-26.** Resumed cleanly via `scripts/run_phase_c_pilot.py` (registry
+-sourced `GEMINI_API_KEY`, no quota errors this run — daily limit had
+reset): all 9 remaining documents processed, 0 new quota hits.
+`scripts/validate_phase_c_extraction.py` regenerated
+`reports/phase_c_completion.md` against the FULL pilot set (17 documents
+with LLM-extracted facts): **precision 90.0%, recall 100.0%** vs. Phase
+B's deterministic ground truth (9/10 overlapping numeric values agree
+exactly; every disagreement disclosed, not summarized away — doc 10788
+MOFIREIF: Phase B 3.7468 vs LLM 9.7192, unresolved, flagged for human
+review, not silently picked one). Self-critique gate ran completely on
+every draft (136/136 expected critique rows = 17 × 8): 3/17 implications
+`blocked_by_self_critique`, 14/17 `unvalidated_ai_interpretation`. 2/17
+facts failed grounding (forced to 0.0 confidence, kept not discarded).
+Full numbers: `reports/phase_c_completion.md`,
+`reports/phase_c_pilot_summary.{md,json}`. No further action needed on
+this item — closed.
+
+*(Original description, for history:)* Resume the Phase C pilot past Gemini's free-tier quota (pipeline
+now fully resumable, 2026-07-22 — the resume-skip gap noted below is CLOSED)
+- Description: owner supplied `GEMINI_API_KEY`; the pilot ran for real and
+  produced real results (100% precision/recall on the numeric overlap with
+  Phase B, a real self-critique catch on GTCO's dilutive offer, a
+  pre-existing Phase B misclassification surfaced on NEM — full detail
+  `reports/phase_c_completion.md`), then hit Google's free-tier quota (20
+  `generate_content` requests/day/project for `gemini-3.6-flash`,
+  confirmed via the API's 429 response) partway through document 7 of 18
+  (8 documents' worth of data actually landed — one, UCAP, mid-critique).
+  **Hardened same day**: `run_phase_c_pilot.py` is now fully resumable
+  (`document_processing_status` table + `pipeline_status.py`, cross-
+  checked against real data so a stale status can never cause duplicate
+  extraction), `QuotaExceededError` is detected and fails fast (no wasted
+  retries), and a JSON+Markdown pilot summary is written after every run.
+  Backfilled status for the 7/8 pre-hardening documents — `remaining_
+  doc_ids` now correctly reports 9 remaining (1 resume — UCAP just needs
+  its critique step — plus 8 never-touched).
+- Why it matters: closes out the real precision/recall/consistency
+  numbers on the full 18-document sample instead of a partial 8, and the
+  hardening means every FUTURE quota-limited run (this will recur on the
+  free tier) resumes cleanly with no manual intervention.
+- Dependencies: owner decision — wait for daily quota reset, upgrade to a
+  paid tier, or reduce further via `-n`. No engineering blocker remains.
+- Engineering effort: NONE remaining for resumability itself — just
+  running `python -u scripts/run_phase_c_pilot.py` again once quota allows.
+- Files: `scripts/run_phase_c_pilot.py`, `scripts/validate_phase_c_extraction.py`,
+  `src/ngxrot/documents/pipeline_status.py`, `src/ngxrot/documents/pilot_summary.py`,
+  `reports/phase_c_completion.md`, `reports/phase_c_pilot_summary.{md,json}`.
+- Completion criteria: real precision/recall/consistency statistics in
+  `reports/phase_c_completion.md`, reviewed by the owner before Phase D
+  (which per the architecture doc's own phasing is now partially absorbed
+  into what was just built — remaining Phase D/E/F/G scope needs
+  re-scoping once real pilot numbers exist, not before).
+
+**AI-2 — OCR engine decision** (inherited, unresolved since 2026-07-16):
+blocks the 36% of the Phase A archive with no usable text layer,
+including the specific GTCO/Zenith FY2023 anchors named in the
+architecture doc (confirmed OCR-blocked during Phase C's pilot-set
+selection — see `reports/phase_c_completion.md` §3).
 
 *No new hypothesis ID beyond H-010/H-011 is created by this document. No
 architecture change is proposed. This is the complete remaining task
