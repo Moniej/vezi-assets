@@ -1,0 +1,31 @@
+# Single source of truth for which LLM provider/model backs the AI
+# Intelligence Layer's reasoning engine (src/ngxrot/documents/). Change
+# ONLY this file to switch the default provider or model — nothing in the
+# reasoning pipeline (extract.py, self_critique.py, reasoning.py, cache.py,
+# prompts.py) hardcodes a vendor or model string; they only ever see the
+# LLMProvider interface. See llm_providers.py's PROVIDER_REGISTRY for the
+# full list of registered provider names.
+#
+# api_key_env_var is documentation of which environment variable the
+# chosen provider actually reads (GeminiProvider checks GEMINI_API_KEY
+# first, then GOOGLE_API_KEY, regardless of this value) — kept here so a
+# reader doesn't have to open llm_providers.py to know what to set.
+
+[llm]
+provider = "gemini"
+model_id = "gemini-3.6-flash"
+api_key_env_var = "GEMINI_API_KEY"
+
+# 2026-07-22 hardening: cost-estimation rates for the pilot summary's
+# "estimated API cost" figure. ASSUMED, NOT VERIFIED against a real Google
+# billing statement — same "confidence='assumed' until replaced with a
+# real contract note" discipline the quant engine's cost_schedule table
+# already uses for retail brokerage fees. Free-tier usage (this pilot) is
+# actually $0; these rates only matter once/if a paid tier is used. Update
+# with real published rates before trusting the cost figure for anything
+# beyond a rough order-of-magnitude sense-check.
+[llm.cost_assumed]
+input_usd_per_1k_tokens = 0.0
+output_usd_per_1k_tokens = 0.0
+confidence = "assumed"
+note = "Placeholder zero rate — free-tier pilot cost is genuinely $0. Replace with confirmed paid-tier pricing before this figure is used for budgeting."

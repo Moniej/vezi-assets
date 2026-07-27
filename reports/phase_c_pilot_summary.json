@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-07-26",
+  "documents": {
+    "processed": 17,
+    "skipped_on_rerun": 17,
+    "failed": 0,
+    "quota_exceeded_current": 0,
+    "in_progress_interrupted": 0,
+    "status_breakdown": {
+      "completed": 14,
+      "blocked_by_self_critique": 3
+    }
+  },
+  "extraction": {
+    "llm_facts_total": 17,
+    "deterministic_facts_total": 143,
+    "precision": 0.9,
+    "recall": 1.0,
+    "overlap_with_ground_truth": 10,
+    "agree": 9,
+    "llm_found_extra": 6,
+    "recall_misses": 0
+  },
+  "grounding": {
+    "failures": 2,
+    "failure_rate": 0.1176
+  },
+  "self_critique": {
+    "implications_total": 17,
+    "blocked": 3,
+    "rejection_rate": 0.1765,
+    "finding_counts": {
+      "concern": 68,
+      "pass": 61,
+      "fail": 7
+    }
+  },
+  "schema_completeness": {
+    "facts_with_complete_impact_categories": 17,
+    "facts_missing_causal_chain": 0
+  },
+  "performance": {
+    "avg_latency_s": 15.629,
+    "total_input_tokens": 63564,
+    "total_output_tokens": 40634,
+    "total_llm_calls": 34,
+    "cache_hits": 3,
+    "cache_hit_rate": 0.0882,
+    "estimated_api_cost_usd": 0.0,
+    "cost_rate_confidence": "assumed",
+    "cost_rate_note": "Placeholder zero rate \u2014 free-tier pilot cost is genuinely $0. Replace with confirmed paid-tier pricing before this figure is used for budgeting."
+  }
+}
