@@ -1,0 +1,58 @@
+{
+  "stages": {
+    "initial_train": {
+      "final_loss": 88.55065600077312,
+      "global_step": 12,
+      "train_time_s": 28.26,
+      "gpu_max_allocated_mb": 4163.0
+    },
+    "eval_after_initial_train": {
+      "eval_loss": 19.34178924560547,
+      "eval_runtime": 0.5606,
+      "eval_samples_per_second": 10.702,
+      "eval_steps_per_second": 1.784,
+      "epoch": 2.0
+    },
+    "vram_after_explicit_cleanup_mb": 788.9,
+    "resume_train": {
+      "resumed_from": "checkpoint-12",
+      "step_before_resume_object_created": 0,
+      "final_step": 20,
+      "final_loss": 29.12109966278076,
+      "resume_time_s": 18.07,
+      "resume_correct": true
+    },
+    "eval_after_resume": {
+      "eval_loss": 18.712478637695312,
+      "eval_runtime": 0.5628,
+      "eval_samples_per_second": 10.662,
+      "eval_steps_per_second": 1.777,
+      "epoch": 3.3333333333333335
+    }
+  },
+  "lora_setup": {
+    "trainable_params": 5898240,
+    "total_params": 2514484736,
+    "trainable_pct": 0.2346
+  },
+  "dataset": {
+    "train_rows": 24,
+    "eval_rows": 6
+  },
+  "checkpoints_created": [
+    "checkpoint-4",
+    "checkpoint-8",
+    "checkpoint-12"
+  ],
+  "tensorboard_logging": {
+    "event_files_found": 4,
+    "paths": [
+      "lim_training\\dryrun_tensorboard\\events.out.tfevents.1785186549.VEZI-STATION.22588.0",
+      "lim_training\\dryrun_tensorboard\\events.out.tfevents.1785186577.VEZI-STATION.22588.1",
+      "lim_training\\dryrun_tensorboard\\events.out.tfevents.1785186584.VEZI-STATION.22588.2",
+      "lim_training\\dryrun_tensorboard\\events.out.tfevents.1785186601.VEZI-STATION.22588.3"
+    ]
+  },
+  "final_gpu_max_allocated_mb": 4920.5,
+  "verdict": "PASS: forward/backward/optimizer/checkpoint/resume/eval/logging all verified"
+}

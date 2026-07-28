@@ -1,0 +1,94 @@
+{
+  "model_dir": "C:\\Users\\nonso\\Desktop\\vezi assets\\ngx-rotation\\lim_training\\qwen3_4b_model",
+  "stages": {
+    "before_load": {
+      "gpu": {
+        "allocated_mb": 0.0,
+        "reserved_mb": 0.0,
+        "max_allocated_mb": 0.0
+      },
+      "ram_mb": 509.2
+    },
+    "after_load": {
+      "gpu": {
+        "allocated_mb": 3433.0,
+        "reserved_mb": 3468.0,
+        "max_allocated_mb": 3449.0
+      },
+      "ram_mb": 1342.1,
+      "load_time_s": 17.53
+    }
+  },
+  "generations": {
+    "short_extraction_style": {
+      "input_tokens": 71,
+      "output_tokens": 53,
+      "latency_s": 6.311,
+      "tokens_per_second": 8.4,
+      "gpu_after": {
+        "allocated_mb": 3506.4,
+        "reserved_mb": 3606.0,
+        "max_allocated_mb": 3518.8
+      },
+      "output_preview": "```json\n{\n  \"fact_type\": \"dividend_announcement\",\n  \"description\": \"Final dividend per share for the financial year ended 31 December 2025\",\n  \"numeric_value\": \"1.90\"\n}\n```"
+    },
+    "medium_reasoning_style": {
+      "input_tokens": 66,
+      "output_tokens": 107,
+      "latency_s": 6.673,
+      "tokens_per_second": 16.04,
+      "gpu_after": {
+        "allocated_mb": 3506.1,
+        "reserved_mb": 3608.0,
+        "max_allocated_mb": 3518.8
+      },
+      "output_preview": "The dividend increase from N1.20 to N1.90 per share signals that management is confident in the company's future cash flow and financial stability, as they are willing to reward shareholders with higher dividends. This could reflect improved earnings, stronger cash generation, or a more optimistic o"
+    },
+    "long_document_style": {
+      "input_tokens": 2443,
+      "output_tokens": 127,
+      "latency_s": 12.471,
+      "tokens_per_second": 10.18,
+      "gpu_after": {
+        "allocated_mb": 3845.2,
+        "reserved_mb": 5224.0,
+        "max_allocated_mb": 4235.1
+      },
+      "output_preview": "The filing contains **repeated and redundant information** \u2014 the only material fact provided is:\n\n**\"The company reported quarterly results.\"**\n\n### Summary of Key Material Facts:\n- **Fact:** The company reported quarterly results.\n- **Signal for Shareholders:** **Neutral**  \n  *Reason:* The fact al"
+    }
+  },
+  "stability_runs": [
+    {
+      "run": 0,
+      "latency_s": 3.157,
+      "gpu_allocated_mb": 3507.0
+    },
+    {
+      "run": 1,
+      "latency_s": 3.224,
+      "gpu_allocated_mb": 3507.0
+    },
+    {
+      "run": 2,
+      "latency_s": 3.197,
+      "gpu_allocated_mb": 3507.0
+    },
+    {
+      "run": 3,
+      "latency_s": 3.242,
+      "gpu_allocated_mb": 3507.0
+    },
+    {
+      "run": 4,
+      "latency_s": 3.286,
+      "gpu_allocated_mb": 3507.0
+    }
+  ],
+  "stability_verdict": "stable",
+  "final_gpu_state": {
+    "allocated_mb": 3507.0,
+    "reserved_mb": 5226.0,
+    "max_allocated_mb": 4235.1
+  },
+  "final_ram_mb": 2017.9
+}
