@@ -1,0 +1,48 @@
+# LIM-1 quality-scoring weights (DATASET_GENERATION_AND_TRAINING_SPEC.md
+# §4.4). Ad hoc, disclosed, owner-adjustable -- same status as
+# ngxrot.documents.vocab.py's CONFIDENCE_DISCOUNT_PER_CONCERN. Applied
+# AFTER hard exclusions (grounding_failed, contradicts_higher_tier_evidence),
+# which force quality_score=0.0 unconditionally regardless of these weights.
+#
+# Component scores this weights against (all already 0-1 scaled):
+#   self_critique_severity  mean(pass=1.0, concern=0.6, fail=0.0) across
+#                            this example's self_critique_reviews rows
+#   evidence_tier            best evidence tier (1=1.0 ... 4=0.25)
+#   coverage_score            the ticker's CoverageAssessment.coverage_score
+#   citation_integrity        1.0 unless the primary citation's own
+#                            grounding_check failed (redundant with the hard
+#                            exclusion in the common case, kept for the rare
+#                            path where an example has no fact_id at all)
+
+[weights]
+self_critique_severity = 0.35
+evidence_tier = 0.30
+coverage_score = 0.20
+citation_integrity = 0.15
+
+# Per-task-type acceptance thresholds (spec §4.5) -- deliberately different
+# bars per dataset purpose: a Self-Critique NEGATIVE example is valuable
+# precisely because it failed, so it's accepted far below a Financial
+# -Reasoning POSITIVE example's bar. 0.0 means "accept unless a hard
+# exclusion applies" -- used for purely descriptive dataset types where
+# quality_score isn't really a claim of correctness.
+[acceptance_thresholds]
+financial_reasoning = 0.55
+extraction = 0.50
+corporate_actions = 0.50
+citation_grounding = 0.40
+investment_decision_support = 0.50
+entity_recognition = 0.30
+knowledge_graph_completion = 0.30
+confidence_estimation = 0.0
+coverage_assessment = 0.0
+evidence_ranking = 0.0
+self_critique = 0.0
+contradiction_detection = 0.0
+hallucination_detection = 0.0
+portfolio_reasoning = 0.0
+retrieval = 0.0
+rag = 0.0
+event_understanding = 0.0
+
+default = 0.50

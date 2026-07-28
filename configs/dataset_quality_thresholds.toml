@@ -1,0 +1,23 @@
+# LIM-1 dataset audit gate (DATASET_GENERATION_AND_TRAINING_SPEC.md §6).
+# Mirrors configs/coverage_thresholds.toml's naming and enforcement
+# philosophy exactly, ported to the dataset-generation domain: a training
+# run must be REFUSED (not merely warned) if any threshold below is
+# breached for the dataset_version it references. Ad hoc, disclosed,
+# owner-adjustable -- not a validated statistical cutoff.
+
+[thresholds]
+max_duplicate_rate = 0.05
+max_unresolved_contradiction_rate = 0.10
+min_citation_integrity = 0.95
+min_grounding_integrity = 0.95
+min_acceptance_rate = 0.30
+max_single_ticker_share = 0.60
+
+# Train/validation/test split percentages (of the ACCEPTED partition only --
+# rejected examples never enter any split). Deterministic hash-bucket
+# assignment (audit.py's _split_bucket), not a random shuffle -- stable
+# across dataset growth, per spec §9's non-contamination principle.
+[splits]
+train_pct = 80
+val_pct = 10
+# test_pct is implicitly 100 - train_pct - val_pct = 10
