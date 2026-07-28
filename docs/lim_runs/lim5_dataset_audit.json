@@ -1,0 +1,499 @@
+{
+  "contradiction_detection": {
+    "version": "contradiction_detection-v1.0.0",
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 1,
+      "mean": 0.9125,
+      "median": 0.9125,
+      "min": 0.9125,
+      "max": 0.9125,
+      "stdev": 0.0
+    },
+    "evidence_tier_distribution": {
+      "1": 1
+    },
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 0,
+    "token_length": {
+      "n": 1,
+      "mean": 109,
+      "median": 109,
+      "min": 109,
+      "max": 109,
+      "p95": 109,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 1,
+      "n_distinct_contexts": 1,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "corporate_actions": {
+    "version": "corporate_actions-v1.0.0",
+    "n_accepted": 159,
+    "n_rejected": 2,
+    "acceptance_rate": 0.9876,
+    "quality_score": {
+      "n": 161,
+      "mean": 0.9876,
+      "median": 1.0,
+      "min": 0.0,
+      "max": 1.0,
+      "stdev": 0.1111
+    },
+    "evidence_tier_distribution": {
+      "1": 159
+    },
+    "grounding_integrity": 0.9889,
+    "citation_integrity": 1.0,
+    "class_balance": {
+      "dividend": 158,
+      "rights_issue": 2,
+      "bonus_issue": 1
+    },
+    "duplicate_rate": 0.0062,
+    "company_distribution": 60,
+    "token_length": {
+      "n": 159,
+      "mean": 116.2,
+      "median": 116,
+      "min": 99,
+      "max": 161,
+      "p95": 138,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 159,
+      "n_distinct_contexts": 152,
+      "n_collision_groups": 7,
+      "n_inconsistent_groups": 6,
+      "n_examples_in_inconsistent_groups": 12,
+      "worst_collision_group_size": 2
+    }
+  },
+  "coverage_assessment": {
+    "version": "coverage_assessment-v1.0.0",
+    "n_accepted": 12,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 12,
+      "mean": 0.7333,
+      "median": 0.7143,
+      "min": 0.7143,
+      "max": 0.7714,
+      "stdev": 0.0281
+    },
+    "evidence_tier_distribution": {},
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 12,
+    "token_length": {
+      "n": 12,
+      "mean": 292.7,
+      "median": 300.5,
+      "min": 268,
+      "max": 305,
+      "p95": 303,
+      "pct_over_256": 100.0
+    },
+    "label_consistency": {
+      "n_examples": 12,
+      "n_distinct_contexts": 12,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "entity_recognition": {
+    "version": "entity_recognition-v1.1.0",
+    "n_accepted": 39,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 39,
+      "mean": 1.0,
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "stdev": 0.0
+    },
+    "evidence_tier_distribution": {},
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 0,
+    "token_length": {
+      "n": 39,
+      "mean": 96.9,
+      "median": 97,
+      "min": 88,
+      "max": 105,
+      "p95": 103,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 39,
+      "n_distinct_contexts": 17,
+      "n_collision_groups": 13,
+      "n_inconsistent_groups": 13,
+      "n_examples_in_inconsistent_groups": 35,
+      "worst_collision_group_size": 6
+    }
+  },
+  "event_understanding": {
+    "version": "event_understanding-v1.0.0",
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "acceptance_rate": null,
+    "quality_score": {
+      "n": 0,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null,
+      "stdev": null
+    },
+    "evidence_tier_distribution": {},
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 0,
+    "token_length": {
+      "n": 0
+    },
+    "label_consistency": {
+      "n_examples": 0,
+      "n_distinct_contexts": 0,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "evidence_ranking": {
+    "version": "evidence_ranking-v1.0.0",
+    "n_accepted": 159,
+    "n_rejected": 2,
+    "acceptance_rate": 0.9876,
+    "quality_score": {
+      "n": 161,
+      "mean": 0.9876,
+      "median": 1.0,
+      "min": 0.0,
+      "max": 1.0,
+      "stdev": 0.1111
+    },
+    "evidence_tier_distribution": {
+      "1": 159
+    },
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 0,
+    "token_length": {
+      "n": 159,
+      "mean": 87.6,
+      "median": 82,
+      "min": 81,
+      "max": 171,
+      "p95": 127,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 159,
+      "n_distinct_contexts": 159,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "extraction": {
+    "version": "extraction-v1.0.0",
+    "n_accepted": 159,
+    "n_rejected": 2,
+    "acceptance_rate": 0.9876,
+    "quality_score": {
+      "n": 161,
+      "mean": 0.9876,
+      "median": 1.0,
+      "min": 0.0,
+      "max": 1.0,
+      "stdev": 0.1111
+    },
+    "evidence_tier_distribution": {
+      "1": 159
+    },
+    "grounding_integrity": 0.9889,
+    "citation_integrity": 1.0,
+    "class_balance": {
+      "dividend": 158,
+      "rights_issue": 2,
+      "bonus_issue": 1
+    },
+    "duplicate_rate": 0.0062,
+    "company_distribution": 60,
+    "token_length": {
+      "n": 159,
+      "mean": 116.2,
+      "median": 116,
+      "min": 99,
+      "max": 161,
+      "p95": 138,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 159,
+      "n_distinct_contexts": 152,
+      "n_collision_groups": 7,
+      "n_inconsistent_groups": 6,
+      "n_examples_in_inconsistent_groups": 12,
+      "worst_collision_group_size": 2
+    }
+  },
+  "hallucination_detection": {
+    "version": "hallucination_detection-v1.0.0",
+    "n_accepted": 2,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 2,
+      "mean": 0.5,
+      "median": 0.5,
+      "min": 0.5,
+      "max": 0.5,
+      "stdev": 0.0
+    },
+    "evidence_tier_distribution": {
+      "4": 2
+    },
+    "grounding_integrity": 0.0,
+    "citation_integrity": 1.0,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 0,
+    "token_length": {
+      "n": 2,
+      "mean": 98,
+      "median": 98.0,
+      "min": 92,
+      "max": 104,
+      "p95": 92,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 2,
+      "n_distinct_contexts": 2,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "investment_decision_support": {
+    "version": "investment_decision_support-v1.0.0",
+    "n_accepted": 16,
+    "n_rejected": 2,
+    "acceptance_rate": 0.8889,
+    "quality_score": {
+      "n": 18,
+      "mean": 0.7868,
+      "median": 0.8906,
+      "min": 0.0,
+      "max": 0.9344,
+      "stdev": 0.2902
+    },
+    "evidence_tier_distribution": {
+      "1": 16
+    },
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 12,
+    "token_length": {
+      "n": 16,
+      "mean": 145,
+      "median": 140.5,
+      "min": 132,
+      "max": 188,
+      "p95": 157,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 16,
+      "n_distinct_contexts": 15,
+      "n_collision_groups": 1,
+      "n_inconsistent_groups": 1,
+      "n_examples_in_inconsistent_groups": 2,
+      "worst_collision_group_size": 2
+    }
+  },
+  "knowledge_graph_completion": {
+    "version": "knowledge_graph_completion-v1.0.0",
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 1,
+      "mean": 1.0,
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "stdev": 0.0
+    },
+    "evidence_tier_distribution": {},
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 0,
+    "token_length": {
+      "n": 1,
+      "mean": 68,
+      "median": 68,
+      "min": 68,
+      "max": 68,
+      "p95": 68,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 1,
+      "n_distinct_contexts": 1,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "rag": {
+    "version": "rag-v1.0.0",
+    "n_accepted": 12,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 12,
+      "mean": 0.7333,
+      "median": 0.7143,
+      "min": 0.7143,
+      "max": 0.7714,
+      "stdev": 0.0281
+    },
+    "evidence_tier_distribution": {},
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 12,
+    "token_length": {
+      "n": 12,
+      "mean": 279.7,
+      "median": 258.0,
+      "min": 180,
+      "max": 492,
+      "p95": 372,
+      "pct_over_256": 50.0
+    },
+    "label_consistency": {
+      "n_examples": 12,
+      "n_distinct_contexts": 12,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "retrieval": {
+    "version": "retrieval-v1.0.0",
+    "n_accepted": 12,
+    "n_rejected": 0,
+    "acceptance_rate": 1.0,
+    "quality_score": {
+      "n": 12,
+      "mean": 1.0,
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "stdev": 0.0
+    },
+    "evidence_tier_distribution": {},
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 12,
+    "token_length": {
+      "n": 12,
+      "mean": 444.2,
+      "median": 437.0,
+      "min": 114,
+      "max": 706,
+      "p95": 700,
+      "pct_over_256": 83.3
+    },
+    "label_consistency": {
+      "n_examples": 12,
+      "n_distinct_contexts": 12,
+      "n_collision_groups": 0,
+      "n_inconsistent_groups": 0,
+      "n_examples_in_inconsistent_groups": 0,
+      "worst_collision_group_size": 0
+    }
+  },
+  "self_critique": {
+    "version": "self_critique-v1.0.0",
+    "n_accepted": 128,
+    "n_rejected": 16,
+    "acceptance_rate": 0.8889,
+    "quality_score": {
+      "n": 144,
+      "mean": 0.7868,
+      "median": 0.8906,
+      "min": 0.0,
+      "max": 0.9344,
+      "stdev": 0.283
+    },
+    "evidence_tier_distribution": {
+      "1": 128
+    },
+    "grounding_integrity": null,
+    "citation_integrity": null,
+    "class_balance": {},
+    "duplicate_rate": 0.0,
+    "company_distribution": 12,
+    "token_length": {
+      "n": 128,
+      "mean": 130.4,
+      "median": 123.0,
+      "min": 103,
+      "max": 210,
+      "p95": 168,
+      "pct_over_256": 0.0
+    },
+    "label_consistency": {
+      "n_examples": 128,
+      "n_distinct_contexts": 120,
+      "n_collision_groups": 8,
+      "n_inconsistent_groups": 8,
+      "n_examples_in_inconsistent_groups": 16,
+      "worst_collision_group_size": 2
+    }
+  }
+}
