@@ -31,3 +31,14 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# LIM (Local Intelligence Model) — isolated project structure per
+# docs/LIM_ARCHITECTURE.md §1.2. Base model downloads, LoRA checkpoints,
+# exported training datasets, and the dedicated LIM venv are large binary
+# artifacts, not source — regenerable from scripts/lim/ + a recorded
+# dataset_version/run_id, same rationale as data/archive/ above.
+lim_training/
+
+# Unsloth's compiled-kernel cache — regenerated automatically on first
+# import, not source (defaults to repo root, outside lim_training/).
+unsloth_compiled_cache/
