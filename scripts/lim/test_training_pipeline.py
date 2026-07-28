@@ -36,10 +36,14 @@ def check(name: str, condition: bool, detail: str = ""):
 
 def _register_fake_version(con_lim, *, dataset_type: str, examples: list[dict],
                            violations: list[str] | None = None,
-                           teacher_model_ids: list[str] | None = None) -> str:
+                           teacher_model_ids: list[str] | None = None,
+                           splits: dict | None = None) -> str:
     """Builds a minimal, real (not mocked) registered version -- writes a
-    real accepted.jsonl, a real audit_report.json, computes a real content
-    hash, and registers it exactly the way export_dataset.py does."""
+    real accepted.jsonl, a real audit_report.json, a real splits.json
+    (LIM-4: load_training_set now REQUIRES one -- default here puts every
+    example in "train" so existing callers that don't care about splits
+    keep working unchanged), computes a real content hash, and registers
+    it exactly the way export_dataset.py does."""
     version = registry.next_version(con_lim, dataset_type)
     version_dir = Path(tempfile.mkdtemp()) / dataset_type / version
     version_dir.mkdir(parents=True)
@@ -50,6 +54,9 @@ def _register_fake_version(con_lim, *, dataset_type: str, examples: list[dict],
     (version_dir / "audit_report.json").write_text(
         json.dumps({"audit": {"n_total": len(examples)}, "violations": violations or []}),
         encoding="utf-8")
+    default_splits = {"train": [e["unique_id"] for e in examples], "validation": [], "test": []}
+    (version_dir / "splits.json").write_text(
+        json.dumps(splits if splits is not None else default_splits), encoding="utf-8")
     registry.register_version(
         con_lim, version=version, dataset_type=dataset_type, accepted_path=accepted_path,
         rejected_path=rejected_path, source_as_of=date.today().isoformat(),
@@ -157,6 +164,50 @@ def test_load_training_set_multi_dataset():
     check("loader: manifest unions teacher_model_ids", manifest["teacher_model_ids"] == ["gemini-3.6-flash"])
 
 
+def test_load_training_set_never_returns_test_split_examples():
+    """LIM-4 regression test for the real contamination bug found in LIM-4's
+    diagnosis: the first LIM-2 training run's ad hoc `examples[:len//10]`
+    in-training eval slice actually trained on entity_recognition:21/25/33,
+    the SAME unique_ids scripts/lim/run_evaluation.py later scored as
+    "held out". load_training_set must now make that structurally
+    impossible by consulting the real splits.json and excluding `test`
+    unique_ids unconditionally."""
+    con = registry.init_registry(Path(tempfile.mktemp(suffix=".sqlite")))
+    examples = [{"unique_id": f"extraction:{i}"} for i in range(1, 6)]
+    splits = {"train": ["extraction:1", "extraction:2", "extraction:3"],
+             "validation": ["extraction:4"], "test": ["extraction:5"]}
+    _register_fake_version(con, dataset_type="extraction", examples=examples, splits=splits)
+    manifest = dl.load_training_set(con, [("extraction", None)])
+    returned_ids = {e["unique_id"] for e in manifest["examples"]}
+    check("loader: test-split unique_id never appears in the returned manifest",
+         "extraction:5" not in returned_ids)
+    check("loader: train-split examples are returned",
+         {"extraction:1", "extraction:2", "extraction:3"} <= returned_ids)
+    check("loader: validation-split examples are returned separately",
+         [e["unique_id"] for e in manifest["validation_examples"]] == ["extraction:4"])
+    check("loader: train_examples excludes validation and test",
+         [e["unique_id"] for e in manifest["train_examples"]] ==
+         ["extraction:1", "extraction:2", "extraction:3"])
+    check("loader: n_examples counts only train+validation, never test",
+         manifest["n_examples"] == 4)
+
+
+def test_load_training_set_refuses_without_splits_json():
+    """A registered version missing splits.json must refuse to train
+    rather than silently treating everything as trainable -- the same
+    "refuse, never guess" posture as every other readiness check."""
+    con = registry.init_registry(Path(tempfile.mktemp(suffix=".sqlite")))
+    version = _register_fake_version(con, dataset_type="extraction",
+                                     examples=[{"unique_id": "extraction:1"}])
+    meta = registry.get_version(con, version)
+    (Path(meta["accepted_path"]).parent / "splits.json").unlink()
+    try:
+        dl.load_training_set(con, [("extraction", None)])
+        check("loader: refuses a version with no splits.json", False)
+    except dl.DatasetNotReadyError:
+        check("loader: refuses a version with no splits.json", True)
+
+
 def test_training_refuses_before_any_run_recorded():
     con_lim = registry.init_registry(Path(tempfile.mktemp(suffix=".sqlite")))
     con_train = tr.init_registry(Path(tempfile.mktemp(suffix=".sqlite")))
@@ -195,6 +246,8 @@ if __name__ == "__main__":
     test_loader_refuses_unregistered_and_tampered()
     test_loader_refuses_versions_with_recorded_violations()
     test_load_training_set_multi_dataset()
+    test_load_training_set_never_returns_test_split_examples()
+    test_load_training_set_refuses_without_splits_json()
     test_training_refuses_before_any_run_recorded()
     test_quality_report_has_every_required_field()
 

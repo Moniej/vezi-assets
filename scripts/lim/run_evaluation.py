@@ -57,15 +57,6 @@ def _git_commit() -> str | None:
         return None
 
 
-def _prompt_prefix(ex: dict) -> str:
-    """Same template training.py's _format_example_text uses, truncated
-    right before the answer -- the model was fine-tuned to continue after
-    '### Response:\\n', so eval must present exactly that continuation
-    point, never the answer itself."""
-    context_json = json.dumps(ex.get("context", {}), default=str)
-    return f"### Instruction:\n{ex['instruction']}\n\n### Context:\n{context_json}\n\n### Response:\n"
-
-
 def gpu_mem_mb() -> dict:
     import torch
     return {"allocated_mb": round(torch.cuda.memory_allocated() / 1024**2, 1),
@@ -81,6 +72,7 @@ def main():
     args = ap.parse_args()
 
     from ngxrot.lim import eval_dataset, eval_metrics, eval_registry, registry, training_registry
+    from ngxrot.lim.training import _prompt_prefix
 
     con_lim = registry.init_registry()
     con_train = training_registry.init_registry()

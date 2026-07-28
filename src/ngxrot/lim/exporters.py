@@ -311,16 +311,34 @@ def export_portfolio_reasoning(con, *, limit=None):
 # ---------------------------------------------------------------------------
 
 def export_entity_recognition(con, *, limit=None):
-    sql = ("SELECT entity_id, entity_type, canonical_name, ticker, first_seen_doc_id "
-          "FROM entities WHERE first_seen_doc_id IS NOT NULL ORDER BY entity_id"
-          + (f" LIMIT {limit}" if limit else ""))
+    """LIM-4 fix (docs/lim_runs/lim4_completion.md): the previous version of
+    this exporter put ONLY `entities.ticker` (the entity's own resolved
+    ticker -- null for the large majority of entities, which are
+    competitor/subsidiary/shareholder mentions rather than the filer
+    itself) into `context`. Verified empirically (LIM-4 diagnosis) that
+    this made every one of entity_recognition-v1.0.0's 39 examples share
+    the EXACT SAME context ({"ticker": null}) with 39 different expected
+    canonical_names -- an information-theoretically unlearnable one-to-many
+    mapping, independent of and in addition to LIM-3's loss-masking defect.
+    `entity_mentions` (the table that would give a real quoted mention
+    span) is still disclosed as unpopulated platform-wide -- this fix does
+    NOT fabricate that; it adds the one real, already-available signal
+    that at least identifies WHICH filing the entity was first seen in
+    (source ticker + filing_date + doc_type), breaking the exact-duplicate
+    -input collision without inventing any data."""
+    sql = ("SELECT e.entity_id, e.entity_type, e.canonical_name, e.ticker, e.first_seen_doc_id, "
+          "d.ticker, d.filing_date, d.doc_type "
+          "FROM entities e JOIN documents d ON d.doc_id = e.first_seen_doc_id "
+          "ORDER BY e.entity_id" + (f" LIMIT {limit}" if limit else ""))
     rows = con.execute(sql).fetchall()
     out = []
-    for entity_id, entity_type, canonical_name, ticker, doc_id in rows:
+    for entity_id, entity_type, canonical_name, ticker, doc_id, doc_ticker, filing_date, \
+            doc_type in rows:
         out.append(_make_example(
             con, task="entity_recognition", unique_id=make_unique_id("entity_recognition", entity_id),
             instruction="Identify this named entity and its type as mentioned in the filing.",
-            context={"ticker": ticker},
+            context={"ticker": ticker, "filing_ticker": doc_ticker, "filing_date": filing_date,
+                    "filing_doc_type": doc_type},
             expected_output={"canonical_name": canonical_name, "entity_type": entity_type,
                             "resolved_ticker": ticker},
             retrieved_documents=[doc_id], retrieved_facts=[], source_documents=[doc_id]))

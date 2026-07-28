@@ -106,24 +106,62 @@ def load_training_set(con_lim, specs: list[tuple[str, str | None]]) -> dict:
     isn't ready (never silently proceeds with a partial set). Returns a
     manifest the caller (training.py) records verbatim in the training-run
     registry: resolved versions, content hashes, teacher model ids, and
-    the flattened example list."""
+    the flattened example list.
+
+    LIM-4 fix (docs/lim_runs/lim4_completion.md): partitions examples by
+    the REAL registered splits.json train/validation/test assignment
+    (LIM-1's deterministic hash-bucket split), and structurally EXCLUDES
+    every `test`-split unique_id here, before anything is returned to the
+    caller -- training and validation examples are the only things
+    training.py ever sees. This replaces training.py's previous ad hoc
+    `examples[:len//10]` in-training "eval" slice, which (verified in
+    LIM-4's diagnosis) silently trained on the SAME unique_ids
+    (entity_recognition:21/25/33) that scripts/lim/run_evaluation.py later
+    scored as "held out" -- a real train/test contamination bug in the
+    first LIM-2 run, not a hypothetical risk. Splitting here, once, in the
+    one function both training and (indirectly, via the registered
+    splits.json) evaluation both trust, makes that contamination
+    structurally impossible to repeat rather than just documented against."""
     resolved_versions: dict[str, str] = {}
     content_hashes: dict[str, str] = {}
     teacher_model_ids: set[str] = set()
-    all_examples: list[dict] = []
+    train_examples: list[dict] = []
+    validation_examples: list[dict] = []
 
     for dataset_type, version in specs:
         resolved, examples = load_examples(con_lim, dataset_type, version)
         meta = registry.get_version(con_lim, resolved)
+        splits_path = Path(meta["accepted_path"]).parent / "splits.json"
+        if not splits_path.exists():
+            raise DatasetNotReadyError(
+                f"{resolved}: no splits.json found -- cannot separate train/validation from the "
+                f"held-out test split; refusing to train (this would risk train/test contamination)")
+        splits = json.loads(splits_path.read_text(encoding="utf-8"))
+        train_ids = set(splits.get("train", []))
+        val_ids = set(splits.get("validation", []))
+        test_ids = set(splits.get("test", []))
+
         resolved_versions[dataset_type] = resolved
         content_hashes[resolved] = meta["content_hash"]
         teacher_model_ids.update(meta["teacher_model_ids"])
-        all_examples.extend(examples)
+        for ex in examples:
+            uid = ex["unique_id"]
+            if uid in test_ids:
+                continue  # never returned to the caller, under any circumstance
+            elif uid in train_ids:
+                train_examples.append(ex)
+            elif uid in val_ids:
+                validation_examples.append(ex)
+            # an accepted example matching none of the three sets can't occur --
+            # make_splits() partitions every accepted unique_id into exactly one
 
+    all_examples = train_examples + validation_examples
     return {
         "dataset_versions": [f"{t}@{v}" for t, v in resolved_versions.items()],
         "content_hashes": content_hashes,
         "teacher_model_ids": sorted(teacher_model_ids),
         "examples": all_examples,
+        "train_examples": train_examples,
+        "validation_examples": validation_examples,
         "n_examples": len(all_examples),
     }
