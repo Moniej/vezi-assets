@@ -23,11 +23,50 @@ from __future__ import annotations
 
 import json
 import subprocess
+import tomllib
 from pathlib import Path
 
 from ngxrot.lim import dataset_loader, training_registry
 
 PKG_ROOT = Path(__file__).resolve().parents[3]
+DEFAULTS_CONFIG_PATH = PKG_ROOT / "configs" / "lim_training_defaults.toml"
+
+# Frozen per RB-2's formal closure (docs/lim_runs/rb2_closure.md,
+# 2026-07-29) -- r=8 over r=16 (retired) and r=32 (eliminated) via 10 real
+# training runs, 4-seed replication, effect-size analysis, and
+# significance testing. Same fallback-if-config-missing pattern as
+# audit.py's DEFAULT_THRESHOLDS -- the TOML file is the source of truth;
+# these constants exist only so a missing/corrupt config file degrades to
+# the same values rather than an unrelated default.
+DEFAULT_LORA_CONFIG = {
+    "r": 8, "lora_alpha": 16, "lora_dropout": 0.0,
+    "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj"],
+    "gradient_checkpointing": "unsloth",
+}
+DEFAULT_QUANTIZATION_CONFIG = {"load_in_4bit": True, "quant_type": "nf4"}
+DEFAULT_TRAINING_HYPERPARAMETERS = {
+    "max_steps": 40, "save_steps": 10, "learning_rate": 2e-4,
+    "batch_size": 1, "gradient_accumulation_steps": 4, "max_seq_length": 256,
+}
+DEFAULT_BASE_MODEL = "lim_training/qwen3_4b_model"
+
+
+def load_training_defaults(path: Path = DEFAULTS_CONFIG_PATH) -> dict:
+    """Returns {"lora", "quantization", "training", "base_model"} --
+    the frozen production baseline every future experiment (RB-3 onward)
+    must use unless its own single independent variable IS one of these
+    fields, in which case the override must be explicit (a CLI flag),
+    never a silent change to what "default" means."""
+    if not path.exists():
+        return {"lora": DEFAULT_LORA_CONFIG, "quantization": DEFAULT_QUANTIZATION_CONFIG,
+                "training": DEFAULT_TRAINING_HYPERPARAMETERS, "base_model": DEFAULT_BASE_MODEL}
+    raw = tomllib.loads(path.read_text(encoding="utf-8"))
+    return {
+        "lora": raw.get("lora", DEFAULT_LORA_CONFIG),
+        "quantization": raw.get("quantization", DEFAULT_QUANTIZATION_CONFIG),
+        "training": raw.get("training", DEFAULT_TRAINING_HYPERPARAMETERS),
+        "base_model": raw.get("model", {}).get("base_model", DEFAULT_BASE_MODEL),
+    }
 CHECKPOINTS_ROOT = PKG_ROOT / "lim_training" / "runs"
 
 

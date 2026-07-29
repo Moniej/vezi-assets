@@ -5,6 +5,15 @@ from LIM-5: one variable per experiment, evaluated against the frozen
 LIM-5 baseline (`lim5-optimization-baseline`, plus `lim3-eval-baseline`
 and `lim4-training-baseline` where relevant), never combined.
 
+**Production default, frozen 2026-07-29 (`docs/lim_runs/rb2_closure.md`,
+tag `lim6-lora-rank-baseline`): LoRA `r=8`.** Every experiment from RB-3
+onward inherits this fixed rank from `configs/lim_training_defaults.toml`
+(`scripts/lim/train.py`'s `--lora-r` default) unless that experiment's
+own single independent variable IS the rank itself, in which case the
+override must be an explicit CLI flag, never a changed default. Do not
+revisit rank selection absent evidence materially contradicting RB-2/
+RB-2b's conclusion.
+
 ## RB-1 — Complete the blocked training-duration experiment
 
 - **Hypothesis**: increasing `max_steps` from 12 (never plateaued in any
@@ -37,7 +46,7 @@ and `lim4-training-baseline` where relevant), never combined.
   intermediate step count and/or repeat seed) recommended before drawing
   any conclusion about training duration's effect on quality.
 
-## RB-2 — LoRA rank sweep
+## RB-2 — LoRA rank sweep — ✅ COMPLETED (formally closed 2026-07-29)
 
 - **Hypothesis**: `r=8` (used in every run to date, 0.15% of base
   parameters) under-capacitates the model relative to what response-only
@@ -73,13 +82,21 @@ and `lim4-training-baseline` where relevant), never combined.
     -unresolved seed-dependent completion-rate effect (parse rate swings
     nearly as much by seed as by rank) that entangles "rank hurts
     representational quality" with "rank hurts generation termination."
-  - **Recommendation**: r=32 is settled (confirmed worst, no further
-    replication needed there). The open, worthwhile follow-up is (a)
-    resolving r=8-vs-r16 with additional seeds, and (b) a targeted
-    investigation of WHY r=32 fails to terminate generation almost
-    entirely on both seeds — now a more interesting question than the
-    original capacity hypothesis. Do not start RB-3/RB-4/RB-5 until at
-    least (a) is resolved.
+  - **STUDY FORMALLY CLOSED** (`docs/lim_runs/rb2_closure.md`), following
+    a dedicated 4-seed follow-up, RB-2b (`rb2b_results.md`), run
+    specifically to resolve r=8-vs-r16 rather than force a conclusion
+    from the original mixed 2-seed evidence. Result: `semantic_
+    equivalence` is directionally consistent in ALL 4 seeds tested and
+    its across-seed bootstrap CI excludes zero (a real, modest, ~37%
+    relative effect favoring r=8); parse/completion rate also favors r=8
+    in all 4 seeds. r=16 offers no offsetting resource advantage
+    (roughly double the trainable parameters, both negligible for this
+    model size). **Production default: r=8.** The r=32 termination
+    -collapse mechanism is documented as a separate, informational-only
+    research question (`rb2_r32_collapse_research_question.md`, four
+    candidate hypotheses + a proposed diagnostic) that does not block
+    this closure. RB-3/RB-4/RB-5 may now begin, using r=8 as the fixed
+    default rank.
 
 ## RB-3 — Train on `self_critique` instead of `extraction`
 

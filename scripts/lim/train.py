@@ -5,11 +5,19 @@ training if any required dataset fails its validation thresholds"
 instruction. Every run is fully recorded in the immutable training-run
 registry before a single GPU cycle executes.
 
-  lim_training/venv/Scripts/python.exe scripts/lim/train.py \
-      --dataset entity_recognition --seed 42 --max-steps 20
+Every default below (rank, step count, learning rate, base model path)
+comes from configs/lim_training_defaults.toml -- the frozen production
+baseline per RB-2's formal closure (docs/lim_runs/rb2_closure.md). Pass
+the corresponding flag explicitly to override any one of them for a
+single-variable experiment (e.g. RB-4's learning-rate sweep); never edit
+this file's fallback constants to "default" to something else.
 
   lim_training/venv/Scripts/python.exe scripts/lim/train.py \
-      --dataset extraction@extraction-v1.0.0 --dataset self_critique --seed 7
+      --dataset self_critique --seed 42
+
+  lim_training/venv/Scripts/python.exe scripts/lim/train.py \
+      --dataset extraction@extraction-v1.0.0 --dataset self_critique --seed 7 \
+      --lora-r 16   # explicit override, e.g. re-testing a retired rank
 """
 
 from __future__ import annotations
@@ -33,16 +41,20 @@ def _parse_dataset_arg(spec: str) -> tuple[str, str | None]:
 
 
 def main():
+    defaults = training.load_training_defaults()
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", action="append", required=True,
                    help="dataset_type or dataset_type@version; repeatable")
-    ap.add_argument("--base-model", default="unsloth/Qwen3-4B-unsloth-bnb-4bit")
+    ap.add_argument("--base-model", default=defaults["base_model"])
     ap.add_argument("--seed", type=int, required=True)
-    ap.add_argument("--max-steps", type=int, default=20)
-    ap.add_argument("--save-steps", type=int, default=10)
-    ap.add_argument("--learning-rate", type=float, default=2e-4)
-    ap.add_argument("--lora-r", type=int, default=8)
-    ap.add_argument("--max-seq-length", type=int, default=256)
+    ap.add_argument("--max-steps", type=int, default=defaults["training"]["max_steps"])
+    ap.add_argument("--save-steps", type=int, default=defaults["training"]["save_steps"])
+    ap.add_argument("--learning-rate", type=float, default=defaults["training"]["learning_rate"])
+    ap.add_argument("--lora-r", type=int, default=defaults["lora"]["r"],
+                   help="frozen production default is 8 (RB-2 closure) -- pass this flag "
+                        "explicitly only when rank itself is the experiment's variable")
+    ap.add_argument("--max-seq-length", type=int, default=defaults["training"]["max_seq_length"])
     ap.add_argument("--notes", default="")
     args = ap.parse_args()
 
@@ -52,14 +64,18 @@ def main():
     specs = [_parse_dataset_arg(d) for d in args.dataset]
     print(f"Requested datasets: {specs}")
 
+    # LoRA alpha follows this project's fixed 2*r convention regardless of
+    # whether --lora-r was overridden away from the frozen default.
+    lora_config = dict(defaults["lora"])
+    lora_config["r"] = args.lora_r
+    lora_config["lora_alpha"] = args.lora_r * 2
+
     try:
         result = training.run_training(
             con_lim, con_train, dataset_specs=specs, base_model=args.base_model,
-            quantization_config={"load_in_4bit": True, "quant_type": "nf4"},
-            lora_config={"r": args.lora_r, "lora_alpha": args.lora_r * 2, "lora_dropout": 0.0,
-                        "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj"],
-                        "gradient_checkpointing": "unsloth"},
-            hyperparameters={"batch_size": 1, "gradient_accumulation_steps": 4,
+            quantization_config=defaults["quantization"], lora_config=lora_config,
+            hyperparameters={"batch_size": defaults["training"]["batch_size"],
+                            "gradient_accumulation_steps": defaults["training"]["gradient_accumulation_steps"],
                             "max_steps": args.max_steps, "save_steps": args.save_steps,
                             "learning_rate": args.learning_rate},
             seed=args.seed, max_seq_length=args.max_seq_length, notes=args.notes)

@@ -1,0 +1,49 @@
+# LIM production training baseline — FROZEN per RB-2's formal closure
+# (docs/lim_runs/rb2_closure.md, 2026-07-29).
+#
+# r=8 was selected over r=16 (retired) and r=32 (eliminated) via 10 real
+# training runs across RB-2 + RB-2b: 4-seed replication, per-seed paired
+# bootstrap significance testing, an across-seed effect-size analysis,
+# completion-rate analysis, and a resource-cost comparison. See
+# docs/lim_runs/rb2_results.md, rb2b_results.md, rb2_closure.md.
+#
+# Every future experiment (RB-3 onward) must use these values UNLESS
+# that experiment's own single independent variable IS one of these
+# fields -- per this project's one-variable-per-experiment discipline
+# (docs/lim_runs/lim6_research_backlog.md), any such override must be
+# explicit (a CLI flag passed deliberately), never a silent change to
+# what "default" means.
+#
+# Do not change these values without equivalent evidence (multi-seed
+# replication + effect-size + significance testing), per the owner's
+# explicit instruction not to revisit LoRA-rank selection absent
+# material contradicting evidence.
+
+[lora]
+r = 8
+lora_alpha = 16              # 2 * r, this project's fixed convention
+lora_dropout = 0.0
+target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+gradient_checkpointing = "unsloth"
+
+[quantization]
+load_in_4bit = true
+quant_type = "nf4"
+
+[training]
+max_steps = 40                # RB-1: confirmed sufficient for convergence
+                              # (loss visibly plateaued) on extraction-sized
+                              # (~130 train example) data; re-check if a
+                              # future experiment uses a materially
+                              # different dataset size
+save_steps = 10
+learning_rate = 2e-4
+batch_size = 1
+gradient_accumulation_steps = 4
+max_seq_length = 256
+
+[model]
+base_model = "lim_training/qwen3_4b_model"  # the local path -- NOT the HF
+                                            # repo id, which triggers a slow
+                                            # redundant re-download (LIM-2
+                                            # finding)
