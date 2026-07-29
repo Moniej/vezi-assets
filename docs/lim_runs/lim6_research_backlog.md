@@ -52,6 +52,34 @@ and `lim4-training-baseline` where relevant), never combined.
   changed per run.
 - **Estimated effort**: M (~30 min: 2-3 training runs + eval each).
 - **Priority**: High.
+- **STATUS: all 6 configs complete, analysis done** (`docs/lim_runs/
+  rb2_results.md`, §1-9 plus the §10 update appended after the final
+  config finished). Hypothesis **not confirmed as stated** — the data
+  shows the opposite of "higher rank helps":
+  - **Confirmed (2 seeds, replicated)**: r=32 is statistically
+    significantly worse than BOTH r=8 and r=16 on `agreement_with_
+    teacher`/`semantic_equivalence`/`grounded_correctness` at both seeds
+    (all paired bootstrap CIs exclude zero) — including a 0/27 parse
+    rate at seed=123 (total generation collapse, never completed a
+    single balanced JSON object), the single most extreme finding in the
+    experiment.
+  - **Still provisional (mixed across seeds)**: r=8-vs-r16 — at seed=42
+    r=8 statistically significantly beats r=16 on all three metrics; at
+    seed=123 the same-direction trend is not significant, and `grounded_
+    correctness` reverses direction. Not yet resolved.
+  - Two real confounds were found and handled during this experiment: a
+    fixed token-budget cap (fixed with a balanced-JSON stopping
+    criterion, applied identically to every checkpoint) and a still
+    -unresolved seed-dependent completion-rate effect (parse rate swings
+    nearly as much by seed as by rank) that entangles "rank hurts
+    representational quality" with "rank hurts generation termination."
+  - **Recommendation**: r=32 is settled (confirmed worst, no further
+    replication needed there). The open, worthwhile follow-up is (a)
+    resolving r=8-vs-r16 with additional seeds, and (b) a targeted
+    investigation of WHY r=32 fails to terminate generation almost
+    entirely on both seeds — now a more interesting question than the
+    original capacity hypothesis. Do not start RB-3/RB-4/RB-5 until at
+    least (a) is resolved.
 
 ## RB-3 — Train on `self_critique` instead of `extraction`
 
