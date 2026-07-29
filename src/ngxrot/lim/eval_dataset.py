@@ -21,20 +21,35 @@ PKG_ROOT = Path(__file__).resolve().parents[3]
 
 
 def load_holdout_set(con_lim, dataset_type: str, version: str | None = None,
-                     split: str = "test") -> dict:
+                     split: str | list[str] = "test") -> dict:
     """Returns a dict describing the held-out set for one registered
     dataset type/version:
       {"dataset_type", "version", "content_hash", "split", "examples",
        "n_total_accepted", "n_in_split"}
     `examples` is the list of accepted-partition example dicts whose
-    unique_id falls in the requested split. Raises
+    unique_id falls in the requested split(s), each tagged with
+    `_eval_split` naming which partition it came from. Raises
     dataset_loader.DatasetNotReadyError if the version isn't registered,
     tampered, or has recorded audit violations -- identical refusal
     semantics to training. Returns n_in_split=0 (empty examples list,
-    never an exception) when the split legitimately has zero examples --
-    e.g. a very small dataset type where the deterministic hash-bucket
-    split happened to place nothing in "test"; the caller must report
-    that honestly as NOT MEASURABLE, not substitute train/validation data."""
+    never an exception) when the requested split(s) legitimately have
+    zero examples -- the caller must report that honestly as NOT
+    MEASURABLE, not substitute other data.
+
+    LIM-6 (RB-1 follow-up, owner directive 2026-07-28) addition:
+    `split` accepts a list (e.g. `["test", "validation"]`) to enlarge the
+    evaluation set beyond the `test` partition alone. This is legitimate,
+    not a governance violation: `validation`-split examples are NEVER
+    used for any gradient update (dataset_loader.load_training_set keeps
+    them strictly separate from train_examples; training.py's Trainer
+    only ever reads them for periodic eval_loss MONITORING, which does
+    not feed back into the model's weights, LR schedule, or any decision
+    that affects the final checkpoint). Including them increases n for
+    uncertainty quantification without touching anything the registry's
+    train/test separation actually protects against (the `test`-split
+    exclusion from training remains absolute and unchanged). Each
+    included example is tagged with its source split so results can still
+    be reported/audited per-split, not silently blended."""
     resolved, all_examples = dataset_loader.load_examples(con_lim, dataset_type, version)
     meta = registry.get_version(con_lim, resolved)
     splits_path = Path(meta["accepted_path"]).parent / "splits.json"
@@ -42,19 +57,27 @@ def load_holdout_set(con_lim, dataset_type: str, version: str | None = None,
         raise dataset_loader.DatasetNotReadyError(
             f"{resolved}: no splits.json found alongside the dataset -- cannot resolve a held-out set")
     splits = json.loads(splits_path.read_text(encoding="utf-8"))
-    if split not in splits:
-        raise dataset_loader.DatasetNotReadyError(
-            f"{resolved}: splits.json has no {split!r} partition (has: {list(splits)})")
-    split_ids = set(splits[split])
-    holdout = [ex for ex in all_examples if ex["unique_id"] in split_ids]
+    requested = [split] if isinstance(split, str) else list(split)
+    for s in requested:
+        if s not in splits:
+            raise dataset_loader.DatasetNotReadyError(
+                f"{resolved}: splits.json has no {s!r} partition (has: {list(splits)})")
+    id_to_split = {uid: s for s in requested for uid in splits[s]}
+    holdout = []
+    for ex in all_examples:
+        if ex["unique_id"] in id_to_split:
+            tagged = dict(ex)
+            tagged["_eval_split"] = id_to_split[ex["unique_id"]]
+            holdout.append(tagged)
     return {
         "dataset_type": dataset_type, "version": resolved, "content_hash": meta["content_hash"],
-        "split": split, "examples": holdout, "n_total_accepted": len(all_examples),
+        "split": "+".join(requested), "examples": holdout, "n_total_accepted": len(all_examples),
         "n_in_split": len(holdout),
     }
 
 
-def load_all_holdout_sets(con_lim, dataset_types: list[str], split: str = "test") -> dict[str, dict]:
+def load_all_holdout_sets(con_lim, dataset_types: list[str],
+                          split: str | list[str] = "test") -> dict[str, dict]:
     """One load_holdout_set() call per requested type. A type whose latest
     version fails readiness (unregistered, tampered, gate-violating) is
     recorded with its failure reason rather than aborting the whole batch --

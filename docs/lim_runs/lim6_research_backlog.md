@@ -20,6 +20,22 @@ and `lim4-training-baseline` where relevant), never combined.
   eval) — blocked only by environment stability, not implementation.
 - **Priority**: **Highest** — directly continues the one already
   -proven-effective lever, cheapest remaining unknown.
+- **STATUS: executed, result inconclusive/mixed against the pre
+  -registered metric** (`docs/lim_runs/rb1_results.md`,
+  `rb1_infrastructure_failure_log.md`). The blocking segfault/`OSError`
+  1455 was confirmed as pure infrastructure (low system memory,
+  reproduced and resolved by an owner-directed restart, byte-identical
+  environment/config hash verified) — no code change. Once run, the
+  pre-registered success metric was **not met**: `semantic_equivalence`
+  on `extraction` was flat-to-lower (0.1704 → 0.1666) and
+  `grounded_correctness` regressed (0.4387 → 0.3006), though several
+  secondary metrics improved (`agreement_with_teacher` on `extraction`
+  broke out of 0.0 for the first time, `hallucination_risk` dropped to
+  0). The one unambiguous finding: the training loss curve visibly
+  plateaued at 40 steps for the first time in any run — useful for
+  calibrating RB-2/RB-4's own step counts. Follow-up (RB-1b, an
+  intermediate step count and/or repeat seed) recommended before drawing
+  any conclusion about training duration's effect on quality.
 
 ## RB-2 — LoRA rank sweep
 

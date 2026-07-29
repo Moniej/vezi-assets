@@ -63,13 +63,61 @@ def gpu_mem_mb() -> dict:
             "max_allocated_mb": round(torch.cuda.max_memory_allocated() / 1024**2, 1)}
 
 
+def _make_balanced_json_stopping_criteria(tokenizer, prompt_len: int):
+    """LIM-6 (RB-2 methodology fix, owner directive 2026-07-28): stops
+    generation as soon as the model has produced a syntactically-complete
+    top-level JSON object (brace depth opens then returns to 0), instead
+    of always running to a fixed `max_new_tokens`.
+
+    Found necessary during RB-2 (LoRA rank sweep): at a FIXED token budget
+    (160, then 300), 100% of generations from every rank hit the cap
+    without completing -- some from genuine verbose-but-real elaboration
+    (more fields than expected, still real content), others from
+    degenerate repetition of a meta-commentary string that never
+    terminates on its own. Simply raising the token budget helps the
+    first case but not the second, and raising it by an arbitrary amount
+    is itself an uncontrolled choice. This stops each generation at the
+    same, well-defined, content-driven point (a complete JSON object)
+    regardless of which rank produced it -- a fair, uniform criterion
+    applied identically to every checkpoint, not tuned per-rank. A
+    generous `max_new_tokens` remains the hard safety cap for genuinely
+    non-terminating (pure repetition-loop) cases. Built as a factory
+    (rather than a module-level class) so the `transformers.StoppingCriteria`
+    base class only needs importing where it's used, matching this file's
+    existing lazy-import-inside-main() convention for heavy ML libraries."""
+    from transformers import StoppingCriteria
+
+    class _BalancedJsonStoppingCriteria(StoppingCriteria):
+        def __call__(self, input_ids, scores, **kwargs) -> bool:
+            text = tokenizer.decode(input_ids[0][prompt_len:], skip_special_tokens=True)
+            depth = 0
+            seen_open = False
+            for ch in text:
+                if ch == "{":
+                    depth += 1
+                    seen_open = True
+                elif ch == "}":
+                    depth -= 1
+            return seen_open and depth <= 0
+
+    return _BalancedJsonStoppingCriteria()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--checkpoint", required=True, help="LoRA checkpoint directory to evaluate")
     ap.add_argument("--dataset-types", nargs="*", default=REGISTERED_TYPES)
     ap.add_argument("--max-new-tokens", type=int, default=160)
+    ap.add_argument("--include-validation", action="store_true",
+                    help="LIM-6 (RB-1 follow-up): also evaluate on the `validation` split, "
+                         "in addition to `test`, to increase n for uncertainty quantification. "
+                         "Legitimate, not a governance violation -- validation-split examples "
+                         "are never used for any gradient update, only periodic loss monitoring "
+                         "during training. Each example's source split is recorded in its score "
+                         "dict as '_eval_split' so results remain auditable per-split.")
     ap.add_argument("--notes", default="")
     args = ap.parse_args()
+    splits_to_use = ["test", "validation"] if args.include_validation else "test"
 
     from ngxrot.lim import eval_dataset, eval_metrics, eval_registry, registry, training_registry
     from ngxrot.lim.training import _prompt_prefix
@@ -78,8 +126,9 @@ def main():
     con_train = training_registry.init_registry()
     con_eval = eval_registry.init_registry()
 
-    print(f"Loading held-out (test-split) examples for {len(args.dataset_types)} dataset types...")
-    holdouts = eval_dataset.load_all_holdout_sets(con_lim, args.dataset_types, split="test")
+    print(f"Loading held-out ({'+'.join(splits_to_use) if isinstance(splits_to_use, list) else splits_to_use}"
+         f"-split) examples for {len(args.dataset_types)} dataset types...")
+    holdouts = eval_dataset.load_all_holdout_sets(con_lim, args.dataset_types, split=splits_to_use)
     for t, h in holdouts.items():
         if "error" in h:
             print(f"  {t:32s} REFUSED: {h['error']}")
@@ -115,16 +164,19 @@ def main():
     records = []
     example_rows = []
     t_start = time.time()
+    from transformers import StoppingCriteriaList
+
     for t, ex in all_examples:
         prompt = _prompt_prefix(ex)
         inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
         input_tokens = inputs["input_ids"].shape[-1]
+        stopping = StoppingCriteriaList([_make_balanced_json_stopping_criteria(tokenizer, input_tokens)])
 
         torch.cuda.synchronize()
         t0 = time.time()
         with torch.no_grad():
             out = model.generate(**inputs, max_new_tokens=args.max_new_tokens, do_sample=False,
-                                 pad_token_id=tokenizer.eos_token_id)
+                                 pad_token_id=tokenizer.eos_token_id, stopping_criteria=stopping)
         torch.cuda.synchronize()
         latency_s = time.time() - t0
         output_tokens = out.shape[-1] - input_tokens
@@ -132,6 +184,7 @@ def main():
 
         parsed = eval_metrics.parse_model_json(raw_text)
         scores = eval_metrics.score_example(ex, parsed)
+        scores["_eval_split"] = ex.get("_eval_split", "test")
         records.append({"dataset_type": t, "scores": scores, "latency_s": latency_s,
                         "output_tokens": output_tokens})
         example_rows.append({
@@ -164,7 +217,8 @@ def main():
         con_eval, subject="local_checkpoint", dataset_versions=dataset_versions,
         dataset_content_hashes=content_hashes, base_model=str(BASE_MODEL_DIR),
         n_examples_evaluated=len(all_examples), metrics=metrics, training_run_id=training_run_id,
-        checkpoint_path=str(ckpt_dir), git_commit=_git_commit(), notes=args.notes)
+        checkpoint_path=str(ckpt_dir), git_commit=_git_commit(), notes=args.notes,
+        holdout_split="+".join(splits_to_use) if isinstance(splits_to_use, list) else splits_to_use)
     for row in example_rows:
         eval_registry.record_example(con_eval, eval_run_id, **row)
 
