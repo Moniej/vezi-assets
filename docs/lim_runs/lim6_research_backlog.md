@@ -98,7 +98,7 @@ RB-2b's conclusion.
     this closure. RB-3/RB-4/RB-5 may now begin, using r=8 as the fixed
     default rank.
 
-## RB-3 — Train on `self_critique` instead of `extraction`
+## RB-3 — Train on `self_critique` instead of `extraction` — ❌ NEGATIVE RESULT
 
 - **Hypothesis**: `self_critique` (128 examples, informative context,
   good consistency per Priority 1) is a genuinely different, viable
@@ -116,6 +116,41 @@ RB-2b's conclusion.
 - **Priority**: High — the other half of Priority 3's curriculum
   question (untested ordering hypothesis) depends on this existing as a
   standalone result first.
+- **STATUS: NEGATIVE RESULT, formally recorded** (`docs/lim_runs/
+  rb3_results.md`). Run at the frozen r=8/40-step default, seed=42,
+  `self_critique@self_critique-v1.0.0`, evaluated on the expanded
+  test+validation set (n=24, up from the originally-scoped n=9).
+  **`self_critique_quality` remained exactly 0.0/24** — a clean,
+  unambiguous non-improvement on the metric named first in the success
+  criterion. `reasoning_quality` did move off zero (0.0 → 0.0441,
+  bootstrap CI [0.027, 0.063] excludes zero), and the pre-registered "or"
+  criterion technically passed on this branch — but the evidence shows
+  this does **not** reflect genuine reasoning improvement: it is a
+  metric-side fallback extracting lexical-overlap credit from
+  wrong-schema outputs, not the model performing the task. Root cause:
+  **0 of 24 outputs use the expected output schema**
+  (`finding`/`explanation`/`resulting_status`); 8 of 24 (33%) instead echo
+  the prompt's own input fields back verbatim instead of attempting a
+  critique. **Working hypothesis: this is an output-schema learning
+  failure, not a reasoning failure** (see the diagnostic below). Do not
+  promote `self_critique` and do not attempt to improve RB-3 directly.
+  `extraction`'s own score on this (different, self_critique-only)
+  checkpoint was reported per instruction (0.1111 semantic_equivalence)
+  but is not a same-checkpoint regression signal, since this checkpoint
+  never trained on `extraction`. All artifacts (training run
+  `ebe73677-...`, eval run `3389f4a1-...`) are preserved as the negative
+  -result baseline for future comparison.
+
+## RB-3a — Schema-learning diagnostic (precedes any further self_critique training)
+
+See `docs/lim_runs/rb3a_schema_diagnostic.md` for the full plan and
+audit-stage findings. **Do not begin another training experiment on
+`self_critique` until this diagnostic narrows the cause.** Two candidate
+causes are already ruled out by direct audit (dataset-schema consistency,
+sequence-length truncation); one strong candidate has been identified
+(the required output key names never appear anywhere in the
+input/instruction, unlike `extraction` where they do) and a minimal
+single-variable training diagnostic is proposed to confirm it.
 
 ## RB-4 — Learning rate sweep
 
