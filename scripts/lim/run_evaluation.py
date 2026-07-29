@@ -115,6 +115,10 @@ def main():
                          "are never used for any gradient update, only periodic loss monitoring "
                          "during training. Each example's source split is recorded in its score "
                          "dict as '_eval_split' so results remain auditable per-split.")
+    ap.add_argument("--schema-hint", action="store_true",
+                   help="RB-3a Phase 2 (docs/lim_runs/rb3a_phase2_preregistration.md): must match "
+                        "whatever the checkpoint was TRAINED with -- adds the same 'Required JSON "
+                        "keys' line to the generation prompt via the same _prompt_prefix function.")
     ap.add_argument("--notes", default="")
     args = ap.parse_args()
     splits_to_use = ["test", "validation"] if args.include_validation else "test"
@@ -167,7 +171,7 @@ def main():
     from transformers import StoppingCriteriaList
 
     for t, ex in all_examples:
-        prompt = _prompt_prefix(ex)
+        prompt = _prompt_prefix(ex, schema_hint=args.schema_hint)
         inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
         input_tokens = inputs["input_ids"].shape[-1]
         stopping = StoppingCriteriaList([_make_balanced_json_stopping_criteria(tokenizer, input_tokens)])
@@ -203,6 +207,7 @@ def main():
     metrics["gpu_memory"] = peak_gpu
     metrics["total_wall_s"] = round(total_wall_s, 2)
     metrics["throughput_examples_per_s"] = round(len(all_examples) / total_wall_s, 4)
+    metrics["schema_hint_enabled"] = args.schema_hint
     metrics["holdout_coverage"] = {
         t: {"n_in_split": h.get("n_in_split", 0),
            "status": "evaluated" if h.get("n_in_split", 0) > 0 else

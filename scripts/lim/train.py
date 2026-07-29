@@ -55,6 +55,11 @@ def main():
                    help="frozen production default is 8 (RB-2 closure) -- pass this flag "
                         "explicitly only when rank itself is the experiment's variable")
     ap.add_argument("--max-seq-length", type=int, default=defaults["training"]["max_seq_length"])
+    ap.add_argument("--schema-hint", action="store_true",
+                   help="RB-3a Phase 2 (docs/lim_runs/rb3a_phase2_preregistration.md): adds an "
+                        "explicit 'Required JSON keys' line to the prompt, derived from each "
+                        "example's own expected_output key names. Default off -- pass only when "
+                        "schema visibility itself is the experiment's single variable.")
     ap.add_argument("--notes", default="")
     args = ap.parse_args()
 
@@ -78,7 +83,8 @@ def main():
                             "gradient_accumulation_steps": defaults["training"]["gradient_accumulation_steps"],
                             "max_steps": args.max_steps, "save_steps": args.save_steps,
                             "learning_rate": args.learning_rate},
-            seed=args.seed, max_seq_length=args.max_seq_length, notes=args.notes)
+            seed=args.seed, max_seq_length=args.max_seq_length, notes=args.notes,
+            schema_hint=args.schema_hint)
     except DatasetNotReadyError as e:
         print(f"\nREFUSED TO START TRAINING: {e}")
         sys.exit(2)

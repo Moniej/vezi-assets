@@ -78,24 +78,43 @@ def _git_commit() -> str | None:
         return None
 
 
-def _format_example_text(ex: dict, eos_token: str) -> str:
+def _schema_hint_line(ex: dict) -> str:
+    """RB-3a Phase 2 (docs/lim_runs/rb3a_phase2_preregistration.md): derived
+    at runtime from THIS example's own `expected_output` KEY NAMES only --
+    never its values. Does not change dataset contents and does not leak
+    the example's specific answer, since the key set is identical across
+    every example of a given dataset type (confirmed by RB-3a's audit for
+    self_critique: 104/104). Equivalent to a fixed task-format instruction,
+    not per-example information."""
+    keys = list(ex.get("expected_output", {}).keys())
+    return f"### Required JSON keys:\n{keys}\n\n" if keys else ""
+
+
+def _format_example_text(ex: dict, eos_token: str, schema_hint: bool = False) -> str:
     """Generic instruction/context/response formatting -- works across all
     17 canonical dataset-schema shapes without a per-type branch, since
     every TrainingExample already carries the same instruction/context/
-    expected_output fields regardless of task."""
+    expected_output fields regardless of task. `schema_hint` is the RB-3a
+    Phase 2 single-variable toggle -- default False keeps every other
+    experiment's prompt shape byte-identical to before this was added."""
+    hint = _schema_hint_line(ex) if schema_hint else ""
     return (f"### Instruction:\n{ex['instruction']}\n\n"
            f"### Context:\n{json.dumps(ex.get('context', {}), default=str)}\n\n"
+           f"{hint}"
            f"### Response:\n{json.dumps(ex.get('expected_output', {}), default=str)}{eos_token}")
 
 
-def _prompt_prefix(ex: dict) -> str:
+def _prompt_prefix(ex: dict, schema_hint: bool = False) -> str:
     """Everything up to and including '### Response:\\n' -- the exact
     template prefix scripts/lim/run_evaluation.py also generates from
     (training and evaluation must never diverge on this shape). Used here
     to find the prompt/response TOKEN boundary for response-only loss
-    masking below."""
+    masking below. `schema_hint` must be passed identically at training
+    and evaluation time for a given experiment -- see `_format_example_text`."""
+    hint = _schema_hint_line(ex) if schema_hint else ""
     return (f"### Instruction:\n{ex['instruction']}\n\n"
            f"### Context:\n{json.dumps(ex.get('context', {}), default=str)}\n\n"
+           f"{hint}"
            f"### Response:\n")
 
 
@@ -128,15 +147,15 @@ class _JsonlExampleDataset:
     R-DATASETS-DILL finding: that library's construction paths are broken
     on this Python 3.14 stack at Unsloth's pinned version ceiling)."""
 
-    def __init__(self, examples: list[dict], tokenizer, max_length: int):
+    def __init__(self, examples: list[dict], tokenizer, max_length: int, schema_hint: bool = False):
         import torch
         self._torch = torch
         self.encoded = []
         for ex in examples:
-            text = _format_example_text(ex, tokenizer.eos_token)
+            text = _format_example_text(ex, tokenizer.eos_token, schema_hint=schema_hint)
             enc = tokenizer(text, truncation=True, max_length=max_length, padding="max_length")
             prompt_token_count = len(
-                tokenizer(_prompt_prefix(ex), add_special_tokens=True)["input_ids"])
+                tokenizer(_prompt_prefix(ex, schema_hint=schema_hint), add_special_tokens=True)["input_ids"])
             enc["labels"] = _build_response_only_labels(enc, prompt_token_count, ex["unique_id"])
             self.encoded.append(enc)
 
@@ -256,12 +275,18 @@ def _manual_train_loop(trainer, args, con_train, run_id: str, *,
 def run_training(
     con_lim, con_train, *, dataset_specs: list[tuple[str, str | None]], base_model: str,
     quantization_config: dict, lora_config: dict, hyperparameters: dict, seed: int,
-    max_seq_length: int = 256, notes: str = "",
+    max_seq_length: int = 256, notes: str = "", schema_hint: bool = False,
 ) -> dict:
     """`con_lim` is the dataset-version registry connection (lim_training/
     dataset_registry.sqlite); `con_train` is the SEPARATE training-run
     registry connection (lim_training/training_registry.sqlite) -- two
     different SQLite databases, never the same connection object.
+
+    `schema_hint` (RB-3a Phase 2, default False): the ONLY variable that
+    experiment changes vs. the frozen baseline -- see
+    docs/lim_runs/rb3a_phase2_preregistration.md. Recorded into the
+    immutable `hyperparameters` JSON blob so it's auditable per run
+    without a registry schema change.
 
     Raises dataset_loader.DatasetNotReadyError (propagated, never
     swallowed) if any requested dataset isn't ready -- this happens BEFORE
@@ -270,6 +295,7 @@ def run_training(
     attempted)."""
     manifest = dataset_loader.load_training_set(con_lim, dataset_specs)
 
+    hyperparameters = {**hyperparameters, "schema_hint": schema_hint}
     run_id = training_registry.start_run(
         con_train, dataset_versions=manifest["dataset_versions"],
         dataset_content_hashes=manifest["content_hashes"],
@@ -305,9 +331,10 @@ def run_training(
         # LIM-2 run), because it wasn't derived from splits.json at all.
         train_examples = manifest["train_examples"]
         eval_examples = manifest["validation_examples"]
-        train_ds = _JsonlExampleDataset(train_examples, tokenizer, max_seq_length)
+        train_ds = _JsonlExampleDataset(train_examples, tokenizer, max_seq_length, schema_hint=schema_hint)
         has_eval = len(eval_examples) > 0
-        eval_ds = _JsonlExampleDataset(eval_examples, tokenizer, max_seq_length) if has_eval else None
+        eval_ds = (_JsonlExampleDataset(eval_examples, tokenizer, max_seq_length, schema_hint=schema_hint)
+                  if has_eval else None)
 
         args = TrainingArguments(
             output_dir=str(run_dir), seed=seed,
