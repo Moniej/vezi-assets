@@ -141,16 +141,45 @@ RB-2b's conclusion.
   `ebe73677-...`, eval run `3389f4a1-...`) are preserved as the negative
   -result baseline for future comparison.
 
-## RB-3a — Schema-learning diagnostic (precedes any further self_critique training)
+## RB-3a — Schema-learning diagnostic — ✅ CONFIRMED (Phase 2 complete, 2026-07-30)
 
-See `docs/lim_runs/rb3a_schema_diagnostic.md` for the full plan and
-audit-stage findings. **Do not begin another training experiment on
-`self_critique` until this diagnostic narrows the cause.** Two candidate
-causes are already ruled out by direct audit (dataset-schema consistency,
-sequence-length truncation); one strong candidate has been identified
-(the required output key names never appear anywhere in the
-input/instruction, unlike `extraction` where they do) and a minimal
-single-variable training diagnostic is proposed to confirm it.
+See `docs/lim_runs/rb3a_schema_diagnostic.md` (Phase 0/1 audit),
+`rb3a_phase2_preregistration.md` (pre-registered hypothesis/thresholds,
+committed before training), and `rb3a_results.md` (full results).
+
+**Phase 0/1 audit** ruled out dataset-schema inconsistency,
+sequence-length truncation, and loss-masking bugs; identified that
+`self_critique`'s required output key names never appear in its
+input/instruction (unlike `extraction`, where they do 132/132).
+
+**Phase 2 (schema-hint training experiment): CONFIRMED.** A single
+runtime-derived conditioning-signal change (listing the expected JSON
+keys in the prompt, no dataset-content change) took the `self_critique`
+schema-match rate from **0/24 (RB-3) to 18/24 = 75% (RB-3a)**, bootstrap
+95% CI [0.583, 0.917] — clears the pre-registered ≥60% success threshold
+even at its lower bound. Input-echoing (33% in RB-3) dropped to 4%.
+**Schema acquisition is confirmed as the dominant, fixable cause of RB-3's
+structural failure.**
+
+**New, narrower open question surfaced by this result**:
+`self_critique_quality` remained exactly 0.0/24 even among the 18
+schema-matched outputs, because **0/18** used a valid categorical value
+for `finding` (expected one of `fail`/`concern`/`pass`; got full free-text
+sentences instead) or `resulting_status` (expected one of
+`blocked_by_self_critique`/`unvalidated_ai_interpretation`; got invented
+words like "revised"/"neutral"/"invalid"). The schema-*key* problem is
+solved; a distinct categorical-*value*-vocabulary problem remains,
+previously invisible because the key-level failure masked it. Proposed
+next step (tentatively **RB-3b**, not yet started): an analogous
+single-variable value-enumeration hint experiment, pre-registered the
+same way.
+
+**Methodological note (documented, not fixed)**: `run_evaluation.py`'s
+`--schema-hint` flag applies uniformly across all dataset types in a
+run, so this run's `extraction` numbers (evaluated with an
+extraction-specific hint this checkpoint never trained on) are not
+directly comparable to RB-3's `extraction` numbers — flagged in
+`rb3a_results.md`, does not affect the primary `self_critique` finding.
 
 ## RB-4 — Learning rate sweep
 
