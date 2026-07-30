@@ -1,0 +1,794 @@
+[
+  {
+    "unique_id": "self_critique:2",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": "pass",
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8788567781448364,
+    "finding_entropy_full_vocab": 0.5153536796569824,
+    "finding_relative_probs": {
+      "fail": 0.056015054807824975,
+      "concern": 0.06347316840564618,
+      "pass": 0.8805117767865289
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.004496652979641089,
+      "concern": 0.022835822761495397,
+      "pass": 0.9726675242588635
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": "unvalidated_ai_interpretation",
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995183944702148,
+    "status_entropy_full_vocab": 0.006403282284736633,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 9.520363701576048e-06,
+      "unvalidated_ai_interpretation": 0.9999904796362984
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 4.944336130474697e-09,
+      "unvalidated_ai_interpretation": 0.999999995055664
+    }
+  },
+  {
+    "unique_id": "self_critique:7",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.5976283550262451,
+    "finding_entropy_full_vocab": 0.9535921812057495,
+    "finding_relative_probs": {
+      "fail": 0.34898865434912335,
+      "concern": 0.07786954158874221,
+      "pass": 0.5731418040621344
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.08099102724817508,
+      "concern": 0.04912328352508766,
+      "pass": 0.8698856892267371
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9993634819984436,
+    "status_entropy_full_vocab": 0.008107134141027927,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.00015851712024781247,
+      "unvalidated_ai_interpretation": 0.9998414828797522
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 3.058532929633498e-07,
+      "unvalidated_ai_interpretation": 0.999999694146707
+    }
+  },
+  {
+    "unique_id": "self_critique:8",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8405749201774597,
+    "finding_entropy_full_vocab": 0.627002477645874,
+    "finding_relative_probs": {
+      "fail": 0.08832134851280113,
+      "concern": 0.06878463698640912,
+      "pass": 0.8428940145007898
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.015189401400462064,
+      "concern": 0.03701124244158403,
+      "pass": 0.9477993561579539
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995124340057373,
+    "status_entropy_full_vocab": 0.006630181800574064,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 2.754797666925605e-05,
+      "unvalidated_ai_interpretation": 0.9999724520233307
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 2.5108991169900715e-08,
+      "unvalidated_ai_interpretation": 0.9999999748910089
+    }
+  },
+  {
+    "unique_id": "self_critique:11",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.6486386656761169,
+    "finding_entropy_full_vocab": 0.9876342415809631,
+    "finding_relative_probs": {
+      "fail": 0.1474218827542608,
+      "concern": 0.1892931736461804,
+      "pass": 0.6632849435995588
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.05153966697345533,
+      "concern": 0.2327960928404321,
+      "pass": 0.7156642401861125
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.999656081199646,
+    "status_entropy_full_vocab": 0.00481062289327383,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.8742893579495426e-06,
+      "unvalidated_ai_interpretation": 0.9999981257106421
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 8.591870603994418e-10,
+      "unvalidated_ai_interpretation": 0.9999999991408128
+    }
+  },
+  {
+    "unique_id": "self_critique:17",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.517584502696991,
+    "finding_entropy_full_vocab": 1.049536943435669,
+    "finding_relative_probs": {
+      "fail": 0.39403369094879004,
+      "concern": 0.10001703484168108,
+      "pass": 0.5059492742095288
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.22698543711640837,
+      "concern": 0.15600417384522552,
+      "pass": 0.6170103890383661
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.998995840549469,
+    "status_entropy_full_vocab": 0.010681434534490108,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.0003355936361425067,
+      "unvalidated_ai_interpretation": 0.9996644063638574
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 1.2752057824357743e-07,
+      "unvalidated_ai_interpretation": 0.9999998724794217
+    }
+  },
+  {
+    "unique_id": "self_critique:19",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.6486386656761169,
+    "finding_entropy_full_vocab": 0.9876342415809631,
+    "finding_relative_probs": {
+      "fail": 0.1474218827542608,
+      "concern": 0.1892931736461804,
+      "pass": 0.6632849435995588
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.05153966697345533,
+      "concern": 0.2327960928404321,
+      "pass": 0.7156642401861125
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.999656081199646,
+    "status_entropy_full_vocab": 0.00481062289327383,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.8742893579495426e-06,
+      "unvalidated_ai_interpretation": 0.9999981257106421
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 8.591870603994418e-10,
+      "unvalidated_ai_interpretation": 0.9999999991408128
+    }
+  },
+  {
+    "unique_id": "self_critique:41",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.517584502696991,
+    "finding_entropy_full_vocab": 1.049536943435669,
+    "finding_relative_probs": {
+      "fail": 0.39403369094879004,
+      "concern": 0.10001703484168108,
+      "pass": 0.5059492742095288
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.22698543711640837,
+      "concern": 0.15600417384522552,
+      "pass": 0.6170103890383661
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.998995840549469,
+    "status_entropy_full_vocab": 0.010681434534490108,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.0003355936361425067,
+      "unvalidated_ai_interpretation": 0.9996644063638574
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 1.2752057824357743e-07,
+      "unvalidated_ai_interpretation": 0.9999998724794217
+    }
+  },
+  {
+    "unique_id": "self_critique:42",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": "pass",
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8788567781448364,
+    "finding_entropy_full_vocab": 0.5153536796569824,
+    "finding_relative_probs": {
+      "fail": 0.056015054807824975,
+      "concern": 0.06347316840564618,
+      "pass": 0.8805117767865289
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.004496652979641089,
+      "concern": 0.022835822761495397,
+      "pass": 0.9726675242588635
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": "unvalidated_ai_interpretation",
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995183944702148,
+    "status_entropy_full_vocab": 0.006403282284736633,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 9.520363701576048e-06,
+      "unvalidated_ai_interpretation": 0.9999904796362984
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 4.944336130474697e-09,
+      "unvalidated_ai_interpretation": 0.999999995055664
+    }
+  },
+  {
+    "unique_id": "self_critique:44",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.43472564220428467,
+    "finding_entropy_full_vocab": 1.039994239807129,
+    "finding_relative_probs": {
+      "fail": 0.4371344164442737,
+      "concern": 0.12573116711145252,
+      "pass": 0.4371344164442737
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.1659554964418223,
+      "concern": 0.08882949138158315,
+      "pass": 0.7452150121765946
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995829463005066,
+    "status_entropy_full_vocab": 0.005465744063258171,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.4744999162433676e-05,
+      "unvalidated_ai_interpretation": 0.9999852550008376
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 5.211470261629426e-10,
+      "unvalidated_ai_interpretation": 0.9999999994788529
+    }
+  },
+  {
+    "unique_id": "self_critique:47",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.5976283550262451,
+    "finding_entropy_full_vocab": 0.9535921812057495,
+    "finding_relative_probs": {
+      "fail": 0.34898865434912335,
+      "concern": 0.07786954158874221,
+      "pass": 0.5731418040621344
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.08099102724817508,
+      "concern": 0.04912328352508766,
+      "pass": 0.8698856892267371
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9993634819984436,
+    "status_entropy_full_vocab": 0.008107134141027927,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.00015851712024781247,
+      "unvalidated_ai_interpretation": 0.9998414828797522
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 3.058532929633498e-07,
+      "unvalidated_ai_interpretation": 0.999999694146707
+    }
+  },
+  {
+    "unique_id": "self_critique:63",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.5976283550262451,
+    "finding_entropy_full_vocab": 0.9535921812057495,
+    "finding_relative_probs": {
+      "fail": 0.34898865434912335,
+      "concern": 0.07786954158874221,
+      "pass": 0.5731418040621344
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.08099102724817508,
+      "concern": 0.04912328352508766,
+      "pass": 0.8698856892267371
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9993634819984436,
+    "status_entropy_full_vocab": 0.008107134141027927,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.00015851712024781247,
+      "unvalidated_ai_interpretation": 0.9998414828797522
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 3.058532929633498e-07,
+      "unvalidated_ai_interpretation": 0.999999694146707
+    }
+  },
+  {
+    "unique_id": "self_critique:69",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8165332078933716,
+    "finding_entropy_full_vocab": 0.632878303527832,
+    "finding_relative_probs": {
+      "fail": 0.1259471062606905,
+      "concern": 0.04633322955445343,
+      "pass": 0.8277196641848561
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.06605658365330086,
+      "concern": 0.016701658190251947,
+      "pass": 0.9172417581564472
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.999319314956665,
+    "status_entropy_full_vocab": 0.008475029841065407,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.2227034612636552e-05,
+      "unvalidated_ai_interpretation": 0.9999877729653874
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 2.339856534687316e-09,
+      "unvalidated_ai_interpretation": 0.9999999976601435
+    }
+  },
+  {
+    "unique_id": "self_critique:71",
+    "expected_finding": "concern",
+    "stored_generated_finding": "pass",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.5976283550262451,
+    "finding_entropy_full_vocab": 0.9535921812057495,
+    "finding_relative_probs": {
+      "fail": 0.34898865434912335,
+      "concern": 0.07786954158874221,
+      "pass": 0.5731418040621344
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.08099102724817508,
+      "concern": 0.04912328352508766,
+      "pass": 0.8698856892267371
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9993634819984436,
+    "status_entropy_full_vocab": 0.008107134141027927,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.00015851712024781247,
+      "unvalidated_ai_interpretation": 0.9998414828797522
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 3.058532929633498e-07,
+      "unvalidated_ai_interpretation": 0.999999694146707
+    }
+  },
+  {
+    "unique_id": "self_critique:74",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": "pass",
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8788567781448364,
+    "finding_entropy_full_vocab": 0.5153536796569824,
+    "finding_relative_probs": {
+      "fail": 0.056015054807824975,
+      "concern": 0.06347316840564618,
+      "pass": 0.8805117767865289
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.004496652979641089,
+      "concern": 0.022835822761495397,
+      "pass": 0.9726675242588635
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": "unvalidated_ai_interpretation",
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995183944702148,
+    "status_entropy_full_vocab": 0.006403282284736633,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 9.520363701576048e-06,
+      "unvalidated_ai_interpretation": 0.9999904796362984
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 4.944336130474697e-09,
+      "unvalidated_ai_interpretation": 0.999999995055664
+    }
+  },
+  {
+    "unique_id": "self_critique:99",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.6486386656761169,
+    "finding_entropy_full_vocab": 0.9876342415809631,
+    "finding_relative_probs": {
+      "fail": 0.1474218827542608,
+      "concern": 0.1892931736461804,
+      "pass": 0.6632849435995588
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.05153966697345533,
+      "concern": 0.2327960928404321,
+      "pass": 0.7156642401861125
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.999656081199646,
+    "status_entropy_full_vocab": 0.00481062289327383,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.8742893579495426e-06,
+      "unvalidated_ai_interpretation": 0.9999981257106421
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 8.591870603994418e-10,
+      "unvalidated_ai_interpretation": 0.9999999991408128
+    }
+  },
+  {
+    "unique_id": "self_critique:106",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": "pass",
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8788567781448364,
+    "finding_entropy_full_vocab": 0.5153536796569824,
+    "finding_relative_probs": {
+      "fail": 0.056015054807824975,
+      "concern": 0.06347316840564618,
+      "pass": 0.8805117767865289
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.004496652979641089,
+      "concern": 0.022835822761495397,
+      "pass": 0.9726675242588635
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": "unvalidated_ai_interpretation",
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995183944702148,
+    "status_entropy_full_vocab": 0.006403282284736633,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 9.520363701576048e-06,
+      "unvalidated_ai_interpretation": 0.9999904796362984
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 4.944336130474697e-09,
+      "unvalidated_ai_interpretation": 0.999999995055664
+    }
+  },
+  {
+    "unique_id": "self_critique:108",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.43472564220428467,
+    "finding_entropy_full_vocab": 1.039994239807129,
+    "finding_relative_probs": {
+      "fail": 0.4371344164442737,
+      "concern": 0.12573116711145252,
+      "pass": 0.4371344164442737
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.1659554964418223,
+      "concern": 0.08882949138158315,
+      "pass": 0.7452150121765946
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995829463005066,
+    "status_entropy_full_vocab": 0.005465744063258171,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.4744999162433676e-05,
+      "unvalidated_ai_interpretation": 0.9999852550008376
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 5.211470261629426e-10,
+      "unvalidated_ai_interpretation": 0.9999999994788529
+    }
+  },
+  {
+    "unique_id": "self_critique:112",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8405749201774597,
+    "finding_entropy_full_vocab": 0.627002477645874,
+    "finding_relative_probs": {
+      "fail": 0.08832134851280113,
+      "concern": 0.06878463698640912,
+      "pass": 0.8428940145007898
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.015189401400462064,
+      "concern": 0.03701124244158403,
+      "pass": 0.9477993561579539
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995124340057373,
+    "status_entropy_full_vocab": 0.006630181800574064,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 2.754797666925605e-05,
+      "unvalidated_ai_interpretation": 0.9999724520233307
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 2.5108991169900715e-08,
+      "unvalidated_ai_interpretation": 0.9999999748910089
+    }
+  },
+  {
+    "unique_id": "self_critique:120",
+    "expected_finding": "concern",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8405749201774597,
+    "finding_entropy_full_vocab": 0.627002477645874,
+    "finding_relative_probs": {
+      "fail": 0.08832134851280113,
+      "concern": 0.06878463698640912,
+      "pass": 0.8428940145007898
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.015189401400462064,
+      "concern": 0.03701124244158403,
+      "pass": 0.9477993561579539
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995124340057373,
+    "status_entropy_full_vocab": 0.006630181800574064,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 2.754797666925605e-05,
+      "unvalidated_ai_interpretation": 0.9999724520233307
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 2.5108991169900715e-08,
+      "unvalidated_ai_interpretation": 0.9999999748910089
+    }
+  },
+  {
+    "unique_id": "self_critique:135",
+    "expected_finding": "concern",
+    "stored_generated_finding": "pass",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.5976283550262451,
+    "finding_entropy_full_vocab": 0.9535921812057495,
+    "finding_relative_probs": {
+      "fail": 0.34898865434912335,
+      "concern": 0.07786954158874221,
+      "pass": 0.5731418040621344
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.08099102724817508,
+      "concern": 0.04912328352508766,
+      "pass": 0.8698856892267371
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9993634819984436,
+    "status_entropy_full_vocab": 0.008107134141027927,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 0.00015851712024781247,
+      "unvalidated_ai_interpretation": 0.9998414828797522
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 3.058532929633498e-07,
+      "unvalidated_ai_interpretation": 0.999999694146707
+    }
+  },
+  {
+    "unique_id": "self_critique:136",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8405749201774597,
+    "finding_entropy_full_vocab": 0.627002477645874,
+    "finding_relative_probs": {
+      "fail": 0.08832134851280113,
+      "concern": 0.06878463698640912,
+      "pass": 0.8428940145007898
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.015189401400462064,
+      "concern": 0.03701124244158403,
+      "pass": 0.9477993561579539
+    },
+    "expected_status": "unvalidated_ai_interpretation",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995124340057373,
+    "status_entropy_full_vocab": 0.006630181800574064,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 2.754797666925605e-05,
+      "unvalidated_ai_interpretation": 0.9999724520233307
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 2.5108991169900715e-08,
+      "unvalidated_ai_interpretation": 0.9999999748910089
+    }
+  },
+  {
+    "unique_id": "self_critique:138",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": "pass",
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8788567781448364,
+    "finding_entropy_full_vocab": 0.5153536796569824,
+    "finding_relative_probs": {
+      "fail": 0.056015054807824975,
+      "concern": 0.06347316840564618,
+      "pass": 0.8805117767865289
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.004496652979641089,
+      "concern": 0.022835822761495397,
+      "pass": 0.9726675242588635
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": "unvalidated_ai_interpretation",
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995183944702148,
+    "status_entropy_full_vocab": 0.006403282284736633,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 9.520363701576048e-06,
+      "unvalidated_ai_interpretation": 0.9999904796362984
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 4.944336130474697e-09,
+      "unvalidated_ai_interpretation": 0.999999995055664
+    }
+  },
+  {
+    "unique_id": "self_critique:140",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.43472564220428467,
+    "finding_entropy_full_vocab": 1.039994239807129,
+    "finding_relative_probs": {
+      "fail": 0.4371344164442737,
+      "concern": 0.12573116711145252,
+      "pass": 0.4371344164442737
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.1659554964418223,
+      "concern": 0.08882949138158315,
+      "pass": 0.7452150121765946
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.9995829463005066,
+    "status_entropy_full_vocab": 0.005465744063258171,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.4744999162433676e-05,
+      "unvalidated_ai_interpretation": 0.9999852550008376
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 5.211470261629426e-10,
+      "unvalidated_ai_interpretation": 0.9999999994788529
+    }
+  },
+  {
+    "unique_id": "self_critique:141",
+    "expected_finding": "pass",
+    "stored_generated_finding": "fail",
+    "fresh_generated_finding": null,
+    "finding_top1_token": "pass",
+    "finding_top1_prob_full_vocab": 0.8165332078933716,
+    "finding_entropy_full_vocab": 0.632878303527832,
+    "finding_relative_probs": {
+      "fail": 0.1259471062606905,
+      "concern": 0.04633322955445343,
+      "pass": 0.8277196641848561
+    },
+    "finding_base_model_relative_probs": {
+      "fail": 0.06605658365330086,
+      "concern": 0.016701658190251947,
+      "pass": 0.9172417581564472
+    },
+    "expected_status": "blocked_by_self_critique",
+    "stored_generated_status": "unvalidated_ai_interpretation",
+    "fresh_generated_status": null,
+    "status_top1_token": "un",
+    "status_top1_prob_full_vocab": 0.999319314956665,
+    "status_entropy_full_vocab": 0.008475029841065407,
+    "status_relative_probs": {
+      "blocked_by_self_critique": 1.2227034612636552e-05,
+      "unvalidated_ai_interpretation": 0.9999877729653874
+    },
+    "status_base_model_relative_probs": {
+      "blocked_by_self_critique": 2.339856534687316e-09,
+      "unvalidated_ai_interpretation": 0.9999999976601435
+    }
+  }
+]
