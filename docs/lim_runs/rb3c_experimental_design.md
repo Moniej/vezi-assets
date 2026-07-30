@@ -123,7 +123,7 @@ then run the probe methodology against it, producing TVD and discrete
 measurements.
 
 **No additional step counts beyond what Phase 0/1 specify will be added
-without a new pre-registration** — see §8 (risk of fishing).
+without a new pre-registration** — see §9 (risk of fishing).
 
 ## 5. Metrics — pre-registered before any new run
 
@@ -151,7 +151,7 @@ recomputed differently after the fact):
   `rb3b_results.md`'s confusion matrices) — already known to be
   uninformative at step 40 (0/24 on `finding`, majority-class artifact on
   `resulting_status`), but tracked to check for a possible TVD
-  -vs-accuracy dissociation (§7, Outcome E).
+  -vs-accuracy dissociation (§8, Outcome E).
 - Schema-match rate (control — `schema_hint`/`value_hint` are held fixed;
   must not regress from RB-3b's 100%).
 - Parse rate, `self_critique_quality`, `reasoning_quality` (continuity
@@ -175,7 +175,82 @@ recomputed differently after the fact):
   **independently** — no combined/averaged verdict across fields, per
   the investigation's own finding that they behave differently.
 
-## 7. Pre-registered interpretation of every possible outcome
+## 7. Early-stopping rule (evaluated after Phase 0, gates Phase 1)
+
+**This section governs whether Phase 1 (the new, longer training run)
+happens at all.** It is evaluated mechanically once Phase 0's four
+checkpoint measurements exist (steps 10, 20, 30, 40 — the last already
+available from RB-3b) and is not to be revised after seeing Phase 0's
+actual numbers, per the instruction not to redesign after the fact.
+
+### `resulting_status` — pre-decided by existing evidence
+
+The step-40 anchor already measured in `rb3b_mode_collapse_investigation.md`
+(TVD = 0.0001, 24/24 argmax agreement with the untrained base model) is
+about as extreme a plateau signal as this metric can produce — a
+fine-tuned model indistinguishable from an untrained one. **This field is
+pre-registered as already satisfying the stopping criterion (H2,
+plateau) without needing Phase 0 at all.** Phase 0's audit will still
+compute this field's steps 10/20/30 values (zero extra cost, same
+forward passes as `finding`'s audit) purely for completeness and to
+check for a non-monotonic surprise (see below), but a "cancel" verdict
+for this field is the default, override-only outcome.
+
+**Override condition** (would require re-opening this field's verdict,
+not silently overriding it): if Phase 0 shows TVD at any of steps
+10/20/30 is *substantially higher* than 0.0001 (e.g., ≥0.05, an order of
+magnitude above the step-40 anchor), implying non-monotonic behavior
+(the model moved away from the base prior and then back), this
+specific, surprising pattern must be reported explicitly and would
+warrant treating this field as unresolved rather than silently keeping
+the pre-decided verdict — but this is flagged as unlikely, not expected.
+
+### `finding` — decided by the Phase 0 trend, mechanically
+
+Using the four points (0 [base, TVD=0 by definition], 10, 20, 30, 40 —
+step 40 already measured at 0.1704):
+
+1. Compute the three consecutive-interval deltas: Δ(10→20), Δ(20→30),
+   Δ(30→40).
+2. Compute the paired bootstrap 95% CI (n=24, paired by `unique_id`, the
+   same 2000-resample/seed=42 convention used throughout this project)
+   for each of the two *most recent* deltas: Δ(20→30) and Δ(30→40).
+
+**CANCEL Phase 1** (conclude H2 — plateau, from Phase 0 evidence alone)
+**if BOTH** of the following hold:
+- (a) Both Δ(20→30)'s and Δ(30→40)'s paired bootstrap CIs include zero
+  (no statistically distinguishable movement in either of the last two
+  10-step intervals), **and**
+- (b) |Δ(30→40)| ≤ |Δ(20→30)| (the rate of movement is not
+  accelerating) — this guards against concluding "plateau" from two
+  individually-underpowered-but-still-trending-upward intervals.
+
+**PROCEED to Phase 1** if **either**:
+- (a) At least one of Δ(20→30) or Δ(30→40)'s CI excludes zero
+  (statistically real continued movement within the existing
+  checkpoints), **or**
+- (b) The magnitude trend is flat-or-growing (|Δ(30→40)| > |Δ(20→30)|)
+  even if both individual CIs are inconclusive — reported explicitly as
+  a judgment call resting on trend shape rather than significance, not
+  hidden behind non-significant p-values.
+
+### Overall Phase 1 go/no-go
+
+Phase 1 (the new training run) proceeds if **either field's** evaluation
+above says proceed. Phase 1 is skipped entirely only if **both fields**
+conclude cancel — i.e., only if `finding`'s mechanical rule above also
+says cancel, since `resulting_status` is already pre-decided as cancel
+by default. If Phase 1 does proceed (because `finding` warranted it),
+`resulting_status` is still measured and reported at the new step count
+regardless — a single training run necessarily updates the whole model,
+so both fields' outcomes are always reported together even when only one
+field's evidence justified running it.
+
+This rule is evaluated exactly once, immediately after Phase 0's four
+measurements are in hand, and is not to be re-derived or loosened after
+seeing the actual Phase 0 numbers.
+
+## 8. Pre-registered interpretation of every possible outcome
 
 | Outcome | `finding` TVD trend | `resulting_status` TVD trend | Interpretation | Recommended next step |
 |---|---|---|---|---|
@@ -190,7 +265,7 @@ standing instruction across this entire research program, the result
 will be reported exactly as the evidence shows, including if it lands
 between these named cases.
 
-## 8. Risks
+## 9. Risks
 
 1. **Fishing for a supportive result.** Testing many step counts until
    one shows movement would be an unprincipled search, not an
@@ -220,19 +295,19 @@ between these named cases.
    truncated by 11 tokens at `max_seq_length=256`, disclosed, not a
    blocker). No new risk introduced by changing `max_steps` alone.
 
-## 9. Stopping condition
+## 10. Stopping condition
 
 Run Phase 0 (if approved — zero training cost) to inform Phase 1's exact
 step count, then exactly one new training run (Phase 1) and one new
 eval+probe pass (Phase 2). Do not proceed to a rank, loss-reweighting, or
 data-side experiment without a dedicated review of this result first,
-regardless of which pre-registered outcome (§7) materializes. This
+regardless of which pre-registered outcome (§8) materializes. This
 experiment answers exactly one question — does more of the identical
 training recipe close the gap — and its own decision matrix entry (Ranks
 3-4 of `rb3b_mode_collapse_investigation.md`) is where the next choice
 would come from, not decided in advance here.
 
-## 10. What has and has not been done
+## 11. What has and has not been done
 
 - **Done**: this design document only.
 - **Not done**: Phase 0's checkpoint audit, Phase 1's training run,
