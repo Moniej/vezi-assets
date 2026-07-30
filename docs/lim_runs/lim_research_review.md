@@ -1,12 +1,12 @@
-# LIM Research Review — 2026-07-29
+# LIM Research Review — 2026-07-30 (RB-3a update)
 
 **Purpose**: a single reference document summarizing every completed
 phase of the Local Intelligence Model (LIM) research program to date —
 what was built, what was tried, what is confirmed, what was rejected,
 what remains open, the current recommended production configuration, and
-the prioritized queue of next experiments. This document freezes the
-baseline as of commit `c789ffc` / tag `lim6-research-review-baseline
--2026-07-29`.
+the prioritized queue of next experiments. Originally frozen at commit
+`c789ffc` / tag `lim6-research-review-baseline-2026-07-29`; updated here
+to record RB-3a Phase 2's confirmed result and re-tagged — see §8.
 
 Every claim below is sourced from an immutable registry record (training
 run, eval run, or dataset version) or a specific companion document under
@@ -24,7 +24,7 @@ run, eval run, or dataset version) or a specific companion document under
 | **LIM-3** | Objective evaluation framework + first real benchmark | Complete, plus a root-cause diagnosis of an `entity_recognition` output-collapse defect found during the first benchmark run. | `lim3-eval-baseline-2026-07-28` |
 | **LIM-4** | First model-improvement phase: fix the LIM-3 root cause + every disclosed contributing factor, measure objectively | Complete. Fixed 3 confirmed bugs (padding-label leakage into the loss, `entity_recognition` context collisions, train/test contamination) via response-only loss masking and a manual training loop (a real transformers 5.5.0 + Unsloth bug produced inf/NaN loss under `Trainer.train()` with masked labels — isolated via 9 independently-controlled experiments). Validation pass added resume capability and confirmed no held-out example can reach a gradient update through any code path. | `lim4-training-baseline-2026-07-28` |
 | **LIM-5** | Measurably improve model quality against frozen LIM-3/4 baselines via evidence, not intuition — 5 priorities (data quality audit, format/memorization analysis, evidence-based curriculum, next-gen metrics, controlled experiments) | Complete. All 5 priorities addressed; Experiment 1 (dataset swap `entity_recognition`→`extraction`) produced a real, monotonic improvement (`semantic_equivalence` 0.0850→0.1704); Experiment 2 (step count) blocked by infrastructure, honestly reported as untested rather than negative. | `lim5-optimization-baseline-2026-07-28` |
-| **LIM-6 / RB series** | Consolidated comparative report + bottleneck ranking + research backlog, then execute the backlog's experiments one variable at a time | RB-1 through RB-3a executed — see §2. | `lim6-lora-rank-baseline-2026-07-29`, and now `lim6-research-review-baseline-2026-07-29` |
+| **LIM-6 / RB series** | Consolidated comparative report + bottleneck ranking + research backlog, then execute the backlog's experiments one variable at a time | RB-1 through RB-3a (Phase 2, confirmed) executed — see §2. | `lim6-lora-rank-baseline-2026-07-29`, `lim6-research-review-baseline-2026-07-29`, and now `lim6-rb3a-schema-confirmed-baseline-2026-07-30` |
 
 ---
 
@@ -48,21 +48,21 @@ run, eval run, or dataset version) or a specific companion document under
 - **Separated, informational-only side question**: the r=32 termination-collapse mechanism (`rb2_r32_collapse_research_question.md`) — 4 candidate hypotheses documented, does not block closure.
 - Docs: `rb2_results.md`, `rb2b_results.md`, `rb2_closure.md`, `rb2_infrastructure_note.md`, `rb2_r32_collapse_research_question.md`.
 
-### RB-3 — Train on `self_critique` instead of `extraction` — negative result
+### RB-3 — Train on `self_critique` instead of `extraction` — **superseded by RB-3a's schema-conditioning finding**
 
 - **Hypothesis**: `self_critique` is a viable training target; training on it improves `self_critique_quality`/`reasoning_quality` off their universal 0.0, mirroring Experiment 1's result on a different skill.
-- **Result: negative.** `self_critique_quality` remained **exactly 0.0/24**. `reasoning_quality` moved off zero (0.0441, bootstrap CI [0.027, 0.063] excludes zero) but only via a metric-side lexical-overlap fallback scavenging credit from wrong-schema outputs — not genuine task performance. **0/24 outputs used the expected output schema** (`finding`/`explanation`/`resulting_status`); 8/24 (33%) echoed the prompt's own input fields back instead of attempting a critique.
-- Read strictly, the pre-registered "or" criterion technically passed; read honestly, this does not confirm the hypothesis as written and is recorded as a **negative, reproducible result**, not a success.
-- Docs: `rb3_results.md`.
+- **Result as originally reported**: `self_critique_quality` remained **exactly 0.0/24**. `reasoning_quality` moved off zero (0.0441, bootstrap CI [0.027, 0.063] excludes zero) but only via a metric-side lexical-overlap fallback scavenging credit from wrong-schema outputs — not genuine task performance. **0/24 outputs used the expected output schema** (`finding`/`explanation`/`resulting_status`); 8/24 (33%) echoed the prompt's own input fields back instead of attempting a critique.
+- **Status, updated after RB-3a**: this is **not left as an unexplained negative result**. RB-3a identified and confirmed the specific, fixable cause of RB-3's structural failure (schema invisibility — see below), and a single conditioning-signal change resolved 75% of it on the identical held-out set. RB-3's negative result is therefore **superseded**, not overturned: the training run and its numbers remain a valid, reproducible historical data point, but the *conclusion* to draw from them is no longer "self_critique may not be a viable target" — it is "self_critique's original prompt template did not expose the schema, and that specific defect is now identified and demonstrably fixable." Any future `self_critique` work should build on RB-3a's finding, not re-litigate RB-3's original framing.
+- Docs: `rb3_results.md` (original report, unmodified), `rb3a_results.md` (superseding analysis).
 
-### RB-3a — Schema-learning diagnostic (audit-only, no training) — in progress
+### RB-3a — Schema-learning diagnostic — **✅ CONFIRMED (2026-07-30)**
 
 - **Purpose**: isolate *why* RB-3's checkpoint never learns the output schema, before spending further compute on optimization.
-- **Ruled out by direct audit**: dataset-formatting inconsistency (104/104 training examples use the correct schema), sequence-length truncation (max 210 tokens, well under the 256 limit — 0/104 truncated), loss-masking bug (decoded the supervised label span for 5 sampled examples directly — all begin exactly at `{"finding": ...` with no clipping).
+- **Phase 0/1 audit ruled out**: dataset-formatting inconsistency (104/104 training examples use the correct schema), sequence-length truncation (max 210 tokens, well under the 256 limit — 0/104 truncated), loss-masking bug (decoded the supervised label span for 5 sampled examples directly — all begin exactly at `{"finding": ...` with no clipping).
 - **Likely not the cause**: teacher-output/value consistency (finding/resulting_status value distributions are reasonably balanced, not degenerate).
-- **Strong candidate identified**: `self_critique`'s required output key names never appear anywhere in its input/instructions (0/104), whereas `extraction`'s output key `fact_type` appears verbatim in every input context (132/132) — a much easier copy-style schema-binding problem. Entangled with `self_critique` being an inherently generative/authorship task vs. `extraction`'s closer-to-extractive one.
-- **Proposed next step (not yet run, pending sign-off)**: a single schema-hint prompt-template training diagnostic, single variable, to directly test whether making the schema visible in the input fixes the 0/24 match rate.
-- Docs: `rb3a_schema_diagnostic.md`.
+- **Phase 2 (schema-hint training experiment) — CONFIRMED**: pre-registered before training (`rb3a_phase2_preregistration.md`), a single runtime-derived conditioning-signal change (listing the expected JSON keys in the prompt, no dataset-content change, all else byte-identical to RB-3's seed=42 run) took the `self_critique` schema-match rate from **0/24 (RB-3) to 18/24 = 75% (RB-3a)**, bootstrap 95% CI [0.583, 0.917] — clears the pre-registered ≥60% success threshold even at its lower bound. Input-echoing dropped from 33% to 4%. **Schema-acquisition is confirmed as the dominant, fixable cause of RB-3's structural failure — not a reasoning-capacity limitation.**
+- **New bottleneck surfaced, not masked**: `self_critique_quality` remained exactly 0.0/24 even among the 18 schema-matched outputs, because **0/18** used a valid categorical value for `finding` (expected `fail`/`concern`/`pass`; got free-text sentences) or `resulting_status` (expected two specific enum values; got invented words). This is a **distinct, separate learning problem** (constrained categorical-value-vocabulary acquisition), not an extension of RB-3a's own schema-key question, proposed as RB-3b (§7).
+- Docs: `rb3a_schema_diagnostic.md` (Phase 0/1 audit), `rb3a_phase2_preregistration.md` (pre-registration), `rb3a_results.md` (full Phase 2 results).
 
 ---
 
@@ -77,17 +77,19 @@ run, eval run, or dataset version) or a specific companion document under
 7. **`extraction`'s output schema is learnable because its key names are already present in the input** (`fact_type` appears in 132/132 training contexts); this copy-style schema-binding is categorically easier than `self_critique`'s, where the required keys never appear in the input at all (RB-3a).
 8. **Loss masking is verified correct specifically for `self_critique`**, not just in general — decoded supervised spans begin exactly at the response JSON's first key with no clipping (RB-3a Phase 1).
 9. **OS memory pressure (Windows "Memory Compression"), not code defects, is the recurring cause of training/eval process crashes** (segfaults, `OSError 1455`) across a long session of sequential model-loading subprocesses — resolved every time by a clean machine restart, confirmed via byte-identical environment hashes before/after (RB-1, RB-2, RB-2b, RB-3).
+10. **Schema invisibility, not reasoning capacity, was the dominant cause of `self_critique`'s 0/24 schema-match failure.** Adding a runtime-derived "required JSON keys" line to the prompt (no dataset-content change) raised the schema-match rate to 75% (CI [0.583, 0.917]) on the identical held-out set, and cut input-echoing from 33% to 4% (RB-3a Phase 2). This directly supersedes RB-3's original framing of its own negative result.
+11. **Schema-key acquisition and categorical-value-vocabulary acquisition are separable, independent problems.** Even among RB-3a's 18 schema-matched outputs, 0/18 used a valid enum value for `finding`/`resulting_status` — fixing the key-structure problem did not fix (and was not expected by itself to fix) the value-vocabulary problem, which remains open (RB-3b, not yet started).
 
 ## 4. Rejected hypotheses
 
 1. **"Higher LoRA rank improves semantic correctness" — rejected.** The data shows the opposite: r=32 is decisively worse (including a 0/27 total generation collapse at one seed), and r=16 shows no advantage over r=8 on any metric at any seed (RB-2/RB-2b).
-2. **"Self_critique is a viable training target that mirrors extraction's success" — rejected as tested.** `self_critique_quality` showed zero movement; the apparent `reasoning_quality` improvement is a metric-side artifact, not genuine task learning (RB-3).
+2. **"Self_critique is a viable training target that mirrors extraction's success, under the original (no-schema-hint) prompt template" — rejected as tested under that specific condition.** `self_critique_quality` showed zero movement under RB-3's original template; the apparent `reasoning_quality` improvement was a metric-side artifact, not genuine task learning. **Superseded, not final**: RB-3a showed this was a prompt-conditioning defect, not a property of `self_critique` as a target — under the schema-hint condition, the model reliably learns the schema (75% match). Whether `self_critique` is *fully* viable (schema + correct categorical values) remains open pending RB-3b.
 3. **"The prompt/response format (`### Instruction/Context/Response`) is implicated in current defects" — rejected** (LIM-5 Priority 2): directly tested via a memorization-vs-learning analysis; the template itself is not the cause of any observed defect (the only recommended fix, a generation-time stop sequence, is a separate small item, RB-7 — not a rejection of the template itself).
 4. **"More training steps alone continues to improve quality past 40" — not supported.** RB-1 found no convincing semantic improvement from 12→40 steps beyond the point of loss-curve plateau, alongside one regressed metric (`grounded_correctness`).
 
 ## 5. Unresolved / open questions
 
-1. **Why does `self_critique` never learn its output schema — schema-visibility, task-complexity, or both?** RB-3a has ruled out 4 candidate causes but has not yet run the schema-hint diagnostic that would separate the two live hypotheses (§2, RB-3a).
+1. **Can the model learn the constrained categorical value vocabulary for `finding` (`fail`/`concern`/`pass`) and `resulting_status` (2 fixed values), given that it now reliably learns the surrounding key structure?** This is the newly-isolated, narrower successor to the old "why does self_critique never learn its schema" question (which RB-3a resolved for the key-structure component). Proposed as **RB-3b**, the current highest-priority experiment (§7) — design pending review, not yet started.
 2. **The r=32 generation-collapse mechanism** — 4 candidate hypotheses documented (`rb2_r32_collapse_research_question.md`), informational only, not yet investigated further.
 3. **Whether r=8 remains optimal under a different dataset, step count, or learning rate** — the RB-2 closure is explicitly scoped to `extraction`/40 steps/lr=2e-4; untested outside that regime.
 4. **Learning rate** (2e-4 used throughout) — completely unvaried; genuinely open, no observed symptom implicates it either way (RB-4, not yet started).
@@ -95,6 +97,7 @@ run, eval run, or dataset version) or a specific companion document under
 6. **Latency**: LIM-4 showed a large latency spike (27.58s mean vs. LIM-3's 11.56s) that partially but not fully recovered by LIM-5 (15.13s) — never isolated as a controlled measurement (no thermal/clock monitoring); still an open question, not resolved.
 7. **Three of six priority evaluation dimensions remain structurally unmeasurable** (`grounding_accuracy`, `citation_correctness`, `hallucination_flag_correct` all show n=0 in every real eval run) — not a broken metric, but zero registered held-out examples carry the needed labels. Closing this (RB-8, persisting `context` retroactively; RB-11, re-auditing the source datasets) is blocked pending new-dataset scope being reopened.
 8. **`entity_recognition`'s residual context collisions** (13/39 examples) and **`evidence_ranking`'s uninformative `{"fact_id": N}` context** — real, evidenced defects, explicitly blocked this phase pending new data (RB-9, RB-10).
+9. **A discovered eval-script coupling**: `run_evaluation.py`'s `--schema-hint` flag applies uniformly across every dataset type evaluated in a run (each type's hint is derived from that type's own schema), which means any multi-type eval run with the flag on will apply hints to types the checkpoint was never trained with a hint for. Documented in `rb3a_results.md`, not fixed (didn't affect RB-3a's primary conclusion), but worth scoping per-trained-type before it causes a real comparability error in a future multi-type experiment.
 
 ## 6. Current recommended production configuration
 
@@ -138,18 +141,20 @@ fields.
 
 | Priority | Item | Type | Why |
 |---|---|---|---|
-| **1 (highest, gating)** | RB-3a Phase 2 — schema-hint diagnostic | Single training run, pending sign-off | Must resolve before any further `self_critique` work; directly explains RB-3's failure mode or rules it out |
+| **1 (highest, gating)** | RB-3b — categorical value-vocabulary experiment | Single-variable training experiment, design pending review, **not yet started** | Direct successor to RB-3a's confirmed finding; narrowly scoped to the one remaining named cause of `self_critique_quality`'s 0.0, while preserving the 75% schema-match rate as a fixed reference point |
 | **2** | RB-7 — generation-time stop sequence | Eval-side only, no retraining | Cheap, safe, already evidence-backed (LIM-5 Priority 2), reduces parse failures independent of any training change |
 | **3** | RB-4 — learning rate sweep | Training experiment on `extraction` | No observed symptom implicates 2e-4, but it is completely unvaried — genuinely open |
 | **4** | RB-5 — batch size / gradient accumulation | Training experiment on `extraction` | Same rationale as RB-4; unvaried, open |
 | **5** | RB-8 — persist `context` retroactively in the eval registry | Infrastructure/schema change | Unlocks 3 of 6 priority evaluation dimensions for LIM-3/4-era runs, not blocking any model-quality experiment directly |
 | **6 (conditional)** | RB-6 — sequence length / packing | Audit, only if a future dataset's p95 length approaches 256 | Not currently triggered by `extraction`; monitor per new training target |
+| **7** | Scope `--schema-hint` per-trained-type in `run_evaluation.py` (§5 item 9) | Small eval-script fix | Prevents a future multi-type comparability error; not urgent, no experiment currently blocked by it |
 | **Blocked this phase** | RB-9 (`entity_recognition` context collisions), RB-10 (`evidence_ranking` context content), RB-11 (`citation_grounding`/`financial_reasoning` re-audit) | Requires new datasets | Explicitly out of scope until the owner lifts the "no new datasets" constraint |
 
 ---
 
 ## 8. Provenance
 
-- Frozen at commit `c789ffc` (RB-3 negative result + RB-3a diagnostic), tagged `lim6-research-review-baseline-2026-07-29`.
+- Originally frozen at commit `c789ffc` (RB-3 negative result + RB-3a Phase 0/1 diagnostic), tagged `lim6-research-review-baseline-2026-07-29`.
+- Updated to record RB-3a Phase 2's confirmed result (schema-hint experiment, `rb3a_results.md`) and re-tagged `lim6-rb3a-schema-confirmed-baseline-2026-07-30`.
 - Prior baseline tags, still valid and unchanged: `lim2-training-baseline-2026-07-28`, `lim3-eval-baseline-2026-07-28`, `lim4-training-baseline-2026-07-28`, `lim5-optimization-baseline-2026-07-28`, `lim6-lora-rank-baseline-2026-07-29`.
 - Every metric cited above traces to an immutable `eval_run`/`training_run` registry record or a named companion document under `docs/lim_runs/`; none are restated from memory.

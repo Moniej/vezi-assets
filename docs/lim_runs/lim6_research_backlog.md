@@ -98,7 +98,7 @@ RB-2b's conclusion.
     this closure. RB-3/RB-4/RB-5 may now begin, using r=8 as the fixed
     default rank.
 
-## RB-3 — Train on `self_critique` instead of `extraction` — ❌ NEGATIVE RESULT
+## RB-3 — Train on `self_critique` instead of `extraction` — ⤴ SUPERSEDED by RB-3a
 
 - **Hypothesis**: `self_critique` (128 examples, informative context,
   good consistency per Priority 1) is a genuinely different, viable
@@ -138,8 +138,14 @@ RB-2b's conclusion.
   checkpoint was reported per instruction (0.1111 semantic_equivalence)
   but is not a same-checkpoint regression signal, since this checkpoint
   never trained on `extraction`. All artifacts (training run
-  `ebe73677-...`, eval run `3389f4a1-...`) are preserved as the negative
-  -result baseline for future comparison.
+  `ebe73677-...`, eval run `3389f4a1-...`) are preserved as the original
+  baseline for future comparison.
+- **Superseded, 2026-07-30**: RB-3a identified and confirmed the specific
+  cause (schema invisibility in the prompt) and demonstrated it is
+  fixable (75% schema-match once fixed). RB-3's numbers remain a valid
+  historical data point, but "self_critique may not be a viable target"
+  is no longer the right takeaway — see RB-3a below and RB-3b's narrower
+  framing.
 
 ## RB-3a — Schema-learning diagnostic — ✅ CONFIRMED (Phase 2 complete, 2026-07-30)
 
@@ -180,6 +186,37 @@ run, so this run's `extraction` numbers (evaluated with an
 extraction-specific hint this checkpoint never trained on) are not
 directly comparable to RB-3's `extraction` numbers — flagged in
 `rb3a_results.md`, does not affect the primary `self_critique` finding.
+
+## RB-3b — Categorical value-vocabulary acquisition — 🔴 HIGHEST PRIORITY, design pending review, NOT STARTED
+
+- **Hypothesis (narrow)**: given that RB-3a's schema-hint conditioning
+  already produces the correct output *keys* in 75% of `self_critique`
+  outputs, the model can also learn the constrained *categorical values*
+  for `finding` (`fail`/`concern`/`pass`) and `resulting_status`
+  (`blocked_by_self_critique`/`unvalidated_ai_interpretation`) if those
+  value sets are made equally visible/enumerable, by the same kind of
+  single, runtime-derived, dataset-content-preserving conditioning-signal
+  change that fixed the key-structure problem.
+- **This is explicitly a new, separate hypothesis, not an extension of
+  RB-3a.** RB-3a's own success criterion (schema-match rate) is preserved
+  as a **control** metric in this experiment, not re-tested — the
+  question here is narrowly about value correctness, holding the
+  already-confirmed schema-key win fixed.
+- **Full experimental design**: `docs/lim_runs/rb3b_experimental_design.md`
+  (hypothesis, rationale, single variable, controls, pre-registered
+  success/partial/failure thresholds, evaluation metrics, statistical
+  analysis plan, risks, stopping conditions — written for review, no
+  training run started).
+- **Related mechanism review** (informational, not yet acted on):
+  `docs/lim_runs/rb3b_mechanism_review.md` surveys enum-constrained
+  decoding, structured generation, and training-label design as
+  candidate levers for this specific problem, without implementing any
+  of them.
+- **Priority**: Highest — direct, evidence-driven successor to RB-3a's
+  confirmed result; the natural next single-variable question the
+  research program itself surfaced.
+- **STATUS: design complete, awaiting sign-off. Do not begin
+  implementation until reviewed.**
 
 ## RB-4 — Learning rate sweep
 
@@ -271,14 +308,16 @@ constraint.
 
 ## Priority summary
 
-| ID | Item | Priority | Effort |
-|---|---|---|---|
-| RB-1 | Training duration (resume blocked experiment) | Highest | S |
-| RB-2 | LoRA rank sweep | High | M |
-| RB-3 | Train on `self_critique` | High | S |
-| RB-7 | Generation stop-sequence | Medium | S |
-| RB-4 | Learning rate sweep | Medium | M |
-| RB-5 | Batch size / grad accumulation | Medium | M |
-| RB-8 | Persist eval context (infra) | Medium | S |
-| RB-6 | Sequence length / packing | Low (conditional) | S |
-| RB-9/10/11 | Data-quality fixes | Blocked this phase | — |
+| ID | Item | Priority | Effort | Status |
+|---|---|---|---|---|
+| RB-1 | Training duration (resume blocked experiment) | Highest | S | ✅ Complete (mixed result) |
+| RB-2/2b | LoRA rank sweep | High | M | ✅ Complete, formally closed (r=8) |
+| RB-3 | Train on `self_critique` | — | S | ⤴ Superseded by RB-3a |
+| RB-3a | Schema-learning diagnostic | High | S | ✅ Confirmed |
+| **RB-3b** | **Categorical value-vocabulary acquisition** | **🔴 Highest** | **S–M** | **Design complete, not started — awaiting review** |
+| RB-7 | Generation stop-sequence | Medium | S | Not started |
+| RB-4 | Learning rate sweep | Medium | M | Not started |
+| RB-5 | Batch size / grad accumulation | Medium | M | Not started |
+| RB-8 | Persist eval context (infra) | Medium | S | Not started |
+| RB-6 | Sequence length / packing | Low (conditional) | S | Not triggered |
+| RB-9/10/11 | Data-quality fixes | Blocked this phase | — | Blocked |
