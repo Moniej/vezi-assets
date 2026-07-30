@@ -187,7 +187,7 @@ extraction-specific hint this checkpoint never trained on) are not
 directly comparable to RB-3's `extraction` numbers — flagged in
 `rb3a_results.md`, does not affect the primary `self_critique` finding.
 
-## RB-3b — Categorical value-vocabulary acquisition — 🔴 HIGHEST PRIORITY, design pending review, NOT STARTED
+## RB-3b — Categorical value-vocabulary acquisition — ✅ PRIMARY METRIC CONFIRMED; new bottleneck found, STOPPED per instruction
 
 - **Hypothesis (narrow)**: given that RB-3a's schema-hint conditioning
   already produces the correct output *keys* in 75% of `self_critique`
@@ -215,8 +215,31 @@ directly comparable to RB-3's `extraction` numbers — flagged in
 - **Priority**: Highest — direct, evidence-driven successor to RB-3a's
   confirmed result; the natural next single-variable question the
   research program itself surfaced.
-- **STATUS: design complete, awaiting sign-off. Do not begin
-  implementation until reviewed.**
+- **STATUS: executed exactly as designed, 2026-07-30** (`docs/lim_runs/
+  rb3b_results.md`). Training run `8d265e59-...`, eval run `5beeee3c-...`,
+  seed=42, `schema_hint=True` held fixed, `value_hint=True` the one
+  variable — byte-identical to RB-3a otherwise. One genuine infrastructure
+  blocker encountered (a GPU-memory `RuntimeError` caused by a concurrent
+  external process holding VRAM) and resolved without any config change,
+  per the standing protocol; the failed attempt is preserved in the
+  registry, not deleted.
+  **Primary metric (valid-value rate) CONFIRMED**: `finding` and
+  `resulting_status` valid-value rate both went from 0% (RB-3a) to
+  **100%** (bootstrap CI [1.0, 1.0], n=24 schema-matched outputs, all
+  24/24). Control metric (schema-match rate) not only held but improved
+  further, 75%→100%.
+  **New bottleneck surfaced, not fixed**: cross-checking against ground
+  truth shows this 100% validity was achieved via near-total **mode
+  collapse**, not per-example discrimination — the model produced
+  `finding=fail` in 22/24 outputs (this held-out set's true distribution
+  is `concern=12, pass=12, fail=0`; `concern` was never produced even
+  once) and `resulting_status=unvalidated_ai_interpretation` in **24/24**
+  outputs (true distribution `unvalidated_ai_interpretation=17,
+  blocked_by_self_critique=7`; the latter was never produced once).
+  `self_critique_quality` remains exactly 0.0/24, unchanged from RB-3a.
+  **Per instruction, this is documented and the work stops here — no
+  RB-3c proposed or started, no additional fix implemented.** Awaiting
+  review of this new bottleneck before any next-experiment decision.
 
 ## RB-4 — Learning rate sweep
 
@@ -314,7 +337,7 @@ constraint.
 | RB-2/2b | LoRA rank sweep | High | M | ✅ Complete, formally closed (r=8) |
 | RB-3 | Train on `self_critique` | — | S | ⤴ Superseded by RB-3a |
 | RB-3a | Schema-learning diagnostic | High | S | ✅ Confirmed |
-| **RB-3b** | **Categorical value-vocabulary acquisition** | **🔴 Highest** | **S–M** | **Design complete, not started — awaiting review** |
+| RB-3b | Categorical value-vocabulary acquisition | High (was highest) | S–M | ✅ Confirmed + new mode-collapse bottleneck found, stopped for review |
 | RB-7 | Generation stop-sequence | Medium | S | Not started |
 | RB-4 | Learning rate sweep | Medium | M | Not started |
 | RB-5 | Batch size / grad accumulation | Medium | M | Not started |
