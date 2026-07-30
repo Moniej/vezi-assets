@@ -90,31 +90,76 @@ def _schema_hint_line(ex: dict) -> str:
     return f"### Required JSON keys:\n{keys}\n\n" if keys else ""
 
 
-def _format_example_text(ex: dict, eos_token: str, schema_hint: bool = False) -> str:
+# RB-3b (docs/lim_runs/rb3b_experimental_design.md): scoped per-task, not
+# generic across all 17 dataset shapes -- only self_critique currently has
+# a known, governed, small categorical vocabulary problem. Verified before
+# RB-3b's run that these field names are the only two self_critique fields
+# needing this treatment (`finding`, `resulting_status`) -- `explanation`
+# is free text and has no fixed vocabulary to hint.
+_VALUE_HINT_FIELDS = {"self_critique": ("finding", "resulting_status")}
+
+
+def _compute_value_hint_texts(examples: list[dict]) -> dict[str, str]:
+    """RB-3b: derived ONCE from a full example set's OWN observed
+    expected_output values (never per single example -- one example only
+    carries one legal value, not the full domain). Verified before this
+    experiment that the observed training-set values agree exactly with
+    the governed source (self_critique.py's `_SEVERITY` dict and its two
+    reachable resulting_status branches) -- see rb3b_experimental_
+    design.md section 3. Caller must always compute this from the
+    TRAINING split specifically (never validation/test), and reuse the
+    identical resulting dict everywhere a value hint is needed for a given
+    run, so training and evaluation never derive two different hints."""
+    by_task: dict[str, dict[str, set]] = {}
+    for ex in examples:
+        fields = _VALUE_HINT_FIELDS.get(ex.get("task"))
+        if not fields:
+            continue
+        out = ex.get("expected_output", {})
+        bucket = by_task.setdefault(ex["task"], {f: set() for f in fields})
+        for field in fields:
+            if field in out:
+                bucket[field].add(out[field])
+    texts = {}
+    for task, field_values in by_task.items():
+        lines = [f"{field}: one of {sorted(values)}" for field, values in field_values.items() if values]
+        if lines:
+            texts[task] = "### Field value constraints:\n" + "\n".join(lines) + "\n\n"
+    return texts
+
+
+def _format_example_text(ex: dict, eos_token: str, schema_hint: bool = False,
+                         value_hint_text: str = "") -> str:
     """Generic instruction/context/response formatting -- works across all
     17 canonical dataset-schema shapes without a per-type branch, since
     every TrainingExample already carries the same instruction/context/
     expected_output fields regardless of task. `schema_hint` is the RB-3a
     Phase 2 single-variable toggle -- default False keeps every other
-    experiment's prompt shape byte-identical to before this was added."""
+    experiment's prompt shape byte-identical to before this was added.
+    `value_hint_text` is RB-3b's toggle (a pre-computed string, since the
+    legal-value set is a property of the whole dataset, not one example)
+    -- default "" is likewise a no-op for every prior experiment."""
     hint = _schema_hint_line(ex) if schema_hint else ""
     return (f"### Instruction:\n{ex['instruction']}\n\n"
            f"### Context:\n{json.dumps(ex.get('context', {}), default=str)}\n\n"
            f"{hint}"
+           f"{value_hint_text}"
            f"### Response:\n{json.dumps(ex.get('expected_output', {}), default=str)}{eos_token}")
 
 
-def _prompt_prefix(ex: dict, schema_hint: bool = False) -> str:
+def _prompt_prefix(ex: dict, schema_hint: bool = False, value_hint_text: str = "") -> str:
     """Everything up to and including '### Response:\\n' -- the exact
     template prefix scripts/lim/run_evaluation.py also generates from
     (training and evaluation must never diverge on this shape). Used here
     to find the prompt/response TOKEN boundary for response-only loss
-    masking below. `schema_hint` must be passed identically at training
-    and evaluation time for a given experiment -- see `_format_example_text`."""
+    masking below. `schema_hint`/`value_hint_text` must be passed
+    identically at training and evaluation time for a given experiment --
+    see `_format_example_text`."""
     hint = _schema_hint_line(ex) if schema_hint else ""
     return (f"### Instruction:\n{ex['instruction']}\n\n"
            f"### Context:\n{json.dumps(ex.get('context', {}), default=str)}\n\n"
            f"{hint}"
+           f"{value_hint_text}"
            f"### Response:\n")
 
 
@@ -147,15 +192,19 @@ class _JsonlExampleDataset:
     R-DATASETS-DILL finding: that library's construction paths are broken
     on this Python 3.14 stack at Unsloth's pinned version ceiling)."""
 
-    def __init__(self, examples: list[dict], tokenizer, max_length: int, schema_hint: bool = False):
+    def __init__(self, examples: list[dict], tokenizer, max_length: int, schema_hint: bool = False,
+                value_hint_texts: dict[str, str] | None = None):
         import torch
         self._torch = torch
         self.encoded = []
+        value_hint_texts = value_hint_texts or {}
         for ex in examples:
-            text = _format_example_text(ex, tokenizer.eos_token, schema_hint=schema_hint)
+            vht = value_hint_texts.get(ex.get("task"), "")
+            text = _format_example_text(ex, tokenizer.eos_token, schema_hint=schema_hint, value_hint_text=vht)
             enc = tokenizer(text, truncation=True, max_length=max_length, padding="max_length")
             prompt_token_count = len(
-                tokenizer(_prompt_prefix(ex, schema_hint=schema_hint), add_special_tokens=True)["input_ids"])
+                tokenizer(_prompt_prefix(ex, schema_hint=schema_hint, value_hint_text=vht),
+                         add_special_tokens=True)["input_ids"])
             enc["labels"] = _build_response_only_labels(enc, prompt_token_count, ex["unique_id"])
             self.encoded.append(enc)
 
@@ -275,7 +324,7 @@ def _manual_train_loop(trainer, args, con_train, run_id: str, *,
 def run_training(
     con_lim, con_train, *, dataset_specs: list[tuple[str, str | None]], base_model: str,
     quantization_config: dict, lora_config: dict, hyperparameters: dict, seed: int,
-    max_seq_length: int = 256, notes: str = "", schema_hint: bool = False,
+    max_seq_length: int = 256, notes: str = "", schema_hint: bool = False, value_hint: bool = False,
 ) -> dict:
     """`con_lim` is the dataset-version registry connection (lim_training/
     dataset_registry.sqlite); `con_train` is the SEPARATE training-run
@@ -284,9 +333,13 @@ def run_training(
 
     `schema_hint` (RB-3a Phase 2, default False): the ONLY variable that
     experiment changes vs. the frozen baseline -- see
-    docs/lim_runs/rb3a_phase2_preregistration.md. Recorded into the
-    immutable `hyperparameters` JSON blob so it's auditable per run
-    without a registry schema change.
+    docs/lim_runs/rb3a_phase2_preregistration.md. `value_hint` (RB-3b,
+    default False): the ONLY variable RB-3b changes -- see
+    docs/lim_runs/rb3b_experimental_design.md. RB-3b holds schema_hint
+    fixed at True (preserving RB-3a's confirmed win as a control, not
+    re-testing it) and toggles value_hint alone. Both flags are recorded
+    into the immutable `hyperparameters` JSON blob so they're auditable
+    per run without a registry schema change.
 
     Raises dataset_loader.DatasetNotReadyError (propagated, never
     swallowed) if any requested dataset isn't ready -- this happens BEFORE
@@ -295,7 +348,7 @@ def run_training(
     attempted)."""
     manifest = dataset_loader.load_training_set(con_lim, dataset_specs)
 
-    hyperparameters = {**hyperparameters, "schema_hint": schema_hint}
+    hyperparameters = {**hyperparameters, "schema_hint": schema_hint, "value_hint": value_hint}
     run_id = training_registry.start_run(
         con_train, dataset_versions=manifest["dataset_versions"],
         dataset_content_hashes=manifest["content_hashes"],
@@ -331,9 +384,17 @@ def run_training(
         # LIM-2 run), because it wasn't derived from splits.json at all.
         train_examples = manifest["train_examples"]
         eval_examples = manifest["validation_examples"]
-        train_ds = _JsonlExampleDataset(train_examples, tokenizer, max_seq_length, schema_hint=schema_hint)
+        # RB-3b: derived ONCE from train_examples specifically (never
+        # validation/test), then reused identically for both train_ds and
+        # eval_ds -- eval_ds is only ever used for periodic eval_loss
+        # monitoring (LIM-4), never generation, but must still see the
+        # same prompt shape the model was actually trained on.
+        value_hint_texts = _compute_value_hint_texts(train_examples) if value_hint else {}
+        train_ds = _JsonlExampleDataset(train_examples, tokenizer, max_seq_length,
+                                        schema_hint=schema_hint, value_hint_texts=value_hint_texts)
         has_eval = len(eval_examples) > 0
-        eval_ds = (_JsonlExampleDataset(eval_examples, tokenizer, max_seq_length, schema_hint=schema_hint)
+        eval_ds = (_JsonlExampleDataset(eval_examples, tokenizer, max_seq_length,
+                                       schema_hint=schema_hint, value_hint_texts=value_hint_texts)
                   if has_eval else None)
 
         args = TrainingArguments(

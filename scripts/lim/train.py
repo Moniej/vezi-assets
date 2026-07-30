@@ -60,6 +60,14 @@ def main():
                         "explicit 'Required JSON keys' line to the prompt, derived from each "
                         "example's own expected_output key names. Default off -- pass only when "
                         "schema visibility itself is the experiment's single variable.")
+    ap.add_argument("--value-hint", action="store_true",
+                   help="RB-3b (docs/lim_runs/rb3b_experimental_design.md): adds an explicit "
+                        "'Field value constraints' line listing the legal categorical values for "
+                        "fields with a known governed vocabulary (currently only self_critique's "
+                        "finding/resulting_status), derived from the training set. Default off -- "
+                        "pass only when value-vocabulary visibility itself is the experiment's "
+                        "single variable; RB-3b holds --schema-hint on at the same time to "
+                        "preserve RB-3a's win as a control, not a re-test.")
     ap.add_argument("--notes", default="")
     args = ap.parse_args()
 
@@ -84,7 +92,7 @@ def main():
                             "max_steps": args.max_steps, "save_steps": args.save_steps,
                             "learning_rate": args.learning_rate},
             seed=args.seed, max_seq_length=args.max_seq_length, notes=args.notes,
-            schema_hint=args.schema_hint)
+            schema_hint=args.schema_hint, value_hint=args.value_hint)
     except DatasetNotReadyError as e:
         print(f"\nREFUSED TO START TRAINING: {e}")
         sys.exit(2)

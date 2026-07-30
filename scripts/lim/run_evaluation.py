@@ -119,12 +119,18 @@ def main():
                    help="RB-3a Phase 2 (docs/lim_runs/rb3a_phase2_preregistration.md): must match "
                         "whatever the checkpoint was TRAINED with -- adds the same 'Required JSON "
                         "keys' line to the generation prompt via the same _prompt_prefix function.")
+    ap.add_argument("--value-hint", action="store_true",
+                   help="RB-3b (docs/lim_runs/rb3b_experimental_design.md): must match whatever "
+                        "the checkpoint was TRAINED with -- adds the same 'Field value constraints' "
+                        "line, derived from the checkpoint's own traced training run's TRAINING "
+                        "split (never validation/test), so eval never invents a different hint "
+                        "than what the model actually saw during training.")
     ap.add_argument("--notes", default="")
     args = ap.parse_args()
     splits_to_use = ["test", "validation"] if args.include_validation else "test"
 
-    from ngxrot.lim import eval_dataset, eval_metrics, eval_registry, registry, training_registry
-    from ngxrot.lim.training import _prompt_prefix
+    from ngxrot.lim import dataset_loader, eval_dataset, eval_metrics, eval_registry, registry, training_registry
+    from ngxrot.lim.training import _compute_value_hint_texts, _prompt_prefix
 
     con_lim = registry.init_registry()
     con_train = training_registry.init_registry()
@@ -155,6 +161,19 @@ def main():
     print(f"\nCheckpoint: {ckpt_dir}")
     print(f"Traced to training_run_id: {training_run_id}")
 
+    value_hint_texts = {}
+    if args.value_hint:
+        if run_prov is None:
+            print("REFUSED: --value-hint requires tracing this checkpoint back to its training "
+                 "run (to derive the identical training-split value vocabulary the model was "
+                 "trained with), but no training_run_events row matched this checkpoint path.")
+            sys.exit(1)
+        value_hint_specs = [tuple(dv.split("@", 1)) if "@" in dv else (dv, None)
+                           for dv in run_prov["dataset_versions"]]
+        value_hint_manifest = dataset_loader.load_training_set(con_lim, value_hint_specs)
+        value_hint_texts = _compute_value_hint_texts(value_hint_manifest["train_examples"])
+        print(f"Value-hint texts derived from training split for: {list(value_hint_texts.keys())}")
+
     import torch
     from peft import PeftModel
     from unsloth import FastLanguageModel
@@ -171,7 +190,8 @@ def main():
     from transformers import StoppingCriteriaList
 
     for t, ex in all_examples:
-        prompt = _prompt_prefix(ex, schema_hint=args.schema_hint)
+        prompt = _prompt_prefix(ex, schema_hint=args.schema_hint,
+                                value_hint_text=value_hint_texts.get(t, ""))
         inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
         input_tokens = inputs["input_ids"].shape[-1]
         stopping = StoppingCriteriaList([_make_balanced_json_stopping_criteria(tokenizer, input_tokens)])
@@ -208,6 +228,7 @@ def main():
     metrics["total_wall_s"] = round(total_wall_s, 2)
     metrics["throughput_examples_per_s"] = round(len(all_examples) / total_wall_s, 4)
     metrics["schema_hint_enabled"] = args.schema_hint
+    metrics["value_hint_enabled"] = args.value_hint
     metrics["holdout_coverage"] = {
         t: {"n_in_split": h.get("n_in_split", 0),
            "status": "evaluated" if h.get("n_in_split", 0) > 0 else
