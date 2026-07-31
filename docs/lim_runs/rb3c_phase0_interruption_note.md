@@ -90,6 +90,37 @@ changes nothing about the design — Phase 0 simply needs to be re-run to
 completion after the environment is verified post-restart, using the
 identical script and identical checkpoints.
 
+## Addendum — monitor cleanup (2026-07-31, before the planned restart)
+
+A follow-up cleanup pass was requested to stop any remaining watcher
+processes before the restart, separate from the interruption itself
+documented above. Findings, kept distinct from any experimental result:
+
+- **No Python/GPU process was found running at all** — confirming the
+  Phase 0 process was already gone, not merely idle (consistent with the
+  diagnosis above).
+- **8 leftover `tail -f | grep` monitor pipelines were found still alive
+  at the OS level**, despite the harness having already reported their
+  parent `Monitor` tasks as stopped/completed/timed-out earlier in this
+  session. All were watching RB-3b/RB-3c log files
+  (`rb3b_train.log`, `rb3b_eval.log`, `rb3b_probe.log`,
+  `rb3b_probe2.log`, `rb3b_probe3.log` ×2, `rb3b_probe4.log`,
+  `rb3c_phase0.log`, plus `rb3b_train2.log` found in a follow-up sweep)
+  — none were attached to any live experiment process, so stopping them
+  had no effect on any data.
+- **All 16 processes (8 tail/grep pairs) were terminated gracefully with
+  `SIGTERM`** and confirmed gone on a follow-up check; no `SIGKILL` was
+  needed at any point.
+- **Verified after cleanup**: process table fully clean (only the
+  current shell remains); training registry's most recent run still
+  `8d265e59-...`, eval registry's most recent run still `5beeee3c-...`
+  (both unchanged, 38 and 24 total rows respectively — no new entries);
+  `git status` shows only the same pre-existing untracked backup file as
+  before; no `rb3c_phase0_probe_data.json` or any other new artifact was
+  created.
+- This cleanup made **no changes to any code, config, experiment file,
+  registry, or evaluation criterion**, and started no new experiment.
+
 ## Next step (not taken yet)
 
 Per instruction: do not restart Phase 0 yet. After the machine restarts,
