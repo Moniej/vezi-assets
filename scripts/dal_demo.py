@@ -22,8 +22,12 @@ from ngxrot.providers import CSVProvider, SyntheticProvider  # noqa: E402
 from ngxrot.providers.base import DataProvider, ProviderInfo  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-DB_PATH = ROOT / "data" / "ngx.sqlite"
-DB_PATH.unlink(missing_ok=True)
+# Fixed 2026-08-01 (docs/fre_runs/incident_2026-08-01_prod_db_wipe.md): this
+# used to hardcode data/ngx.sqlite and unconditionally unlink it -- harmless
+# when written (no real data existed yet), but a live landmine once the
+# production database was populated. Uses the sanctioned scratch-DB helper
+# instead, same fix as scripts/phase1_smoke_test.py.
+DB_PATH = db.new_scratch_db_path()
 con = db.init_db(DB_PATH)
 
 AS_OF = "2026-07-15"

@@ -3,6 +3,15 @@
 Uses synthetic rows (clearly marked, source=manual_seed) — no real market
 data is loaded in Phase 1. Three lookahead traps are set; the test passes
 only if all three are blocked.
+
+Runs against a fresh SCRATCH database (db.new_scratch_db_path()), never the
+real data/ngx.sqlite -- this script originally hardcoded the production path
+and unconditionally unlinked it, which was harmless when first written (no
+real data existed yet) but silently wiped the real, since-populated
+production database when re-run on 2026-08-01
+(docs/fre_runs/incident_2026-08-01_prod_db_wipe.md). Fixed, not just
+patched: use the one sanctioned scratch-DB helper instead of hand-rolling
+the path.
 """
 
 import sys
@@ -12,8 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from ngxrot import db  # noqa: E402
 
-DB_PATH = Path(__file__).resolve().parents[1] / "data" / "ngx.sqlite"
-DB_PATH.unlink(missing_ok=True)
+DB_PATH = db.new_scratch_db_path()
 
 con = db.init_db(DB_PATH)
 

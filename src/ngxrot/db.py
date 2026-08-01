@@ -20,14 +20,29 @@ SELECTs on the base tables.
 
 from __future__ import annotations
 
+import os
 import sqlite3
+import tempfile
 from pathlib import Path
 
 import pandas as pd
 
 PKG_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = PKG_ROOT / "schema"
-DEFAULT_DB = PKG_ROOT / "data" / "ngx.sqlite"
+
+# Incident, 2026-08-01 (docs/fre_runs/incident_2026-08-01_prod_db_wipe.md):
+# two old smoke/demo scripts hardcoded this exact literal path and called
+# `.unlink()` on it directly, bypassing this module entirely, which deleted
+# the real production database. DEFAULT_DB now honors an NGXROT_DB_PATH
+# environment override so any script that relies on the default (via
+# connect()/init_db() with no explicit path) can be redirected to a scratch
+# location by CONFIGURATION -- e.g. in a CI/sandboxed test run -- without
+# touching that script's code. This does NOT protect a script that hardcodes
+# its own literal path instead of using DEFAULT_DB (as both incident scripts
+# did) -- see new_scratch_db_path()/assert_not_default_db() below for that
+# case, and scripts/check_db_safety.py for the automated audit that now
+# catches the hardcoded-path pattern itself.
+DEFAULT_DB = Path(os.environ.get("NGXROT_DB_PATH", str(PKG_ROOT / "data" / "ngx.sqlite")))
 
 
 def connect(db_path: str | Path = DEFAULT_DB) -> sqlite3.Connection:
@@ -36,6 +51,33 @@ def connect(db_path: str | Path = DEFAULT_DB) -> sqlite3.Connection:
     con = sqlite3.connect(db_path)
     con.execute("PRAGMA foreign_keys = ON")
     return con
+
+
+def new_scratch_db_path() -> Path:
+    """A throwaway database path for a smoke test / demo / rehearsal script
+    that wants a fresh, empty database -- guaranteed never to collide with
+    DEFAULT_DB. This is the ONE sanctioned way to get a "fresh empty DB for
+    a one-off script" on this platform; prefer it over hand-rolling
+    `ROOT / "data" / "ngx.sqlite"` + `.unlink()`, which is exactly the
+    pattern that caused the 2026-08-01 production-database wipe (see
+    DEFAULT_DB's comment above). The directory is fresh (tempfile.mkdtemp())
+    so no unlink is ever needed before use.
+    """
+    return Path(tempfile.mkdtemp()) / "scratch.sqlite"
+
+
+def assert_not_default_db(path: str | Path) -> None:
+    """Defense-in-depth guard: raise if `path` resolves to DEFAULT_DB.
+    Call this before any destructive operation (unlink/DROP/wholesale
+    overwrite) in a script that must never be allowed to target the real
+    production database. Cheap, explicit, and independent of whether the
+    caller remembered to use new_scratch_db_path() instead."""
+    if Path(path).resolve() == DEFAULT_DB.resolve():
+        raise RuntimeError(
+            f"Refusing a destructive operation against the production "
+            f"database at {DEFAULT_DB} -- use db.new_scratch_db_path() for "
+            f"a smoke test/demo/rehearsal script instead."
+        )
 
 
 def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Connection:
