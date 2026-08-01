@@ -24,11 +24,15 @@ output, no cross-company scoring; tag
 Financial Reasoning Memory — a read-only `as_of(ticker, date)` layer over
 Phase 3's conclusions, gated by public filing dates rather than
 financial period dates, with a mechanical 30-point look-ahead audit
-finding 0 violations; tag `fsi-phase4-baseline-2026-08-01`) are all
-complete and frozen. Full implementation history, results, and an
-architectural-defect discovery-and-fix precedent are in `docs/fre_runs/`.
-No further phase has been approved or started as of this writing.
-Everything below this line is
+finding 0 violations; tag `fsi-phase4-baseline-2026-08-01`), and **FSI
+Phase 5** (Regression & Consistency Validation Harness — golden-snapshot
+reproducibility, Phase 3/4 cross-consistency, and 3/3 historical
+defects confirmed detectable via scratch-copy/isolated-function
+injection, 0 deviations found in the real pipeline; tag
+`fsi-phase5-baseline-2026-08-01`) are all complete and frozen. Full
+implementation history, results, and an architectural-defect
+discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
+been approved or started as of this writing. Everything below this line is
 the original, frozen design document and describes the program as first
 conceived; it is retained unmodified as the architectural reference, not
 updated in place as execution has diverged from it (see the roadmap
