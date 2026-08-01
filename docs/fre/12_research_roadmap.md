@@ -124,8 +124,8 @@ roadmap review conducted before FRE-7 began
 Net effect: this table's FRE-7 ("Valuation Engine v0", pilot triangulated
 ranges against a now-real dataset) remains the next roadmap item exactly
 as designed and is **not yet started**. Separately, the owner has since
-directed a **Phase 3** (`docs/fre_runs/fsi_phase3_preregistration.md`,
-once written) focused on financial reasoning over the FSI dataset rather
-than valuation specifically — this is additive to, not a replacement for,
+directed a **Phase 3** (`docs/fre_runs/fsi_phase3_preregistration.md`)
+focused on financial reasoning over the FSI dataset rather than
+valuation specifically — this is additive to, not a replacement for,
 FRE-7-as-designed; both remain individually gated, and neither begins
 without its own separate owner approval.
