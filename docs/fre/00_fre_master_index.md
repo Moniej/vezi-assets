@@ -20,10 +20,15 @@ Reasoning over the validated dataset — 177 mechanically-derived
 conclusions: ratios, trend classifications, rule-based health flags,
 plus a read-only evidence-linking layer; no new fact types, no valuation
 output, no cross-company scoring; tag
-`fsi-phase3-baseline-2026-08-01`) are all complete and frozen. Full
-implementation history, results, and an architectural-defect
-discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
-been approved or started as of this writing. Everything below this line is
+`fsi-phase3-baseline-2026-08-01`), and **FSI Phase 4** (Point-in-Time
+Financial Reasoning Memory — a read-only `as_of(ticker, date)` layer over
+Phase 3's conclusions, gated by public filing dates rather than
+financial period dates, with a mechanical 30-point look-ahead audit
+finding 0 violations; tag `fsi-phase4-baseline-2026-08-01`) are all
+complete and frozen. Full implementation history, results, and an
+architectural-defect discovery-and-fix precedent are in `docs/fre_runs/`.
+No further phase has been approved or started as of this writing.
+Everything below this line is
 the original, frozen design document and describes the program as first
 conceived; it is retained unmodified as the architectural reference, not
 updated in place as execution has diverged from it (see the roadmap
