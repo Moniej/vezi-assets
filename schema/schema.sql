@@ -642,6 +642,49 @@ CREATE INDEX IF NOT EXISTS ix_llm_calls_doc ON llm_calls (doc_id);
 CREATE INDEX IF NOT EXISTS ix_llm_calls_cache_key ON llm_calls (cache_key);
 CREATE INDEX IF NOT EXISTS ix_llm_calls_document_hash ON llm_calls (document_hash);
 
+-- ----------------------------------------------------------------------------
+-- FSI Phase 3 (docs/fre_runs/fsi_phase3_preregistration.md Area 6):
+-- Financial Reasoning conclusions -- ratios, trends, and rule-based health
+-- flags DERIVED from already-validated extracted_facts (FSI Phase 1-2). No
+-- new fact_type, no new document, no valuation output. Append-only: a rerun
+-- under a new rule_version inserts new rows, never overwrites old ones,
+-- exactly like restates_fact_id/investment_implications elsewhere in this
+-- file. confidence_tier is NULLABLE and a NULL result is a real, meaningful
+-- signal ("this conclusion's confidence floor is unknown because at least
+-- one input fact predates the confidence_tier column and was never
+-- backfilled" -- Phase 1's own 30 original facts) -- never silently upgraded
+-- to a real tier.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS financial_reasoning_conclusions (
+    conclusion_id   INTEGER PRIMARY KEY,
+    ticker          TEXT NOT NULL,
+    conclusion_type TEXT NOT NULL CHECK (conclusion_type IN ('ratio', 'trend', 'flag')),
+    metric          TEXT NOT NULL,
+    status          TEXT NOT NULL CHECK (status IN ('computed', 'insufficient_data')),
+    value_numeric   REAL,             -- ratio value, or pct change for a trend; NULL if insufficient_data
+    value_text      TEXT,             -- e.g. 'increasing'/'decreasing'/'stable' for a trend, or a flag's own name
+    confidence_tier TEXT CHECK (confidence_tier IN
+                       ('direct_reported', 'mapped_equivalent', 'derived', 'interpretation')),
+    method          TEXT NOT NULL,    -- e.g. "debt_to_equity = liabilities / equity" -- the exact calculation, never left implicit
+    limitations     TEXT NOT NULL,    -- always populated, even for a clean 'computed' result (e.g. period-span caveats)
+    rule_version    TEXT NOT NULL,    -- distinguishes a rule-set change from a data change; never overwritten
+    period_start    TEXT,             -- the (later, for a trend) period this conclusion is about
+    period_end      TEXT,
+    computed_at     TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_fr_conclusions_ticker ON financial_reasoning_conclusions (ticker);
+CREATE INDEX IF NOT EXISTS ix_fr_conclusions_type_metric ON financial_reasoning_conclusions (conclusion_type, metric);
+
+-- Join table, not a free-text blob, per the pre-registration's own explicit
+-- requirement ("input_fact_ids (a traceable list/join table)") -- every
+-- conclusion's exact source facts are queryable, not embedded as text.
+CREATE TABLE IF NOT EXISTS financial_reasoning_conclusion_facts (
+    conclusion_id INTEGER NOT NULL REFERENCES financial_reasoning_conclusions(conclusion_id),
+    fact_id       INTEGER NOT NULL REFERENCES extracted_facts(fact_id),
+    role          TEXT NOT NULL,   -- e.g. 'numerator', 'denominator', 'earlier_period', 'later_period', 'input'
+    PRIMARY KEY (conclusion_id, fact_id, role)
+);
+
 -- 2026-07-22 hardening: per-document pilot processing lifecycle — what
 -- makes run_phase_c_pilot.py resumable. The status here is the fast,
 -- authoritative "should I skip this document" signal; the actual
