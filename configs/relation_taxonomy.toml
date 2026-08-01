@@ -1,0 +1,36 @@
+# Relation-type taxonomy for entity_relationships.relation_type
+# (docs/fre/02_knowledge_graph_expansion.md). CONFIGURABLE: adding a leaf is
+# a config change, not a code change -- same pattern as
+# event_taxonomy.toml/fact_taxonomy.toml/document_taxonomy.toml.
+#
+# NOT enforced as a database CHECK constraint (relation_type remains plain
+# TEXT NOT NULL in schema.sql), matching the SAME convention already used
+# for extracted_facts.fact_type -- a config-driven taxonomy on this
+# platform is application-layer guidance, not always a DB-level constraint.
+# This file is the source of truth for what a future extraction pass is
+# permitted to write; existing real data (entity_relationships currently
+# holds exactly one row, relation_type='affects_order_1') already conforms
+# to the [graph_provenance] group below and is unaffected by this file's
+# addition.
+
+[corporate_structure]
+types = ["subsidiary_of", "parent_of", "jv_partner_of", "merged_into",
+         "demerged_from", "renamed_from"]
+
+[commercial]
+types = ["competitor_of", "supplier_of", "customer_of", "distributor_for"]
+
+[governance]
+types = ["regulated_by", "audited_by", "board_member_of", "executive_of",
+         "major_shareholder_of"]
+
+[macro_exposure]
+types = ["exposed_to_commodity", "exposed_to_fx", "exposed_to_policy"]
+
+[graph_provenance]
+# UNCHANGED -- the existing effect_chains-order-tagged values Phase F's
+# record_relationship() already writes (industry_reasoning.py). Kept as
+# their own family so a future query can distinguish a genuinely classified
+# relation (the groups above) from an order-tagged effect-propagation
+# artifact (this group).
+types = ["affects_order_1", "affects_order_2", "affects_order_3"]

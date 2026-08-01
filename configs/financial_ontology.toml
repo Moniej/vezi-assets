@@ -1,0 +1,148 @@
+# Financial ontology (docs/fre/01_financial_ontology.md). CONFIGURABLE:
+# adding a node or edge is a config change, not a code change -- same
+# pattern as event_taxonomy.toml/fact_taxonomy.toml/relation_taxonomy.toml.
+#
+# FRE-1 SCOPE: seeded with the DEFINITIONAL (accounting-identity) skeleton
+# ONLY. No `causal` edges (macro/sector-conditioned mechanisms, e.g.
+# "MPR drives_negative industrial.net_profit") are added by this pass --
+# Part 1's own design explicitly recommends shipping a small,
+# high-confidence definitional core first and adding causal edges only as
+# they are actually needed, each tagged with its own evidence_status
+# (theoretical / ngx_confirmed / ngx_rejected / ngx_mixed) tied to
+# docs/FACTOR_REGISTRY.md. That is future work, not this file.
+#
+# Two edge classes exist in the full design (docs/fre/01_financial_ontology.md
+# "Design: two edge classes, not one"); only `definitional` is populated here:
+#   definitional -- an accounting identity, always true by construction,
+#                   no evidence_status needed (it cannot be empirically
+#                   rejected the way a causal claim can).
+#   causal       -- an economic mechanism, probabilistic, evidence-scored.
+#                   NOT YET POPULATED (see above).
+
+[node_families]
+# Only the three statement-line-item families this skeleton actually uses.
+# macro / corporate_action / sector_ratio / qualitative node families
+# (docs/fre/01_financial_ontology.md's full node taxonomy) are documented
+# there but intentionally not seeded here -- they gain real edges only once
+# a financial-statements dataset exists (docs/fre/10_dataset_strategy.md)
+# and/or a causal edge actually needs them.
+income_statement = ["revenue", "cogs", "gross_profit", "opex", "operating_profit",
+                     "d_and_a", "ebitda", "ebit", "interest_expense", "tax",
+                     "net_profit", "shares_outstanding", "eps"]
+balance_sheet     = ["assets", "liabilities", "equity"]
+cash_flow         = ["cfo", "capex", "fcf"]
+
+# --- Income statement skeleton (Revenue -> ... -> EPS) -----------------
+[[edge]]
+subject = "cogs"
+predicate = "component_of"
+object = "gross_profit"
+edge_class = "definitional"
+mechanism = "Gross Profit = Revenue - COGS."
+
+[[edge]]
+subject = "revenue"
+predicate = "component_of"
+object = "gross_profit"
+edge_class = "definitional"
+mechanism = "Gross Profit = Revenue - COGS."
+
+[[edge]]
+subject = "opex"
+predicate = "component_of"
+object = "operating_profit"
+edge_class = "definitional"
+mechanism = "Operating Profit = Gross Profit - Opex."
+
+[[edge]]
+subject = "gross_profit"
+predicate = "component_of"
+object = "operating_profit"
+edge_class = "definitional"
+mechanism = "Operating Profit = Gross Profit - Opex."
+
+[[edge]]
+subject = "operating_profit"
+predicate = "component_of"
+object = "ebit"
+edge_class = "definitional"
+mechanism = "EBIT ~= Operating Profit, adjusted for non-operating items disclosed in the filing."
+
+[[edge]]
+subject = "ebit"
+predicate = "component_of"
+object = "ebitda"
+edge_class = "definitional"
+mechanism = "EBITDA = EBIT + D&A."
+
+[[edge]]
+subject = "d_and_a"
+predicate = "component_of"
+object = "ebitda"
+edge_class = "definitional"
+mechanism = "EBITDA = EBIT + D&A."
+
+[[edge]]
+subject = "interest_expense"
+predicate = "component_of"
+object = "net_profit"
+edge_class = "definitional"
+mechanism = "Net Profit = EBIT - Interest Expense - Tax (+/- non-operating items)."
+
+[[edge]]
+subject = "ebit"
+predicate = "component_of"
+object = "net_profit"
+edge_class = "definitional"
+mechanism = "Net Profit = EBIT - Interest Expense - Tax (+/- non-operating items)."
+
+[[edge]]
+subject = "tax"
+predicate = "component_of"
+object = "net_profit"
+edge_class = "definitional"
+mechanism = "Net Profit = EBIT - Interest Expense - Tax (+/- non-operating items)."
+
+[[edge]]
+subject = "net_profit"
+predicate = "derived_from"
+object = "eps"
+edge_class = "definitional"
+mechanism = "EPS = Net Profit / Shares Outstanding."
+
+[[edge]]
+subject = "shares_outstanding"
+predicate = "derived_from"
+object = "eps"
+edge_class = "definitional"
+mechanism = "EPS = Net Profit / Shares Outstanding."
+
+# --- Balance sheet identity ---------------------------------------------
+[[edge]]
+subject = "liabilities"
+predicate = "component_of"
+object = "assets"
+edge_class = "definitional"
+mechanism = "Assets = Liabilities + Equity."
+
+[[edge]]
+subject = "equity"
+predicate = "component_of"
+object = "assets"
+edge_class = "definitional"
+mechanism = "Assets = Liabilities + Equity."
+
+# --- Cash flow identity --------------------------------------------------
+[[edge]]
+subject = "cfo"
+predicate = "component_of"
+object = "fcf"
+edge_class = "definitional"
+mechanism = "FCF = CFO - Capex."
+
+[[edge]]
+subject = "capex"
+predicate = "component_of"
+object = "fcf"
+edge_class = "definitional"
+mechanism = "FCF = CFO - Capex."

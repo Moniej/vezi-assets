@@ -42,6 +42,24 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
     """Create all tables/views and (optionally) load reference seeds."""
     con = connect(db_path)
     _migrate_events_table(con)
+    _migrate_entities_table(con)
+    # additive migration, 2026-08-01 (FRE-1, docs/fre/03_evidence_graph.md +
+    # docs/fre/04_reasoning_engine.md): both nullable, no existing row is
+    # affected. schema.sql's CREATE TABLE IF NOT EXISTS already carries
+    # these for a fresh database; this covers a database that already has
+    # causal_chain_steps from before this change (same try/except
+    # OperationalError pattern as every other ALTER in this function).
+    try:
+        con.execute("ALTER TABLE causal_chain_steps ADD COLUMN implication_layer TEXT "
+                    "CHECK (implication_layer IN ('financial','business','competitive'))")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE causal_chain_steps ADD COLUMN reasoning_mode TEXT "
+                    "CHECK (reasoning_mode IN ('causal','counterfactual','historical','trend',"
+                    "'comparative','sector','macro','valuation','uncertainty','portfolio'))")
+    except sqlite3.OperationalError:
+        pass
     try:  # additive migration for pre-uid events tables
         con.execute("ALTER TABLE events ADD COLUMN event_uid TEXT")
     except sqlite3.OperationalError:
@@ -109,6 +127,62 @@ def _migrate_events_table(con: sqlite3.Connection) -> None:
         FROM events_legacy""")
     con.execute("DROP TABLE events_legacy")
     con.commit()
+
+
+def _migrate_entities_table(con: sqlite3.Connection) -> None:
+    """One-time rebuild of a pre-FRE-1 `entities` table (narrower entity_type
+    CHECK) to the widened layout (docs/fre/02_knowledge_graph_expansion.md).
+    Existing rows are preserved verbatim -- entity_type has only ever held
+    'company'/'competitor_mention' in practice, both still valid under the
+    widened CHECK.
+
+    Unlike _migrate_events_table, `entities` IS referenced by foreign keys
+    from other tables (entity_mentions.entity_id, entity_relationships.
+    subject_entity_id/object_entity_id, effect_chains.affected_entity_id).
+    RENAME TABLE would otherwise silently rewrite those tables' own FK
+    clauses to point at `entities_legacy` instead of following the table
+    back to its original name once recreated -- EMPIRICALLY VERIFIED (on a
+    disposable scratch copy of the real database, not assumed from
+    documentation) that this rewrite is suppressed only when BOTH
+    `foreign_keys=OFF` AND `legacy_alter_table=ON` are set before the
+    RENAME; either alone is insufficient. Every statement here uses
+    `execute()`, never `executescript()` -- the latter forces an implicit
+    COMMIT before running each script, which would make a failure midway
+    (e.g. the foreign_key_check below) impossible to cleanly roll back.
+    Keeping everything on plain `execute()` keeps the whole rebuild inside
+    one transaction that `rollback()` can fully undo.
+    """
+    info = con.execute("PRAGMA table_info(entities)").fetchall()
+    if not info:
+        return  # fresh DB -- schema.sql's CREATE TABLE IF NOT EXISTS handles it
+    row = con.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='entities'"
+    ).fetchone()
+    if row and row[0] and "'commodity'" in row[0]:
+        return  # already migrated
+    try:
+        con.execute("PRAGMA foreign_keys = OFF")
+        con.execute("PRAGMA legacy_alter_table = ON")
+        con.execute("ALTER TABLE entities RENAME TO entities_legacy")
+        con.execute("PRAGMA legacy_alter_table = OFF")
+        ddl = (SCHEMA_DIR / "schema.sql").read_text(encoding="utf-8")
+        start = ddl.index("CREATE TABLE IF NOT EXISTS entities (")
+        end = ddl.index(");", start) + 2
+        con.execute(ddl[start:end])
+        con.execute("""
+            INSERT INTO entities (entity_id, entity_type, canonical_name, ticker, first_seen_doc_id)
+            SELECT entity_id, entity_type, canonical_name, ticker, first_seen_doc_id
+            FROM entities_legacy""")
+        con.execute("DROP TABLE entities_legacy")
+        bad_fks = con.execute("PRAGMA foreign_key_check").fetchall()
+        if bad_fks:
+            raise RuntimeError(f"entities migration left dangling foreign keys: {bad_fks}")
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        con.execute("PRAGMA foreign_keys = ON")
 
 
 # ---------------------------------------------------------------------------

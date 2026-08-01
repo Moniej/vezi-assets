@@ -339,8 +339,17 @@ CREATE INDEX IF NOT EXISTS ix_documents_doc_type ON documents (doc_type);
 
 CREATE TABLE IF NOT EXISTS entities (
     entity_id         INTEGER PRIMARY KEY,
+    -- Widened 2026-08-01 (docs/fre/02_knowledge_graph_expansion.md, FRE-1):
+    -- 'commodity'/'macro_variable'/'subsidiary'/'index' added. Purely
+    -- additive to the CHECK set -- every pre-existing row's entity_type
+    -- ('company'/'competitor_mention', the only two ever populated so far)
+    -- remains valid. A fresh DB gets this widened CHECK directly from this
+    -- CREATE TABLE; an existing DB is migrated via db.py's
+    -- _migrate_entities_table() (table-rebuild, same pattern as
+    -- _migrate_events_table -- SQLite cannot ALTER an existing CHECK).
     entity_type       TEXT NOT NULL CHECK (entity_type IN
-                        ('company','executive','competitor_mention','regulator','sector')),
+                        ('company','executive','competitor_mention','regulator','sector',
+                         'commodity','macro_variable','subsidiary','index')),
     canonical_name    TEXT NOT NULL,
     ticker            TEXT REFERENCES securities(ticker),
     first_seen_doc_id INTEGER REFERENCES documents(doc_id)
@@ -434,6 +443,22 @@ CREATE TABLE IF NOT EXISTS causal_chain_steps (
     statement     TEXT NOT NULL,
     inferred      INTEGER NOT NULL DEFAULT 0,
     evidence_id   INTEGER REFERENCES evidence(evidence_id),
+    -- Added 2026-08-01 (FRE-1): both nullable, narrative/mechanism tags,
+    -- never required for a pre-FRE row to remain valid. implication_layer
+    -- = docs/fre/03_evidence_graph.md's financial/business/competitive
+    -- staging of a causal chain. reasoning_mode = docs/fre/
+    -- 04_reasoning_engine.md's ten reasoning modes. Existing rows keep
+    -- both NULL -- a CHECK is satisfied (not violated) by NULL under
+    -- standard SQL semantics, same convention as documents.extraction_
+    -- method/news_classification elsewhere in this file. For a pre-existing
+    -- database, these columns are added via db.py's init_db() ALTER TABLE
+    -- calls (this CREATE TABLE only takes effect on a fresh database),
+    -- per the convention documented above entity_relationships.
+    implication_layer TEXT CHECK (implication_layer IN
+                        ('financial','business','competitive')),
+    reasoning_mode     TEXT CHECK (reasoning_mode IN
+                        ('causal','counterfactual','historical','trend','comparative',
+                         'sector','macro','valuation','uncertainty','portfolio')),
     UNIQUE (fact_id, step_order)
 );
 
