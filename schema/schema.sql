@@ -397,6 +397,15 @@ CREATE TABLE IF NOT EXISTS extracted_facts (
     payment_date          TEXT,
     agm_date              TEXT,
     closure_date          TEXT,
+    -- Added 2026-08-01, FSI Phase 1 (docs/fre_runs/fsi_phase1_preregistration.md):
+    -- a financial-statement line item (revenue/net_profit) needs a fiscal
+    -- PERIOD, distinct from the corporate-action-specific dates above.
+    -- Nullable, additive -- no existing row is affected. For a pre-existing
+    -- database these are added via db.py's init_db() ALTER TABLE calls
+    -- (this CREATE TABLE only takes effect on a fresh database), per the
+    -- same convention documented for causal_chain_steps' FRE-1 columns.
+    period_start          TEXT,
+    period_end            TEXT,
     evidence_id           INTEGER REFERENCES evidence(evidence_id),
     extraction_confidence REAL NOT NULL CHECK (extraction_confidence BETWEEN 0.0 AND 1.0),
     model_id              TEXT,               -- NULL for regex/manual

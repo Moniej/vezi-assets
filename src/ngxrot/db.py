@@ -102,6 +102,19 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
                     "'comparative','sector','macro','valuation','uncertainty','portfolio'))")
     except sqlite3.OperationalError:
         pass
+    # additive migration, 2026-08-01 (FSI Phase 1, docs/fre_runs/
+    # fsi_phase1_preregistration.md): both nullable, no existing row is
+    # affected. schema.sql's CREATE TABLE IF NOT EXISTS already carries
+    # these for a fresh database; this covers a database that already has
+    # extracted_facts from before this change.
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN period_start TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN period_end TEXT")
+    except sqlite3.OperationalError:
+        pass
     try:  # additive migration for pre-uid events tables
         con.execute("ALTER TABLE events ADD COLUMN event_uid TEXT")
     except sqlite3.OperationalError:

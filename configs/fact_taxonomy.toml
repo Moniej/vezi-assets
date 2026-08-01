@@ -27,3 +27,10 @@ types = ["cyber_attack", "operational_disruption"]
 
 [uncategorized]
 types = ["other"]   # catch-all; a fact landing here is a taxonomy-triage flag, never dropped
+
+[financial_statements]
+# Added 2026-08-01, FSI Phase 1 (docs/fre_runs/fsi_phase1_preregistration.md).
+# EXACTLY these two leaves, per the frozen pre-registration's own scope --
+# "no extraction of any line item beyond revenue/net_profit." Not a general
+# financial-statements taxonomy expansion.
+types = ["revenue", "net_profit"]

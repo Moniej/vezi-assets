@@ -13,18 +13,25 @@ inside one.
 
 ## Why this is architecture, not a working valuation model, verified not assumed
 
-Before writing any adapter, the real database was checked directly:
-`extracted_facts.fact_type` has exactly three values across all 161 real
-rows -- `dividend` (158), `rights_issue` (2), `bonus_issue` (1). Zero
-revenue/EBITDA/balance-sheet/cash-flow line items exist anywhere.
-`securities.sector_ngx` is 0/320 populated. Every one of the six method
-adapters below therefore reports `NOT_READY` for every real ticker today,
-by construction and by verified fact, not by assumption -- there is
-nothing to compute a DCF, DDM, Residual Income, EV/EBITDA, P/E, or P/B
-valuation FROM. This module is the scaffolding this platform will use
-once a financial-statements dataset is acquired (docs/fre/10_dataset_
-strategy.md's single highest-leverage, still-unacquired item) -- it does
-not, and architecturally cannot, produce a number before then.
+Written when `extracted_facts.fact_type` had exactly three values across
+all 161 real rows -- `dividend` (158), `rights_issue` (2), `bonus_issue`
+(1) -- with zero revenue/EBITDA/balance-sheet/cash-flow line items
+anywhere, so every adapter reported `NOT_READY` for every real ticker.
+
+**Updated 2026-08-01, FSI Phase 1** (`docs/fre_runs/fsi_phase1_results.md`):
+30 real `revenue`/`net_profit` facts now exist for 5 real tickers (UCAP,
+BUAFOODS, AFRIPRUD, CAP, NASCON) -- the first financial-statement-shaped
+data this platform has ever held. `is_ready()`'s coarse "does ANY
+non-corporate-action fact exist" check now correctly reports `dcf`/
+`ev_ebitda`/`pe` as READY for those 5 tickers -- exactly the transition
+this architecture was built to make once real data existed. **This is
+still not a working valuation model**: `compute()` has no implemented
+formula for any method (see the `NotImplementedError` in the base class
+below), so `value_company()` catches that specifically and reports
+"ready, but not yet implemented" rather than crashing or fabricating a
+number -- `TriangulatedValuation.results` remains empty for every ticker,
+with or without FSI Phase 1's data. `securities.sector_ngx` remains 0/320
+populated, unaffected by FSI Phase 1 (which populated facts, not sectors).
 
 ## The non-negotiable boundary, restated as code
 
@@ -241,7 +248,29 @@ def value_company(con: sqlite3.Connection, ticker: str, as_of_date: str) -> Tria
         readiness = adapter.is_ready(con, ticker)
         readiness_by_method[method_name] = readiness
         if readiness.ready:
-            results.append(adapter.compute(con, ticker, as_of_date, assumptions={}))
+            try:
+                results.append(adapter.compute(con, ticker, as_of_date, assumptions={}))
+            except NotImplementedError:
+                # Real, disclosed interaction (first observed 2026-08-01,
+                # docs/fre_runs/fsi_phase1_results.md): once FSI Phase 1 adds
+                # real revenue/net_profit facts for a ticker,
+                # is_ready()'s coarse "does ANY non-corporate-action fact
+                # exist" check correctly flips to True for the first time --
+                # exactly the future unlock this architecture was built for
+                # -- but compute() itself still has no real formula to run
+                # (none has ever been developed or validated on this
+                # platform). This is NOT valuation activation: `results`
+                # stays exactly as empty as it was before this fact existed;
+                # the distinction is disclosed here instead of crashing
+                # uncaught, so a caller can tell "ready but not yet
+                # implemented" apart from "not ready" without ever
+                # receiving a fabricated number either way.
+                readiness_by_method[method_name] = ReadinessResult(
+                    True, readiness.reason + " -- HOWEVER, compute() is not yet "
+                    "implemented for this method (no real formula has ever been "
+                    "developed or validated on this platform); zero numeric "
+                    "result is produced despite is_ready()=True."
+                )
 
     disagreement_note = (
         "No methods are ready -- nothing to triangulate or disagree about."

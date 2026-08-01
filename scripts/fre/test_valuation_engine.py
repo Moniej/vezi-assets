@@ -60,10 +60,10 @@ def main() -> int:
           "(architecturally isolated from thesis generation, per instruction)",
           not any(mod in line for line in import_lines for mod in forbidden_modules))
 
-    # --- every real ticker is NOT_READY for every eligible method, verified
-    # against real data, not assumed ----------------------------------------
+    # --- tickers untouched by FSI Phase 1: every eligible method still
+    # reports NOT_READY, verified against real data, not assumed ------------
     con = ro()
-    for ticker in ["GTCO", "TOTAL", "UCAP", "CILEASING", "NOTAREALTICKER"]:
+    for ticker in ["GTCO", "TOTAL", "CILEASING", "NOTAREALTICKER"]:
         tv = ve.value_company(con, ticker, "2026-08-01")
         check(f"{ticker}: every eligible method reports NOT_READY",
               all(not r.ready for r in tv.readiness_by_method.values()))
@@ -71,6 +71,30 @@ def main() -> int:
         check(f"{ticker}: every readiness result has a non-empty, named reason "
               f"(never a bare 'not ready')",
               all(len(r.reason) > 10 for r in tv.readiness_by_method.values()))
+    con.close()
+
+    # --- tickers FSI Phase 1 added real revenue/net_profit facts for: the
+    # readiness gate now correctly reports READY for dcf/ev_ebitda/pe (real
+    # financial-statement-shaped data exists for the first time on this
+    # platform) -- but compute() has no implemented formula, so it MUST
+    # still produce ZERO numeric results. This is the exact "no valuation
+    # activation" invariant this test exists to enforce: readiness may
+    # change as real data grows, a computed number never appears without a
+    # real formula and an explicit, separate implementation decision. -----
+    con = ro()
+    for ticker in ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]:
+        tv = ve.value_company(con, ticker, "2026-08-01")
+        check(f"{ticker}: dcf/ev_ebitda/pe now report READY (real FSI Phase 1 "
+              f"revenue/net_profit data exists for this ticker)",
+              all(tv.readiness_by_method[m].ready for m in ("dcf", "ev_ebitda", "pe")))
+        check(f"{ticker}: STILL zero numeric results produced -- READY per "
+              f"data presence is not the same as a computed valuation "
+              f"(no formula is implemented; no valuation activation occurred)",
+              len(tv.results) == 0)
+        check(f"{ticker}: the readiness reason explicitly discloses that "
+              f"compute() is not yet implemented despite being ready",
+              all("not yet implemented" in tv.readiness_by_method[m].reason
+                  for m in ("dcf", "ev_ebitda", "pe")))
     con.close()
 
     # --- company-type classification: defaults to 'general' since
@@ -94,16 +118,21 @@ def main() -> int:
               f"(RuntimeError, never a fabricated number)", raised)
     con.close()
 
-    # --- confirmed real-data fact: zero financial-statement line items exist
-    # anywhere -- the reason every adapter is NOT_READY, checked directly ---
+    # --- confirmed real-data fact, UPDATED 2026-08-01 after FSI Phase 1:
+    # exactly 30 financial-statement line items now exist (the 15 real
+    # revenue + 15 real net_profit facts from FSI Phase 1's own pilot
+    # extraction, docs/fre_runs/fsi_phase1_results.md) -- no more, no less.
+    # This was correctly 0 when FRE-6 was first written and verified; the
+    # test is updated to match the new real state rather than left stale,
+    # exactly the reason the 5 anchor tickers above now show READY. -------
     con = ro()
     non_corp_action_facts = con.execute(
         "SELECT COUNT(*) FROM extracted_facts WHERE fact_type NOT IN "
         "('dividend','rights_issue','bonus_issue')"
     ).fetchone()[0]
-    check("zero financial-statement line items exist anywhere in the real "
-          "database (only dividend/rights_issue/bonus_issue fact types "
-          "have ever been extracted)", non_corp_action_facts == 0)
+    check("exactly 30 financial-statement line items exist (FSI Phase 1's "
+          "own 15 revenue + 15 net_profit facts, and nothing else)",
+          non_corp_action_facts == 30)
     sector_populated = con.execute(
         "SELECT COUNT(*) FROM securities WHERE sector_ngx IS NOT NULL"
     ).fetchone()[0]
