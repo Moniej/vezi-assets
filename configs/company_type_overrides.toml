@@ -1,0 +1,23 @@
+# Company-type overrides for the Valuation Engine (docs/fre/08_valuation_
+# engine_architecture.md): "owner-judged, never AI-inferred" -- the same
+# discipline already applied to configs/relation_taxonomy.toml's graph
+# -provenance values and the (not-yet-built) news_outlets reliability
+# registry.
+#
+# DELIBERATELY EMPTY as of this writing. securities.sector_ngx is 0/320
+# populated (a real, disclosed, platform-wide gap), so company-type
+# classification cannot be derived automatically. This file exists so the
+# override mechanism is ready to receive owner-confirmed entries -- it is
+# NOT this pass's place to guess which NGX tickers are banks/insurers/
+# holdcos, however well-known some of them may seem; an unconfirmed guess
+# presented as a classification would be exactly the kind of unearned
+# authority this platform's "owner-judged, never AI-inferred" rule exists
+# to prevent. Every ticker defaults to "general" until an entry is added
+# here by the owner.
+#
+# Format, once populated:
+#   [overrides]
+#   GTCO = "bank"
+#   ...
+
+[overrides]

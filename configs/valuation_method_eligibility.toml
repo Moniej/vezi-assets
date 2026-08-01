@@ -1,0 +1,32 @@
+# Valuation-method eligibility by company type (docs/fre/08_valuation_engine_architecture.md).
+# CONFIGURABLE: adding/changing an eligible method set is a config change,
+# not a code change -- same pattern as every other taxonomy on this
+# platform. This table is architecture, not data -- it does not imply any
+# method is actually runnable today (see ValuationMethodAdapter.is_ready()
+# in src/ngxrot/fre/valuation_engine.py; every method reports NOT_READY
+# against the real database as of this writing, since no financial-
+# statements dataset has been acquired).
+
+[bank]
+methods = ["ddm", "residual_income", "pb"]
+rationale = "A bank's revenue/debt are its raw materials, not comparable line items to a non-financial DCF; EV/EBITDA is architecturally inapplicable."
+
+[insurance]
+methods = ["residual_income", "pb"]
+rationale = "Float-driven earnings timing is a poor fit for standard DCF; embedded-value-style methods need actuarial inputs not currently ingested."
+
+[holding_company]
+methods = ["sum_of_the_parts"]
+rationale = "Value each subsidiary via its own applicable method, aggregate, apply a disclosed holdco discount -- requires Part 2's subsidiary_of lineage edges."
+
+[growth_company]
+methods = ["dcf", "ev_ebitda"]
+rationale = "Wide, explicitly disclosed sensitivity bands matter most here -- a growth-company DCF's point estimate is close to meaningless without its range."
+
+[turnaround_company]
+methods = ["normalized_earnings_multiple", "asset_based_floor"]
+rationale = "Trailing earnings are typically non-representative; requires an explicit normalization_assumptions sub-field, never a silent substitution."
+
+[general]
+methods = ["dcf", "ev_ebitda", "pe"]
+rationale = "The standard set for industrial/consumer/agriculture/oil_gas/telecom/utilities/healthcare names."
