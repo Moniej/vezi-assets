@@ -13,14 +13,17 @@ found the dataset this program's Part 10/FRE-6-in-the-original-roadmap-
 table anticipated did not yet exist, and inserted a dedicated **Financial
 Statement Intelligence (FSI)** track to build it: **FSI Phase 1** (pilot
 revenue/net_profit extraction, 30 facts, 5 tickers, tag
-`fsi-phase1-baseline-2026-08-01`) and **FSI Phase 2** (balance sheet, cash
+`fsi-phase1-baseline-2026-08-01`), **FSI Phase 2** (balance sheet, cash
 flow, EBITDA/EBIT — 76 more facts, 106 total, tag
-`fsi-phase2-baseline-2026-08-01`) are both complete and frozen. Full
+`fsi-phase2-baseline-2026-08-01`), and **FSI Phase 3** (Financial
+Reasoning over the validated dataset — 177 mechanically-derived
+conclusions: ratios, trend classifications, rule-based health flags,
+plus a read-only evidence-linking layer; no new fact types, no valuation
+output, no cross-company scoring; tag
+`fsi-phase3-baseline-2026-08-01`) are all complete and frozen. Full
 implementation history, results, and an architectural-defect
-discovery-and-fix precedent are in `docs/fre_runs/`. **FSI Phase 3**
-(financial reasoning over the now-validated dataset, not further
-extraction) is in design/pre-registration only, per the owner's explicit
-instruction — no implementation has begun. Everything below this line is
+discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
+been approved or started as of this writing. Everything below this line is
 the original, frozen design document and describes the program as first
 conceived; it is retained unmodified as the architectural reference, not
 updated in place as execution has diverged from it (see the roadmap
