@@ -29,7 +29,12 @@ Phase 5** (Regression & Consistency Validation Harness — golden-snapshot
 reproducibility, Phase 3/4 cross-consistency, and 3/3 historical
 defects confirmed detectable via scratch-copy/isolated-function
 injection, 0 deviations found in the real pipeline; tag
-`fsi-phase5-baseline-2026-08-01`) are all complete and frozen. Full
+`fsi-phase5-baseline-2026-08-01`), and **FSI Phase 6** (Unified
+Point-in-Time Company Memory — `CompanyMemory360.as_of()`, a pure
+composition of FRE-3's `CompanyMemory` and Phase 4's
+`pit_financial_memory`, neither underlying module modified, 0
+discrepancies vs. both, 0 PIT leakage violations; tag
+`fsi-phase6-baseline-2026-08-01`) are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
