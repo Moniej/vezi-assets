@@ -29,8 +29,17 @@ types = ["cyber_attack", "operational_disruption"]
 types = ["other"]   # catch-all; a fact landing here is a taxonomy-triage flag, never dropped
 
 [financial_statements]
-# Added 2026-08-01, FSI Phase 1 (docs/fre_runs/fsi_phase1_preregistration.md).
-# EXACTLY these two leaves, per the frozen pre-registration's own scope --
-# "no extraction of any line item beyond revenue/net_profit." Not a general
-# financial-statements taxonomy expansion.
-types = ["revenue", "net_profit"]
+# FSI Phase 1 (2026-08-01, docs/fre_runs/fsi_phase1_preregistration.md):
+# revenue, net_profit -- the original two-metric pilot scope.
+#
+# FSI Phase 2 (2026-08-01, docs/fre_runs/fsi_phase2_execution_plan.md +
+# the owner's implementation-order instruction): balance sheet (assets,
+# liabilities, equity), cash flow (cfo/cfi/cff = operating/investing/
+# financing cash flow, capex, fcf), EBITDA/EBIT. `fcf` is always
+# confidence_tier='derived' (cfo - capex, per configs/financial_ontology
+# .toml's existing definitional edges) -- it is never independently
+# extracted from a stated line, by design.
+types = ["revenue", "net_profit",
+         "assets", "liabilities", "equity",
+         "cfo", "cfi", "cff", "capex", "fcf",
+         "ebitda", "ebit"]

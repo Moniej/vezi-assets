@@ -1,9 +1,30 @@
 # Financial Reasoning Engine (FRE) — Master Index
 
-*Program status: DESIGN ONLY, complete, awaiting owner review. No code
-written, no schema migrated, no config file created, no dependency
-installed, no experiment run, nothing committed, no branch created, as of
-this pass. Repository state outside `docs/fre/` is unmodified.*
+*Program status, UPDATED 2026-08-01: the 15-part design below is frozen
+(tag `fre-architecture-baseline-2026-08-01`) and has since been
+implemented through several individually-approved phases: **FRE-2**
+(Evidence Graph), **FRE-3** (Company Memory), **FRE-4** (reaction-check),
+**FRE-5** (Company Thesis, scoped to a pilot case study), and **FRE-6**
+(Valuation Engine architecture — scaffolding + readiness-gating only,
+`compute()` still unconditionally refuses to run on real data; no
+valuation activation has occurred). A roadmap review conducted before
+FRE-7 (`docs/fre_runs/roadmap_review_financial_statement_intelligence.md`)
+found the dataset this program's Part 10/FRE-6-in-the-original-roadmap-
+table anticipated did not yet exist, and inserted a dedicated **Financial
+Statement Intelligence (FSI)** track to build it: **FSI Phase 1** (pilot
+revenue/net_profit extraction, 30 facts, 5 tickers, tag
+`fsi-phase1-baseline-2026-08-01`) and **FSI Phase 2** (balance sheet, cash
+flow, EBITDA/EBIT — 76 more facts, 106 total, tag
+`fsi-phase2-baseline-2026-08-01`) are both complete and frozen. Full
+implementation history, results, and an architectural-defect
+discovery-and-fix precedent are in `docs/fre_runs/`. **FSI Phase 3**
+(financial reasoning over the now-validated dataset, not further
+extraction) is in design/pre-registration only, per the owner's explicit
+instruction — no implementation has begun. Everything below this line is
+the original, frozen design document and describes the program as first
+conceived; it is retained unmodified as the architectural reference, not
+updated in place as execution has diverged from it (see the roadmap
+review above for the specific divergence).*
 
 ## What this program is
 

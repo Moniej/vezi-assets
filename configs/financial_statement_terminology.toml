@@ -1,0 +1,68 @@
+# Accounting-terminology synonym mapping (docs/fre_runs/
+# fsi_phase2_execution_plan.md section 4.2). CONFIGURABLE: adding a
+# synonym is a config change, not a code change -- same pattern as every
+# other taxonomy on this platform.
+#
+# Used by src/ngxrot/fre/terminology_mapping.py's map_label_to_concept():
+# an observed label from a real filing is matched (case-insensitive,
+# exact string) against a canonical fact_type's synonym list; an
+# unmatched label returns None -- NEVER a guessed fallback. Every match
+# is recorded in the resulting fact's own description (see
+# fsi_phase2_execution_plan.md's "no silent metric substitution"
+# constraint) so a reader can always see which literal label produced
+# which canonical concept.
+#
+# Seeded from FSI Phase 1's own confirmed real observations (not
+# invented): AFRIPRUD (a share registrar) has no line item literally
+# called "Revenue" -- its own headline metric is "Gross Earnings", and
+# even that label is inconsistent across AFRIPRUD's own filings over
+# time ("Gross earnings" in 2020 vs. "Gross Revenue" in 2022).
+
+[revenue]
+synonyms = ["Revenue", "Total Revenue", "Turnover", "Gross Earnings", "Gross Revenue"]
+sector_note = "Gross Earnings/Gross Revenue used by financial-services/registrar firms (e.g. AFRIPRUD) lacking a literal 'Revenue' line -- confirmed in FSI Phase 1."
+
+[net_profit]
+synonyms = ["Profit for the period", "Profit for the year", "Profit After Tax",
+            "PROFIT FOR THE PERIOD", "Profit after tax", "PAT"]
+
+[assets]
+synonyms = ["Total Assets", "TOTAL ASSETS", "TOTAL ASSESTS"]
+note = "'TOTAL ASSESTS' (sic) observed verbatim in a real AFRIPRUD filing (doc 6349) -- a real typo in the source document itself, kept here as a literal synonym rather than silently corrected, since the mapping function matches the SOURCE text as written."
+
+[liabilities]
+synonyms = ["Total Liabilities", "TOTAL LIABILITIES"]
+
+[equity]
+synonyms = ["Total Equity", "TOTAL EQUITY", "Shareholders Fund", "Shareholders' Fund",
+            "TOTAL SHAREHOLDERS' FUND", "SHAREHOLDERS FUND", "TOTAL SHAREHOLDERS FUND",
+            "Total Shareholders' Fund", "Equity"]
+note = "'Equity' (bare, no 'Total' prefix) confirmed as CAP Plc's own real table label (docs 5911, 10115). 'TOTAL SHAREHOLDERS FUND' (no apostrophe) confirmed as UCAP's own real table label in its FY2022/FY2025 filings (docs 6911, 10772), a punctuation variant caught by this module's own assertion check during Stage 2 extraction, not anticipated in advance -- both added after verifying actual filing text."
+
+[cfo]
+synonyms = ["Net cash from operating activities", "Net cash generated from operating activities",
+            "Net cash used in operating activities"]
+note = "The last synonym ('used in', i.e. a negative operating cash flow) maps to the same canonical concept -- the SIGN of numeric_value carries the direction, the fact_type mapping does not encode it."
+
+[cfi]
+synonyms = ["Net cash from investing activities", "Net cash used in investing activities"]
+
+[cff]
+synonyms = ["Net cash from financing activities", "Net cash used in financing activities"]
+
+[capex]
+synonyms = ["Purchase of property, plant and equipment", "Purchase of property and equipment",
+            "Additions to property, plant and equipment", "Capital expenditure"]
+
+[ebitda]
+synonyms = ["EBITDA"]
+
+[ebit]
+synonyms = ["EBIT", "Operating Profit", "Operating profit",
+            "Profit Before Finance Cost and Tax", "Profit before finance costs and tax"]
+caveat = "NOT guaranteed equivalent across all filers -- 'Operating Profit' can exclude or include items EBIT conventionally treats differently depending on a company's own income-statement structure. Every fact mapped via this synonym must record confidence_tier='mapped_equivalent' (never 'direct_reported'), per docs/fre_runs/fsi_phase2_execution_plan.md section 3's EBIT risk note."
+note = "The two 'Profit Before Finance Cost(s) and Tax' variants (singular/plural 'cost') are AFRIPRUD's own real income-statement line (docs 4245, 6349, 7540) -- structurally identical to EBIT's definition (earnings before interest/finance cost and tax), confirmed by its position immediately before a 'Finance costs' deduction and 'Profit Before Tax' line in AFRIPRUD's own statement. Kept as mapped_equivalent, not direct_reported, since the filing itself never uses the word 'EBIT'."
+
+[fcf]
+synonyms = ["Free Cash Flow"]
+note = "Added during Stage 3 (Cash Flow Intelligence): the execution plan's own design treated fcf as a DERIVED-only concept (fcf = cfo - capex), but CAP Plc's real FY2020 filing (doc 4508) states 'Free Cash Flow' as its own literal 'Key Financial Highlights' table line item. Kept as a direct synonym so this real, literally-stated value can be correctly tagged confidence_tier='direct_reported' -- a literal reported figure outranks a derivation the filing never actually required, per the confidence hierarchy's own priority rule."

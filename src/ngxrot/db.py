@@ -115,6 +115,27 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
         con.execute("ALTER TABLE extracted_facts ADD COLUMN period_end TEXT")
     except sqlite3.OperationalError:
         pass
+    # additive migration, 2026-08-01 (FSI Phase 2, docs/fre_runs/
+    # fsi_phase2_execution_plan.md section 4.1). All three nullable, no
+    # existing row is affected. schema.sql's CREATE TABLE IF NOT EXISTS
+    # already carries these for a fresh database; this covers a database
+    # that already has extracted_facts from before this change.
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN period_type TEXT "
+                    "CHECK (period_type IN ('Q1','Q2','Q3','Q4','H1','H2','9M','FY'))")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN confidence_tier TEXT "
+                    "CHECK (confidence_tier IN "
+                    "('direct_reported','mapped_equivalent','derived','interpretation'))")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN restates_fact_id INTEGER "
+                    "REFERENCES extracted_facts(fact_id)")
+    except sqlite3.OperationalError:
+        pass
     try:  # additive migration for pre-uid events tables
         con.execute("ALTER TABLE events ADD COLUMN event_uid TEXT")
     except sqlite3.OperationalError:

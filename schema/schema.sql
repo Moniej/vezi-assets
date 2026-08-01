@@ -406,6 +406,33 @@ CREATE TABLE IF NOT EXISTS extracted_facts (
     -- same convention documented for causal_chain_steps' FRE-1 columns.
     period_start          TEXT,
     period_end            TEXT,
+    -- Added 2026-08-01, FSI Phase 2 (docs/fre_runs/fsi_phase2_execution_plan.md
+    -- section 4.1). All three nullable, additive -- no existing row is
+    -- affected. For a pre-existing database these are added via db.py's
+    -- init_db() ALTER TABLE calls, same convention as every prior addition.
+    -- period_type: derived from the actual period_start/period_end span,
+    -- NEVER from a filing's own headline label (the real, confirmed reason:
+    -- UCAP's "Q3 2020" headline described what was actually a 9-month
+    -- cumulative period -- see fsi_phase2_implementation_log.md).
+    period_type           TEXT CHECK (period_type IN ('Q1','Q2','Q3','Q4','H1','H2','9M','FY')),
+    -- confidence_tier: a QUALITATIVE dimension distinct from the existing
+    -- numeric extraction_confidence float below -- see docs/fre_runs/
+    -- fsi_phase2_execution_plan.md section 2 for the four-tier definition.
+    -- 'interpretation' is a defined, real value in this CHECK constraint,
+    -- but is never written by any Phase 2 extraction script -- the schema
+    -- permits it (so a future, explicitly-approved phase could use it) but
+    -- the current pipeline code enforces "no inferred financial facts" by
+    -- simply never producing that tier.
+    confidence_tier        TEXT CHECK (confidence_tier IN
+                             ('direct_reported','mapped_equivalent','derived','interpretation')),
+    -- restates_fact_id: self-referencing, nullable -- modeled directly on
+    -- investment_implications.corroborates_implication_id/.contradicts_
+    -- implication_id (architecture doc Sec 8, proven, already-audited
+    -- pattern). A fact with this set restates an earlier fact for an
+    -- overlapping period at a different value; BOTH rows stand, append
+    -- -only, exactly like every other table on this platform -- never an
+    -- UPDATE, never a delete of the original.
+    restates_fact_id       INTEGER REFERENCES extracted_facts(fact_id),
     evidence_id           INTEGER REFERENCES evidence(evidence_id),
     extraction_confidence REAL NOT NULL CHECK (extraction_confidence BETWEEN 0.0 AND 1.0),
     model_id              TEXT,               -- NULL for regex/manual

@@ -106,3 +106,26 @@ instead of quant hypotheses.
   necessarily as final) before their corresponding phase starts, and on
   Part 13's gap analysis (next) for an honest accounting of what today's
   codebase actually already provides toward each phase.
+
+## Execution note, added 2026-08-01 (append-only — the table above is
+
+left as originally designed, not rewritten)
+
+Actual execution diverged from this table in one respect, disclosed here
+rather than silently reconciled: **FRE-2 through FRE-5 executed as
+designed**, but **FRE-6 executed as "Valuation Engine architecture"**
+(scaffolding + readiness-gating only) rather than this table's original
+FRE-6 ("Financial-statements dataset acquisition"). The dataset-
+acquisition work this table's FRE-6 row describes was instead carried out
+as a separately-tracked **Financial Statement Intelligence (FSI)**
+program (Phases 1-2, see `docs/fre_runs/`), inserted via an explicit
+roadmap review conducted before FRE-7 began
+(`docs/fre_runs/roadmap_review_financial_statement_intelligence.md`).
+Net effect: this table's FRE-7 ("Valuation Engine v0", pilot triangulated
+ranges against a now-real dataset) remains the next roadmap item exactly
+as designed and is **not yet started**. Separately, the owner has since
+directed a **Phase 3** (`docs/fre_runs/fsi_phase3_preregistration.md`,
+once written) focused on financial reasoning over the FSI dataset rather
+than valuation specifically — this is additive to, not a replacement for,
+FRE-7-as-designed; both remain individually gated, and neither begins
+without its own separate owner approval.

@@ -118,21 +118,29 @@ def main() -> int:
               f"(RuntimeError, never a fabricated number)", raised)
     con.close()
 
-    # --- confirmed real-data fact, UPDATED 2026-08-01 after FSI Phase 1:
-    # exactly 30 financial-statement line items now exist (the 15 real
-    # revenue + 15 real net_profit facts from FSI Phase 1's own pilot
-    # extraction, docs/fre_runs/fsi_phase1_results.md) -- no more, no less.
-    # This was correctly 0 when FRE-6 was first written and verified; the
-    # test is updated to match the new real state rather than left stale,
-    # exactly the reason the 5 anchor tickers above now show READY. -------
+    # --- confirmed real-data fact, UPDATED 2026-08-01 after FSI Phase 2
+    # Stage 4 (EBITDA/EBIT Intelligence): 106 financial-statement line
+    # items now exist -- Phase 1's 15 revenue + 15 net_profit, Stage 2's
+    # 14 assets + 14 liabilities + 14 equity, Stage 3's 4 cfo + 3 cfi + 4
+    # cff + 1 capex + 1 fcf, plus Stage 4's 12 ebit + 9 ebitda (UCAP, a
+    # bank, yields none -- PBT is never treated as EBIT/EBITDA-equivalent
+    # for a financial institution; CAP yields ebit but never ebitda, no
+    # D&A ever disclosed in any of its 3 filings -- both real, disclosed
+    # document-content/architectural-scope gaps, not extraction
+    # failures). This was correctly 0 when FRE-6 was first written, then
+    # 30 after Phase 1, 72 after Stage 2, 85 after Stage 3 -- updated
+    # again to match the new real state rather than left stale, same
+    # discipline every time. -----------------------------------------------
     con = ro()
     non_corp_action_facts = con.execute(
         "SELECT COUNT(*) FROM extracted_facts WHERE fact_type NOT IN "
         "('dividend','rights_issue','bonus_issue')"
     ).fetchone()[0]
-    check("exactly 30 financial-statement line items exist (FSI Phase 1's "
-          "own 15 revenue + 15 net_profit facts, and nothing else)",
-          non_corp_action_facts == 30)
+    check("exactly 106 financial-statement line items exist (Phase 1's 15 "
+          "revenue + 15 net_profit, Stage 2's 14 assets + 14 liabilities "
+          "+ 14 equity, Stage 3's 4 cfo + 3 cfi + 4 cff + 1 capex + 1 fcf, "
+          "Stage 4's 12 ebit + 9 ebitda)",
+          non_corp_action_facts == 106)
     sector_populated = con.execute(
         "SELECT COUNT(*) FROM securities WHERE sector_ngx IS NOT NULL"
     ).fetchone()[0]
