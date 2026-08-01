@@ -164,6 +164,43 @@ always empty) rather than left asserting a now-false claim.
   vendor relationship, any real valuation formula) does not begin as a
   result of this report** — per instruction, this stops here for review.
 
+## Addendum — limitations formally recorded (2026-08-01, on approval)
+
+Per the owner's explicit approval of this report ("the result confirms the
+pre-registered hypothesis for the limited scope: native-text NGX filings
+can reliably produce Revenue and Net Profit facts **under controlled
+conditions**"), the following limitations are recorded formally as
+accepted, load-bearing context for any future phase that cites this
+result — not new findings, but the boundaries of this result, stated
+explicitly rather than left implicit in the prose above:
+
+1. **Small, hand-selected pilot** — 15 filings, 5 companies, chosen partly
+   for document-size manageability (6,000–17,000 characters) and a
+   confirmed `results_notice` doc_type; not a random or representative
+   sample of the 349 real candidates the scoping step found, still less
+   of the full native-text archive.
+2. **No external validation** — every cross-check was internal
+   (same-document highlights vs. detailed statement table); no
+   independent secondary source, vendor feed, or owner-confirmed anchor
+   value was used anywhere, per instruction. The pre-registration's own
+   disclosed weaker-validation caveat for this case applies to all 30
+   facts, not a subset.
+3. **No OCR validation** — scoped entirely to the 7,399 native-text
+   documents; the 4,134 OCR-pending documents (36% of the archive,
+   including the known GTCO/Zenith FY2023 anchors) were untouched and
+   remain untested for this extraction task.
+4. **Limited financial taxonomy** — exactly two metrics (`revenue`,
+   `net_profit`); no balance-sheet, cash-flow, EBITDA/EBIT, or ratio data
+   was extracted in this pass.
+5. **Not production-scale** — 15 filings is a feasibility floor (the
+   pre-registration's own minimum), not a throughput or coverage
+   commitment; no automation, scheduling, or bulk-processing mechanism
+   was built or evaluated.
+
+These five limitations bound every claim in this report and must be
+carried forward explicitly by any phase that treats Phase 1 as a
+precedent, rather than re-verified or assumed away.
+
 ---
 
 *This concludes FSI Phase 1. Stopping here and awaiting review.*
