@@ -106,7 +106,15 @@ Tier-1 capabilities, closing that section of the frozen architecture
 doc; reuses `AlphaEngine().recommendations()` verbatim, zero
 modification to `alpha_engine.py`/`registry.py`, zero write path
 anywhere (AST-verified); deliberately not wired into `company_research_
-dossier.py` in this phase; tag `fsi-phase17-baseline-2026-08-02`)
+dossier.py` in this phase; tag `fsi-phase17-baseline-2026-08-02`), and
+**FSI Phase 18** (Watchlist Persistence — one new table,
+`watchlist_entries`, and `src/ngxrot/fre/watchlist.py`
+(`add_entry()`/`remove_entry()`/`get_history_for_ticker()`/
+`list_active()`), closing Part 9's Tier-1 capability list in full;
+append-only (no DELETE anywhere, AST-verified), `entry_criteria`
+required and schema-enforced NOT NULL; all test writes confined to a
+scratch copy, real production database confirmed unchanged; tag
+`fsi-phase18-baseline-2026-08-02`)
 are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has

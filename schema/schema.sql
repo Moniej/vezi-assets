@@ -708,6 +708,37 @@ CREATE TABLE IF NOT EXISTS document_processing_status (
 CREATE INDEX IF NOT EXISTS ix_doc_status_status ON document_processing_status (status);
 
 -- ----------------------------------------------------------------------------
+-- FSI Phase 18 (docs/fre_runs/fsi_phase18_preregistration.md): Watchlist
+-- persistence -- Part 9's own Tier-1 "Watchlist" capability
+-- (docs/fre/09_portfolio_reasoning.md), the last of its three Tier-1
+-- items to be built (Screening: Phase 14/15; Portfolio memory: Phase
+-- 17). Append-only: a watchlist entry is never deleted, only marked
+-- removed via removed_at/removal_reason (same convention as
+-- securities.delisting_date and restates_fact_id elsewhere in this
+-- file) -- the full history of what was ever watchlisted, and why, is
+-- always reconstructible. entry_criteria is NOT NULL by design, per
+-- Part 9's own explicit requirement: "what would need to be true for
+-- this to become portfolio-relevant" is written down BEFORE it's met,
+-- not rationalized after -- this platform's own pre-registration
+-- discipline applied to watchlist membership. source_thesis_as_of_date
+-- is a reproducible POINTER (ticker + this date), never a stored copy
+-- of CompanyThesis360's own data -- the same convention every other PIT
+-- object on this platform uses.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS watchlist_entries (
+    watchlist_entry_id       INTEGER PRIMARY KEY,
+    ticker                   TEXT NOT NULL REFERENCES securities(ticker),
+    added_at                 TEXT NOT NULL,
+    rationale                TEXT NOT NULL,
+    source_thesis_as_of_date TEXT NOT NULL,
+    review_cadence           TEXT,
+    entry_criteria           TEXT NOT NULL,
+    removed_at               TEXT,
+    removal_reason           TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_watchlist_entries_ticker ON watchlist_entries (ticker);
+
+-- ----------------------------------------------------------------------------
 -- Point-in-time views: latest as_of per (entity, trade_date).
 -- The Python layer exposes as-of-a-knowledge-date variants of these.
 -- ----------------------------------------------------------------------------
