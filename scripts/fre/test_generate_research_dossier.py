@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ngxrot import db  # noqa: E402
 from ngxrot.fre.company_research_dossier import build_dossier, render_dossier  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
 from ngxrot.fre.pipeline_validation import snapshot_all_table_counts, diff_table_counts  # noqa: E402
 
 SCRIPT = ROOT / "scripts" / "fre" / "generate_research_dossier.py"
@@ -56,7 +57,9 @@ def main() -> int:
     con = sqlite3.connect(f"file:{db.DEFAULT_DB.as_posix()}?mode=ro", uri=True)
     before_counts = snapshot_all_table_counts(con)
 
-    tickers = ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]
+    # FSI Phase 16: dynamic ticker discovery (was a hardcoded 5-ticker list
+    # that silently stopped covering Phase 13's 5 new tickers).
+    tickers = list_tickers(con)
     latest_dates = {}
     for ticker in tickers:
         latest_dates[ticker] = con.execute(
@@ -65,7 +68,7 @@ def main() -> int:
         ).fetchone()[0]
 
     # --- 1. Script output matches calling build_dossier()/render_dossier()
-    # directly, for all 5 real tickers -----------------------------------------
+    # directly, for all real tickers --------------------------------------------
     equivalence_ok = True
     for ticker in tickers:
         direct = render_dossier(build_dossier(con, ticker, latest_dates[ticker]))
@@ -73,9 +76,10 @@ def main() -> int:
         if result.returncode != 0 or result.stdout.strip() != direct.strip():
             equivalence_ok = False
             print(f"  MISMATCH for {ticker}: returncode={result.returncode}")
-    check("the CLI script's stdout output is identical to calling "
-          "build_dossier()/render_dossier() directly, for all 5 real "
-          "tickers at their own latest real filing date", equivalence_ok)
+    check(f"the CLI script's stdout output is identical to calling "
+          f"build_dossier()/render_dossier() directly, for all "
+          f"{len(tickers)} real tickers at their own latest real filing date",
+          equivalence_ok)
 
     # --- 2. --output writes the identical text to the given file, and stdout
     # still shows the same content too -----------------------------------------

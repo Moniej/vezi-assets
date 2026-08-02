@@ -18,6 +18,7 @@ from ngxrot import db  # noqa: E402
 from ngxrot.fre import company_memory_360 as cm360  # noqa: E402
 from ngxrot.fre import company_thesis_360 as ct360  # noqa: E402
 from ngxrot.fre.company_thesis import build_company_thesis  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
 from ngxrot.fre.pipeline_validation import snapshot_all_table_counts, diff_table_counts  # noqa: E402
 
 passed = 0
@@ -47,6 +48,14 @@ EXPECTED_FIRED_CONCERNS = {
     "UCAP": set(),
     "CAP": set(),
     "BUAFOODS": set(),
+    # FSI Phase 13's 5 new tickers -- ground truth confirmed via direct
+    # query of financial_reasoning_conclusions (added FSI Phase 16, which
+    # extended this test's ticker coverage from 5 to all 10 real tickers).
+    "MTNN": {"margin_compression"},
+    "DANGCEM": set(),
+    "UBN": set(),
+    "OANDO": {"margin_compression"},
+    "NESTLE": {"margin_compression"},
 }
 
 
@@ -54,7 +63,9 @@ def main() -> int:
     con = ro()
     before_counts = snapshot_all_table_counts(con)
 
-    tickers = ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]
+    # FSI Phase 16: dynamic ticker discovery (was a hardcoded 5-ticker list
+    # that silently stopped covering Phase 13's 5 new tickers).
+    tickers = list_tickers(con)
     latest_dates = {}
     for ticker in tickers:
         latest_dates[ticker] = con.execute(
@@ -72,13 +83,15 @@ def main() -> int:
         direct = build_company_thesis(con, ticker, latest_dates[ticker])
         if snapshots[ticker].thesis != direct:
             equivalence_ok = False
-    check("CompanyThesis360's 'thesis' sub-result is exactly equivalent to "
-          "calling build_company_thesis() directly, for all 5 tickers -- "
-          "true regardless of whether FSI concern evidence exists for that "
-          "ticker (proves the composition never alters the underlying "
-          "thesis, satisfying the 'output equivalence where no FSI "
-          "evidence exists' requirement by construction: 3 of 5 tickers "
-          "here have zero concern evidence and still match exactly)",
+    zero_concern_count = sum(1 for t in tickers if not EXPECTED_FIRED_CONCERNS[t])
+    check(f"CompanyThesis360's 'thesis' sub-result is exactly equivalent to "
+          f"calling build_company_thesis() directly, for all {len(tickers)} "
+          f"tickers -- true regardless of whether FSI concern evidence "
+          f"exists for that ticker (proves the composition never alters "
+          f"the underlying thesis, satisfying the 'output equivalence "
+          f"where no FSI evidence exists' requirement by construction: "
+          f"{zero_concern_count} of {len(tickers)} tickers here have zero "
+          f"concern evidence and still match exactly)",
           equivalence_ok)
 
     memory_equivalence_ok = True
@@ -86,13 +99,12 @@ def main() -> int:
         direct_memory = cm360.as_of(con, ticker, latest_dates[ticker])
         if snapshots[ticker].memory != direct_memory:
             memory_equivalence_ok = False
-    check("CompanyThesis360's 'memory' sub-result is exactly equivalent to "
-          "calling company_memory_360.as_of() directly, for all 5 tickers",
-          memory_equivalence_ok)
+    check(f"CompanyThesis360's 'memory' sub-result is exactly equivalent to "
+          f"calling company_memory_360.as_of() directly, for all "
+          f"{len(tickers)} tickers", memory_equivalence_ok)
 
-    # --- 2. Correct integration on the 5 real anchor companies: concern
-    # evidence must match the REAL, known-fired flags exactly, neither more
-    # nor fewer --------------------------------------------------------------
+    # --- 2. Correct integration on all real tickers: concern evidence must
+    # match the REAL, known-fired flags exactly, neither more nor fewer -----
     integration_ok = True
     for ticker in tickers:
         fired_metrics = {e.metric for e in snapshots[ticker].concern_evidence}
@@ -100,9 +112,10 @@ def main() -> int:
             integration_ok = False
             print(f"  MISMATCH for {ticker}: expected {EXPECTED_FIRED_CONCERNS[ticker]}, "
                   f"got {fired_metrics}")
-    check("concern_evidence exactly matches the real, known-fired financial "
-          "health flags for all 5 anchor companies (NASCON: leverage_"
-          "increasing; AFRIPRUD: margin_compression; UCAP/CAP/BUAFOODS: none)",
+    check(f"concern_evidence exactly matches the real, known-fired financial "
+          f"health flags for all {len(tickers)} real tickers (NASCON: "
+          f"leverage_increasing; AFRIPRUD/MTNN/OANDO/NESTLE: margin_"
+          f"compression; UCAP/CAP/BUAFOODS/DANGCEM/UBN: none)",
           integration_ok)
 
     # --- 3. Completeness + non-overlap: every financial conclusion in the

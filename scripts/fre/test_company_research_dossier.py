@@ -18,6 +18,7 @@ from ngxrot import db  # noqa: E402
 from ngxrot.fre import company_research_dossier as crd  # noqa: E402
 from ngxrot.fre import company_thesis_360  # noqa: E402
 from ngxrot.fre.entity_context import get_entity_context  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
 from ngxrot.fre.financial_reasoning_report import render_report  # noqa: E402
 from ngxrot.fre.pipeline_validation import snapshot_all_table_counts, diff_table_counts  # noqa: E402
 
@@ -43,7 +44,9 @@ def main() -> int:
     con = ro()
     before_counts = snapshot_all_table_counts(con)
 
-    tickers = ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]
+    # FSI Phase 16: dynamic ticker discovery (was a hardcoded 5-ticker list
+    # that silently stopped covering Phase 13's 5 new tickers).
+    tickers = list_tickers(con)
     latest_dates = {}
     for ticker in tickers:
         latest_dates[ticker] = con.execute(
@@ -54,9 +57,9 @@ def main() -> int:
     dossiers = {t: crd.build_dossier(con, t, latest_dates[t]) for t in tickers}
     reports = {t: crd.render_dossier(dossiers[t]) for t in tickers}
 
-    # --- 1. Renders without exception for all 5 tickers ---------------------
-    check("build_dossier()/render_dossier() succeed for all 5 real tickers "
-          "at their own latest real filing date, zero exceptions",
+    # --- 1. Renders without exception for all real tickers ------------------
+    check(f"build_dossier()/render_dossier() succeed for all {len(tickers)} "
+          f"real tickers at their own latest real filing date, zero exceptions",
           all(t in reports for t in tickers))
 
     # --- 2. Section equivalence: the Company Memory portion of the rendered
@@ -82,9 +85,9 @@ def main() -> int:
            or d.concern_evidence != direct_bundle.concern_evidence \
            or d.supplementary_evidence != direct_bundle.supplementary_evidence:
             thesis_equivalence_ok = False
-    check("dossier.thesis/memory/concern_evidence/supplementary_evidence are "
-          "exactly equivalent to calling company_thesis_360.as_of() directly, "
-          "for all 5 tickers", thesis_equivalence_ok)
+    check(f"dossier.thesis/memory/concern_evidence/supplementary_evidence are "
+          f"exactly equivalent to calling company_thesis_360.as_of() directly, "
+          f"for all {len(tickers)} tickers", thesis_equivalence_ok)
 
     # --- 4. Graph equivalence: dossier.graph exactly matches get_entity_
     # context() called directly ------------------------------------------------
@@ -93,8 +96,8 @@ def main() -> int:
         direct_graph = get_entity_context(con, ticker, latest_dates[ticker])
         if dossiers[ticker].graph != direct_graph:
             graph_equivalence_ok = False
-    check("dossier.graph is exactly equivalent to calling get_entity_context() "
-          "directly, for all 5 tickers", graph_equivalence_ok)
+    check(f"dossier.graph is exactly equivalent to calling get_entity_context() "
+          f"directly, for all {len(tickers)} tickers", graph_equivalence_ok)
 
     # --- 5. Determinism: identical input -> byte-identical output ------------
     rendered_thrice = [crd.render_dossier(dossiers["NASCON"]) for _ in range(3)]
@@ -174,9 +177,9 @@ def main() -> int:
         for word in forbidden_whole_words:
             if re.search(rf"\b{word}\w*\b", lower_scrubbed):
                 forbidden_found.append((ticker, word))
-    check("no forbidden ranking/scoring/recommendation vocabulary appears "
-          "anywhere in any of the 5 real rendered dossiers outside this "
-          "module's own disclaimer sentences", forbidden_found == [])
+    check(f"no forbidden ranking/scoring/recommendation vocabulary appears "
+          f"anywhere in any of the {len(tickers)} real rendered dossiers "
+          f"outside this module's own disclaimer sentences", forbidden_found == [])
 
     # --- 9. No synthesized field anywhere in the dossier dataclass ----------
     field_names = set(crd.CompanyResearchDossier.__dataclass_fields__.keys())

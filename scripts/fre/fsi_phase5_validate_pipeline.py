@@ -1,13 +1,14 @@
 """FSI Phase 5: main validation harness runner
 (docs/fre_runs/fsi_phase5_preregistration.md,
-docs/fre_runs/fsi_phase5_implementation_log.md).
+docs/fre_runs/fsi_phase5_implementation_log.md; Component 4 added FSI
+Phase 16, docs/fre_runs/fsi_phase16_preregistration.md).
 
 The single entry point an operator (or a future CI-style check) runs to
-validate that the frozen FSI Phase 1-4 pipeline remains exactly as it
-was: golden-snapshot reproducibility, cross-phase consistency, and
-database immutability (row counts across ALL 29 tables + integrity/FK
-checks, before and after this run). Read-only against production --
-this script has no write path to `data/ngx.sqlite` at all.
+validate that the frozen FSI pipeline remains exactly as it was:
+golden-snapshot reproducibility, cross-phase consistency, database
+immutability, and (since Phase 16) composition-layer smoke coverage
+across every real ticker. Read-only against production -- this script
+has no write path to `data/ngx.sqlite` at all.
 
   PYTHONPATH=src python scripts/fre/fsi_phase5_validate_pipeline.py
 """
@@ -22,6 +23,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from ngxrot import db  # noqa: E402
+from ngxrot.fre import company_memory_360, company_research_dossier, company_thesis_360, entity_context  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
+from ngxrot.fre.financial_reasoning_report import render_report  # noqa: E402
 from ngxrot.fre.pipeline_validation import (  # noqa: E402
     compare_snapshots, compute_live_snapshot, diff_table_counts,
     snapshot_all_table_counts, verify_cross_phase_consistency,
@@ -70,6 +74,47 @@ def main() -> int:
 
     con.close()
 
+    print("\n=== Component 4: composition-layer smoke coverage (added FSI Phase 16) ===")
+    # Confirms every composition/reporting layer (Phase 6/7/8/10/11) runs
+    # without exception for EVERY real ticker (discovered dynamically via
+    # list_tickers(), never a hardcoded list) -- the exact class of check
+    # that would have caught Phase 13 adding 5 tickers that no composition
+    # layer had ever been exercised against, if it had existed sooner. A
+    # coarse smoke check only (no exception): each phase's own dedicated
+    # test file already carries the detailed equivalence/PIT assertions --
+    # duplicating those here would violate "reuse, don't duplicate."
+    con = sqlite3.connect(f"file:{db.DEFAULT_DB.as_posix()}?mode=ro", uri=True)
+    smoke_failures: list[str] = []
+    tickers = list_tickers(con)
+    for ticker in tickers:
+        latest = con.execute(
+            "SELECT MAX(d.filing_date) FROM extracted_facts f JOIN documents d ON d.doc_id=f.doc_id "
+            "WHERE d.ticker=?", (ticker,),
+        ).fetchone()[0]
+        if latest is None:
+            smoke_failures.append(f"{ticker}: no extracted_facts filing date found")
+            continue
+        try:
+            memory = company_memory_360.as_of(con, ticker, latest)
+            render_report(memory)
+            company_thesis_360.as_of(con, ticker, latest)
+            entity_context.get_entity_context(con, ticker, latest)
+            dossier = company_research_dossier.build_dossier(con, ticker, latest)
+            company_research_dossier.render_dossier(dossier)
+        except Exception as e:  # noqa: BLE001
+            smoke_failures.append(f"{ticker}: {type(e).__name__}: {e}")
+    con.close()
+    if smoke_failures:
+        print(f"FAIL: {len(smoke_failures)} ticker(s) raised an exception in the "
+              f"composition chain:")
+        for f in smoke_failures:
+            print(f"  - {f}")
+        overall_ok = False
+    else:
+        print(f"PASS: all {len(tickers)} real tickers pass through company_memory_360 -> "
+              f"render_report -> company_thesis_360 -> entity_context -> "
+              f"company_research_dossier (build+render) with zero exceptions")
+
     print("\n=== Component 3: database immutability ===")
     con = sqlite3.connect(db.DEFAULT_DB)
     after_counts = snapshot_all_table_counts(con)
@@ -80,7 +125,8 @@ def main() -> int:
         print(f"FAIL: row count changed in {len(table_diffs)} table(s): {table_diffs}")
         overall_ok = False
     else:
-        print(f"PASS: all {len(before_counts)} tables' row counts unchanged before/after this run")
+        print(f"PASS: all {len(before_counts)} tables' row counts unchanged before/after this "
+              f"ENTIRE run (Components 1, 2, and 4 included, not just up to Component 2)")
     if before_integrity != [("ok",)] or after_integrity != [("ok",)]:
         print(f"FAIL: integrity_check before={before_integrity} after={after_integrity}")
         overall_ok = False

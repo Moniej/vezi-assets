@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from ngxrot import db  # noqa: E402
 from ngxrot.fre import company_memory_360 as cm360  # noqa: E402
 from ngxrot.fre.company_memory import build_company_memory  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
 from ngxrot.fre.pipeline_validation import snapshot_all_table_counts, diff_table_counts  # noqa: E402
 from ngxrot.fre.pit_financial_memory import as_of as financial_as_of  # noqa: E402
 
@@ -46,7 +47,11 @@ def main() -> int:
     con = ro()
     before_counts = snapshot_all_table_counts(con)
 
-    tickers = ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]
+    # FSI Phase 16: derived dynamically (was a hardcoded 5-ticker list that
+    # silently stopped covering the 5 tickers Phase 13 added) -- always the
+    # real, current roster, so a future coverage-expansion phase is
+    # automatically exercised here without a manual edit.
+    tickers = list_tickers(con)
     test_dates = ["2020-01-01", "2022-06-01", "2024-07-31", "2026-08-01"]
 
     # --- output equivalence: CompanyMemory360 must exactly match calling
@@ -59,10 +64,10 @@ def main() -> int:
             direct_financial = financial_as_of(con, ticker, as_of_date)
             if combined.corporate != direct_corporate or combined.financial != direct_financial:
                 equivalence_ok = False
-    check("CompanyMemory360.as_of() is exactly equivalent to calling "
-          "build_company_memory() and pit_financial_memory.as_of() directly, "
-          "for all 5 tickers across 4 real/representative as_of_dates "
-          "(20 combinations, 0 discrepancies)",
+    check(f"CompanyMemory360.as_of() is exactly equivalent to calling "
+          f"build_company_memory() and pit_financial_memory.as_of() directly, "
+          f"for all {len(tickers)} real tickers across 4 real/representative "
+          f"as_of_dates ({len(tickers) * 4} combinations, 0 discrepancies)",
           equivalence_ok)
 
     # --- PIT leakage: reuse the 15 real anchor documents' own filing dates --

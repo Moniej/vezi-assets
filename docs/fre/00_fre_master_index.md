@@ -92,7 +92,14 @@ schema change, zero LLM calls; tag `fsi-phase14-baseline-2026-08-02`),
 and **FSI Phase 15** (Screening CLI — `scripts/fre/screen_companies.py`,
 a thin wrapper around Phase 14's `screen_by_flag()`/`screen_by_trend()`,
 mirroring Phase 12's CLI pattern exactly; zero writes, zero schema
-change; tag `fsi-phase15-baseline-2026-08-02`)
+change; tag `fsi-phase15-baseline-2026-08-02`), and **FSI Phase 16**
+(Composition-Layer Ticker Coverage Fix — found and fixed 6 dedicated
+per-phase test files that had silently stopped covering Phase 13's 5
+new tickers, switching them to dynamic ticker discovery
+(`list_tickers()`) so a future coverage-expansion phase cannot silently
+under-test again; added a 4th "composition-layer smoke coverage"
+component to Phase 5's validation harness; zero modification to any
+production module; tag `fsi-phase16-baseline-2026-08-02`)
 are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has

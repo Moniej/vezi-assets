@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from ngxrot import db  # noqa: E402
 from ngxrot.fre import company_memory_360 as cm360  # noqa: E402
 from ngxrot.fre import financial_reasoning_report as report_mod  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
 from ngxrot.fre.pipeline_validation import snapshot_all_table_counts, diff_table_counts  # noqa: E402
 
 passed = 0
@@ -42,10 +43,12 @@ def main() -> int:
     con = ro()
     before_counts = snapshot_all_table_counts(con)
 
-    tickers = ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]
+    # FSI Phase 16: dynamic ticker discovery (was a hardcoded 5-ticker list
+    # that silently stopped covering Phase 13's 5 new tickers).
+    tickers = list_tickers(con)
 
-    # --- 1. Renders without exception for all 5 tickers at their own latest
-    # real filing date, and never crashes -----------------------------------
+    # --- 1. Renders without exception for all real tickers at their own
+    # latest real filing date, and never crashes -----------------------------
     snapshots = {}
     reports = {}
     render_ok = True
@@ -62,8 +65,8 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001
             print(f"  EXCEPTION for {ticker}: {e}")
             render_ok = False
-    check("renders without exception for all 5 real tickers at their own "
-          "latest real filing date", render_ok)
+    check(f"renders without exception for all {len(tickers)} real tickers at "
+          f"their own latest real filing date", render_ok)
 
     # --- 2. Determinism: identical input -> byte-identical output ----------
     ticker, snap = "NASCON", snapshots["NASCON"]
@@ -183,10 +186,10 @@ def main() -> int:
         for word in forbidden_whole_words:
             if re.search(rf"\b{word}\w*\b", lower_scanned):
                 forbidden_found.append((ticker, word))
-    check("no forbidden ranking/scoring/recommendation vocabulary appears "
-          "anywhere in the 5 real rendered reports OUTSIDE the module's own "
-          "fixed disclaimer sentence (which legitimately names these "
-          "excluded categories)", forbidden_found == [])
+    check(f"no forbidden ranking/scoring/recommendation vocabulary appears "
+          f"anywhere in the {len(tickers)} real rendered reports OUTSIDE the "
+          f"module's own fixed disclaimer sentence (which legitimately names "
+          f"these excluded categories)", forbidden_found == [])
 
     con.close()
 

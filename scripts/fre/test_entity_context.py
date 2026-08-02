@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from ngxrot import db  # noqa: E402
 from ngxrot.fre import company_memory_360 as cm360  # noqa: E402
 from ngxrot.fre import entity_context as ec  # noqa: E402
+from ngxrot.fre.financial_ratios import list_tickers  # noqa: E402
 from ngxrot.fre.pipeline_validation import snapshot_all_table_counts, diff_table_counts  # noqa: E402
 
 RENAMES_CSV = ROOT / "data" / "reference" / "symbol_renames.csv"
@@ -44,10 +45,16 @@ def main() -> int:
     con = ro()
     before_counts = snapshot_all_table_counts(con)
 
-    fsi_tickers = ("UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON")
+    # FSI Phase 16: dynamic ticker discovery (was a hardcoded 5-ticker list
+    # that silently stopped covering Phase 13's 5 new tickers -- NONE of
+    # which has a real `entities` row yet, a disclosed Phase 13 gap).
+    fsi_tickers = tuple(list_tickers(con))
 
-    # --- 1. Output equivalence against the underlying tables, for all 5
-    # real tickers at a late as_of_date (nothing PIT-excluded) ---------------
+    # --- 1. Output equivalence against the underlying tables, for every
+    # real ticker at a late as_of_date (nothing PIT-excluded). A ticker with
+    # NO entities row (Phase 13's 5 new tickers) must show BOTH sides empty
+    # (direct query returns None AND ctx.entity_id is None) -- that is a
+    # correct match, "no graph presence yet KNOWN," not a mismatch. ----------
     equivalence_ok = True
     for ticker in fsi_tickers:
         ctx = ec.get_entity_context(con, ticker, "2026-08-02")
@@ -55,11 +62,16 @@ def main() -> int:
             "SELECT entity_id, canonical_name, first_seen_doc_id FROM entities "
             "WHERE entity_type='company' AND canonical_name=?", (ticker,),
         ).fetchone()
-        if direct is None or ctx.entity_id != direct[0] or ctx.canonical_name != direct[1] \
-           or ctx.first_seen_doc_id != direct[2]:
+        if direct is None:
+            if ctx.entity_id is not None:
+                equivalence_ok = False
+        elif ctx.entity_id != direct[0] or ctx.canonical_name != direct[1] \
+                or ctx.first_seen_doc_id != direct[2]:
             equivalence_ok = False
-    check("get_entity_context()'s entity fields match a direct query of "
-          "the entities table exactly, for all 5 real FSI tickers",
+    check(f"get_entity_context()'s entity fields match a direct query of "
+          f"the entities table exactly, for all {len(fsi_tickers)} real "
+          f"tickers (5 of which correctly show 'no graph presence yet "
+          f"known' on both sides, per Phase 13's own disclosed gap)",
           equivalence_ok)
 
     # --- 2. GTCO (not an FSI ticker, but a real, known rename case) has
@@ -83,11 +95,12 @@ def main() -> int:
           gtco_ctx.relationships[0].direction == "subject"
           and gtco_ctx.relationships[0].counterpart_canonical_name == "GUARANTY")
 
-    # --- 3. All 5 FSI tickers correctly show ZERO relationships (matches
+    # --- 3. All real FSI tickers correctly show ZERO relationships (matches
     # Phase 9's own disclosed finding: none of the 4 verified renames
     # involves any FSI ticker) ------------------------------------------------
-    check("all 5 FSI tickers correctly show ZERO entity_relationships "
-          "(matches Phase 9's own disclosed finding -- not a defect)",
+    check(f"all {len(fsi_tickers)} real FSI tickers correctly show ZERO "
+          f"entity_relationships (matches Phase 9's own disclosed finding "
+          f"-- not a defect)",
           all(len(ec.get_entity_context(con, t, "2026-08-02").relationships) == 0
               for t in fsi_tickers))
 
@@ -133,9 +146,9 @@ def main() -> int:
         direct_memory = cm360.as_of(con, ticker, "2026-08-02")
         if combined.memory != direct_memory:
             memory_equivalence_ok = False
-    check("CompanyMemory360Graph's 'memory' sub-result is exactly "
-          "equivalent to calling company_memory_360.as_of() directly, "
-          "for all 5 tickers", memory_equivalence_ok)
+    check(f"CompanyMemory360Graph's 'memory' sub-result is exactly "
+          f"equivalent to calling company_memory_360.as_of() directly, "
+          f"for all {len(fsi_tickers)} tickers", memory_equivalence_ok)
 
     # --- 7. No forbidden analytics/scoring fields anywhere -------------------
     forbidden_terms = ("score", "rank", "centrality", "weight", "vote", "recommend")
