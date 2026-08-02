@@ -200,11 +200,15 @@ Tier-1 capabilities is now both built AND operator-reachable from the
 command line.
 All 25 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
-discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-22 were
+discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-25 were
 executed under the owner's standing continuous-execution authorization
-(no per-phase approval checkpoint); see `docs/fre_runs/
-fsi_final_architecture_audit_2026-08-02.md` for the audit produced at
-the natural stopping point this authorization reached. Everything below this line is
+(no per-phase approval checkpoint), with the owner's explicit
+authorization to introduce NGX's own official sector classification as
+an external reference-metadata source (Phase 23) as the one owner
+decision within that run; see `docs/fre_runs/
+fsi_final_architecture_audit_2026-08-02.md` (Revision 2) for the audit
+produced at the natural stopping point this authorization reached.
+Everything below this line is
 the original, frozen design document and describes the program as first
 conceived; it is retained unmodified as the architectural reference, not
 updated in place as execution has diverged from it (see the roadmap
