@@ -69,8 +69,19 @@ py`, the platform's first real CLI entry point, wrapping Phase 11's
 `build_dossier()`/`render_dossier()` unmodified; two real bugs found
 and fixed, both genuine first-exercised-boundary findings (console
 UTF-8 encoding, subprocess-capture mojibake); zero new reasoning, zero
-database writes; tag `fsi-phase12-baseline-2026-08-02`) are all
-complete and frozen. Full
+database writes; tag `fsi-phase12-baseline-2026-08-02`), and **FSI
+Phase 13** (Coverage Expansion — real-ticker roster grown from 5 to 10:
+MTNN, DANGCEM, UBN, OANDO, NESTLE added via Phase 1/2's own
+hand-verified extraction methodology, 31 new revenue/net_profit/ebit/
+ebitda facts across 10 real filings; Phases 3-12, nine frozen modules,
+re-run against the expanded dataset with ZERO code modification and
+confirmed to generalize; one real bug found and fixed, introduced by
+this phase's own execution rather than a pre-existing defect — Phase 3's
+frozen compute scripts, re-run against the expanded ticker set,
+duplicated the 5 original tickers' financial-reasoning conclusions
+(no dedup check had ever been needed before); golden snapshot re-frozen
+at 137 facts / 267 conclusions; tag `fsi-phase13-baseline-2026-08-02`)
+are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is

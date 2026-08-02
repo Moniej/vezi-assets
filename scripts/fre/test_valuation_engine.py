@@ -118,29 +118,33 @@ def main() -> int:
               f"(RuntimeError, never a fabricated number)", raised)
     con.close()
 
-    # --- confirmed real-data fact, UPDATED 2026-08-01 after FSI Phase 2
-    # Stage 4 (EBITDA/EBIT Intelligence): 106 financial-statement line
-    # items now exist -- Phase 1's 15 revenue + 15 net_profit, Stage 2's
-    # 14 assets + 14 liabilities + 14 equity, Stage 3's 4 cfo + 3 cfi + 4
-    # cff + 1 capex + 1 fcf, plus Stage 4's 12 ebit + 9 ebitda (UCAP, a
-    # bank, yields none -- PBT is never treated as EBIT/EBITDA-equivalent
-    # for a financial institution; CAP yields ebit but never ebitda, no
+    # --- confirmed real-data fact, UPDATED 2026-08-02 after FSI Phase 13
+    # (Coverage Expansion): 137 financial-statement line items now exist --
+    # the prior 106 (Phase 1's 15 revenue + 15 net_profit, Stage 2's 14
+    # assets + 14 liabilities + 14 equity, Stage 3's 4 cfo + 3 cfi + 4 cff
+    # + 1 capex + 1 fcf, Stage 4's 12 ebit + 9 ebitda) PLUS 31 new facts
+    # across 5 new tickers (MTNN, DANGCEM, UBN, OANDO, NESTLE): +10 revenue,
+    # +10 net_profit, +6 ebit, +5 ebitda -- no new balance-sheet/cash-flow
+    # facts (out of scope for Phase 13, deferred). UCAP, a bank, yields none
+    # -- PBT is never treated as EBIT/EBITDA-equivalent for a financial
+    # institution (UBN, Phase 13's own new bank, is the same); CAP yields
+    # ebit but never ebitda, no
     # D&A ever disclosed in any of its 3 filings -- both real, disclosed
     # document-content/architectural-scope gaps, not extraction
     # failures). This was correctly 0 when FRE-6 was first written, then
     # 30 after Phase 1, 72 after Stage 2, 85 after Stage 3 -- updated
     # again to match the new real state rather than left stale, same
-    # discipline every time. -----------------------------------------------
+    # discipline every time -- 106 after Stage 4, now 137 after Phase 13.
+    # -----------------------------------------------------------------------
     con = ro()
     non_corp_action_facts = con.execute(
         "SELECT COUNT(*) FROM extracted_facts WHERE fact_type NOT IN "
         "('dividend','rights_issue','bonus_issue')"
     ).fetchone()[0]
-    check("exactly 106 financial-statement line items exist (Phase 1's 15 "
-          "revenue + 15 net_profit, Stage 2's 14 assets + 14 liabilities "
-          "+ 14 equity, Stage 3's 4 cfo + 3 cfi + 4 cff + 1 capex + 1 fcf, "
-          "Stage 4's 12 ebit + 9 ebitda)",
-          non_corp_action_facts == 106)
+    check("exactly 137 financial-statement line items exist (106 after FSI "
+          "Phase 1-2 Stage 4, plus 31 new facts from Phase 13's 5 new "
+          "tickers: +10 revenue, +10 net_profit, +6 ebit, +5 ebitda)",
+          non_corp_action_facts == 137)
     sector_populated = con.execute(
         "SELECT COUNT(*) FROM securities WHERE sector_ngx IS NOT NULL"
     ).fetchone()[0]

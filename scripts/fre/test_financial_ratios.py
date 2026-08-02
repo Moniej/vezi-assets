@@ -42,9 +42,13 @@ def main() -> int:
     doc_count_before = con.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
     facts_count_before = con.execute("SELECT COUNT(*) FROM extracted_facts").fetchone()[0]
 
+    # Updated FSI Phase 13 (coverage expansion): 5 new tickers (MTNN,
+    # DANGCEM, UBN, OANDO, NESTLE) added alongside the original 5 --
+    # was {"UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"} only.
     tickers = list_tickers(con)
-    check("list_tickers finds all 5 real FSI tickers",
-          set(tickers) == {"UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"})
+    check("list_tickers finds all 10 real FSI tickers (5 original + 5 added in Phase 13)",
+          set(tickers) == {"UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON",
+                            "MTNN", "DANGCEM", "UBN", "OANDO", "NESTLE"})
 
     # --- CAP FY2020 (doc 4508): no balance-sheet data at all (Stage 2's own
     # disclosed gap) -- debt_to_equity must be insufficient_data, not guessed

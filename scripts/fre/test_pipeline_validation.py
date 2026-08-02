@@ -50,11 +50,18 @@ def main() -> int:
     diffs = compare_snapshots(golden, live)
     check("live snapshot is byte-identical to the frozen golden snapshot "
           "(0 deviations on a rerun against unmodified data)", diffs == [])
+    # Re-frozen FSI Phase 13 (Coverage Expansion, 2026-08-02): baseline grew
+    # from 106 facts/177 conclusions (75 ratio + 87 trend + 15 flag) to 137
+    # facts/267 conclusions (125 ratio + 112 trend + 30 flag), a legitimate,
+    # disclosed data expansion (5 new tickers), not an unexplained deviation
+    # -- re-frozen via fsi_phase5_freeze_golden_snapshot.py, per that
+    # script's own documented "re-run only if a future, owner-approved
+    # phase legitimately changes Phase 1-4's output" rule.
     check("the golden snapshot's own totals match the known frozen baseline "
-          "(106 financial facts, 177 conclusions: 75 ratio + 87 trend + 15 flag)",
-          golden["extracted_facts_total_financial"] == 106
-          and golden["conclusions_total"] == 177
-          and golden["conclusions_by_type"] == {"ratio": 75, "trend": 87, "flag": 15})
+          "(137 financial facts, 267 conclusions: 125 ratio + 112 trend + 30 flag)",
+          golden["extracted_facts_total_financial"] == 137
+          and golden["conclusions_total"] == 267
+          and golden["conclusions_by_type"] == {"ratio": 125, "trend": 112, "flag": 30})
 
     # a deliberately-mismatched golden snapshot (in memory only) must produce
     # a non-empty, human-readable diff -- proving compare_snapshots() isn't

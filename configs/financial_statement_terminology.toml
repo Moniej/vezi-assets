@@ -24,7 +24,10 @@ sector_note = "Gross Earnings/Gross Revenue used by financial-services/registrar
 
 [net_profit]
 synonyms = ["Profit for the period", "Profit for the year", "Profit After Tax",
-            "PROFIT FOR THE PERIOD", "Profit after tax", "PAT"]
+            "PROFIT FOR THE PERIOD", "Profit after tax", "PAT",
+            "Net profit", "Profit/(Loss)-After-Tax", "Profit-After-Tax",
+            "(Loss)/profit for the period", "Loss for the period"]
+note = "Five synonyms added in FSI Phase 13 (coverage expansion), each a real, distinct label observed verbatim in a new ticker's own filing: 'Net profit' (DANGCEM), 'Profit/(Loss)-After-Tax' and 'Profit-After-Tax' (OANDO, two different real hyphenation variants across its own FYE2021 and FY2024 filings), '(Loss)/profit for the period' and 'Loss for the period' (NESTLE, two different real variants across its own FY2023 and FY2024 filings -- the SIGN of numeric_value carries loss vs. profit, the fact_type mapping does not encode it, same convention as the existing cfo synonym note)."
 
 [assets]
 synonyms = ["Total Assets", "TOTAL ASSETS", "TOTAL ASSESTS"]
@@ -59,9 +62,10 @@ synonyms = ["EBITDA"]
 
 [ebit]
 synonyms = ["EBIT", "Operating Profit", "Operating profit",
-            "Profit Before Finance Cost and Tax", "Profit before finance costs and tax"]
+            "Profit Before Finance Cost and Tax", "Profit before finance costs and tax",
+            "Results from operating activities"]
 caveat = "NOT guaranteed equivalent across all filers -- 'Operating Profit' can exclude or include items EBIT conventionally treats differently depending on a company's own income-statement structure. Every fact mapped via this synonym must record confidence_tier='mapped_equivalent' (never 'direct_reported'), per docs/fre_runs/fsi_phase2_execution_plan.md section 3's EBIT risk note."
-note = "The two 'Profit Before Finance Cost(s) and Tax' variants (singular/plural 'cost') are AFRIPRUD's own real income-statement line (docs 4245, 6349, 7540) -- structurally identical to EBIT's definition (earnings before interest/finance cost and tax), confirmed by its position immediately before a 'Finance costs' deduction and 'Profit Before Tax' line in AFRIPRUD's own statement. Kept as mapped_equivalent, not direct_reported, since the filing itself never uses the word 'EBIT'."
+note = "The two 'Profit Before Finance Cost(s) and Tax' variants (singular/plural 'cost') are AFRIPRUD's own real income-statement line (docs 4245, 6349, 7540) -- structurally identical to EBIT's definition (earnings before interest/finance cost and tax), confirmed by its position immediately before a 'Finance costs' deduction and 'Profit Before Tax' line in AFRIPRUD's own statement. Kept as mapped_equivalent, not direct_reported, since the filing itself never uses the word 'EBIT'. 'Results from operating activities' (added FSI Phase 13) is NESTLE's own real IFRS-style line, confirmed by the identical structural position (immediately before 'Finance income'/'Finance costs' and a 'before income tax' line)."
 
 [fcf]
 synonyms = ["Free Cash Flow"]

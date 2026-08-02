@@ -149,7 +149,12 @@ def main() -> int:
     facts_count = con.execute("SELECT COUNT(*) FROM extracted_facts").fetchone()[0]
     check("documents count unchanged at 11,533 (this phase never touches "
           "documents or extracted_facts)", doc_count == 11533)
-    check("extracted_facts count unchanged at 267", facts_count == 267)
+    # Updated FSI Phase 13 (coverage expansion): extracted_facts grew from
+    # 267 to 298 (31 new facts across 5 new tickers) -- this phase (9) still
+    # never touches extracted_facts itself; the absolute count here just
+    # tracks the real, current total, same convention as test_valuation_
+    # engine.py's own repeatedly-updated fact-count assertion.
+    check("extracted_facts count unchanged at 298 (Phase 9 itself never writes facts)", facts_count == 298)
 
     con.close()
 
