@@ -46,7 +46,14 @@ pure composition of FRE-5's `CompanyThesis` and FSI Phase 6's
 Engine to the FSI track's validated financial reasoning for the first
 time; real fired concern flags surfaced as cited evidence, zero
 scoring/weighting/ranking/synthesized-strength field; tag
-`fsi-phase8-baseline-2026-08-02`) are all complete and frozen. Full
+`fsi-phase8-baseline-2026-08-02`), and **FSI Phase 9** (Knowledge Graph
+Completeness — populated `entities` rows for all 5 FSI tickers (was
+1/5, NASCON only) and 4 real, typed `renamed_from` `entity_
+relationships` edges from the quant engine's own owner-verified
+`symbol_renames.csv` (was 0 real relations, 1 `effect_chains`
+artifact), closing Part 2's own long-standing, self-disclosed gap with
+zero new extraction and zero LLM call; tag
+`fsi-phase9-baseline-2026-08-02`) are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
