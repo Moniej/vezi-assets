@@ -53,12 +53,14 @@ UNAVAILABLE_FIELDS = {
     "Macro Sensitivity": "H-004 (oil lead-lag) and H-005 (MPC windows) "
                          "both rejected; no validated macro-conditioning "
                          "exists yet (Wave 3 candidate C2, not yet built)",
-    "Industry Exposure": "securities.sector_ngx is now populated for 136/320 "
-                         "rows (FSI Phase 23, 2026-08-02, from NGX's own "
-                         "official Daily Official List) -- still listed as "
-                         "unavailable here because coverage remains partial "
-                         "and build_profile() has no logic wired to consume "
-                         "it yet; not activated by this disclosure update",
+    "Industry Exposure": "populated only for tickers with a known "
+                         "securities.sector_ngx (136/320 as of FSI Phase 23, "
+                         "2026-08-02, NGX's own official Daily Official "
+                         "List) -- for the remaining tickers, sector_ngx is "
+                         "NULL and this field stays unavailable, disclosed, "
+                         "not guessed (FSI Phase 27 wired the consuming "
+                         "logic; this entry is removed per-profile when "
+                         "build_profile() successfully populates it)",
     "Ownership": "no ownership/shareholding dataset acquired",
 }
 
@@ -118,6 +120,14 @@ class CompanyProfile:
     last_dividend_closure: str | None = None
     last_earnings_filing: str | None = None
     recent_corporate_actions: list[dict] = field(default_factory=list)
+
+    # --- Industry Exposure: FSI Phase 27. The ticker's own
+    # securities.sector_ngx value, verbatim (NGX's own official
+    # classification, FSI Phase 23) -- None if not yet known. No
+    # computed percentage, no peer set, no inference: the platform's
+    # own vision names this field "Industry Exposure," and the only
+    # real evidence behind it today is a single sector label. ---
+    industry_exposure: str | None = None
 
     # --- Composite: populated ONLY if in a currently actionable sleeve ---
     expected_return_ann: float | None = None
@@ -241,10 +251,19 @@ def build_profile(con, ticker: str, as_of: str | None = None,
     as_of = as_of or date.today().isoformat()
     cache = cache if cache is not None else {}
 
-    row = con.execute("SELECT name FROM securities WHERE ticker = ?",
+    row = con.execute("SELECT name, sector_ngx FROM securities WHERE ticker = ?",
                       (ticker,)).fetchone()
     profile = CompanyProfile(ticker=ticker, as_of=as_of,
                              name=row[0] if row else None)
+
+    # FSI Phase 27: Industry Exposure, sourced entirely from NGX's own
+    # sector_ngx (FSI Phase 23) -- populated only when known for THIS
+    # ticker; `unavailable` is this profile's own fresh dict copy
+    # (default_factory), so removing the key here never affects any
+    # other ticker's profile.
+    if row is not None and row[1] is not None:
+        profile.industry_exposure = row[1]
+        profile.unavailable.pop("Industry Exposure", None)
 
     px = db.equity_prices_asof(con, as_of, tickers=[ticker], min_confidence=0.9)
     if not px.empty:

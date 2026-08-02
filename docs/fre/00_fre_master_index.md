@@ -210,8 +210,19 @@ new precedence tier between the owner-override config and the
 `"general"` fallback -- confirmed, before and after implementation,
 that none of the 10 real FSI tickers' actual readiness/valuation
 output changes; no `ValuationMethodAdapter` subclass touched, no
-valuation output activated; tag `fsi-phase26-baseline-2026-08-02`).
-All 26 phases are complete and frozen. Full
+valuation output activated; tag `fsi-phase26-baseline-2026-08-02`),
+and **FSI Phase 27** (Industry Exposure Integration --
+`src/ngxrot/company_intelligence.py`'s `CompanyProfile` gains
+`industry_exposure: str | None`, populated verbatim from `securities.
+sector_ngx` for tickers where it is known, correctly removed from
+`CompanyProfile.unavailable` per-profile only; the module-level
+`UNAVAILABLE_FIELDS` dict and every other ticker's own profile
+confirmed unaffected; first dedicated test file for
+`company_intelligence.py`; tag `fsi-phase27-baseline-2026-08-02`).
+Both of the owner's named sector_ngx-consuming phases (Valuation
+Engine company-type mapping; Company Intelligence Industry Exposure)
+are now complete.
+All 27 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-25 were
 executed under the owner's standing continuous-execution authorization
