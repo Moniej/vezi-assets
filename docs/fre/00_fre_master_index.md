@@ -101,21 +101,37 @@ under-test again; added a 4th "composition-layer smoke coverage"
 component to Phase 5's validation harness; zero modification to any
 production module; tag `fsi-phase16-baseline-2026-08-02`), and **FSI
 Phase 17** (Portfolio-Memory Cross-Reference — `src/ngxrot/fre/
-portfolio_memory.py`'s `cross_reference()`, the last of Part 9's three
-Tier-1 capabilities, closing that section of the frozen architecture
-doc; reuses `AlphaEngine().recommendations()` verbatim, zero
+portfolio_memory.py`'s `cross_reference()`, one of Part 9's five
+Tier-1 capabilities; reuses `AlphaEngine().recommendations()` verbatim, zero
 modification to `alpha_engine.py`/`registry.py`, zero write path
 anywhere (AST-verified); deliberately not wired into `company_research_
 dossier.py` in this phase; tag `fsi-phase17-baseline-2026-08-02`), and
 **FSI Phase 18** (Watchlist Persistence — one new table,
 `watchlist_entries`, and `src/ngxrot/fre/watchlist.py`
 (`add_entry()`/`remove_entry()`/`get_history_for_ticker()`/
-`list_active()`), closing Part 9's Tier-1 capability list in full;
+`list_active()`), another of Part 9's five Tier-1 capabilities;
 append-only (no DELETE anywhere, AST-verified), `entry_criteria`
 required and schema-enforced NOT NULL; all test writes confined to a
 scratch copy, real production database confirmed unchanged; tag
-`fsi-phase18-baseline-2026-08-02`)
-are all complete and frozen. Full
+`fsi-phase18-baseline-2026-08-02`), and **FSI Phase 19** (Qualitative
+Correlation Notes — `src/ngxrot/fre/correlation_notes.py`'s
+`note_for_pair()`, the fourth of Part 9's five Tier-1 capabilities;
+this phase also disclosed and corrected Phase 17/18's own
+documentation, which had incorrectly stated Part 9 names only three
+Tier-1 items -- it names five: Watchlist, Screening, Sector-coverage
+view, Qualitative correlation notes, Portfolio memory; narrative-only
+shared-exposure reasons via `[macro_exposure]`-taxonomy edges to a
+common counterpart entity, reusing `entity_context.
+get_entity_context()` unmodified, never a numeric score or shared-edge
+count (Part 9's own pre-rejected alternative #2); pairwise-only, never
+an all-pairs/matrix mode; zero write path anywhere (AST-verified);
+confirmed against real data that `entity_relationships` holds 0
+`macro_exposure` rows today, so every real ticker pair honestly
+returns an empty note; tag `fsi-phase19-baseline-2026-08-02`). Part
+9's Tier 1 now stands at 4 of 5 built -- only Sector-coverage view
+remains, genuinely blocked on `securities.sector_ngx` population
+(0/320, an external data dependency).
+All 19 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
