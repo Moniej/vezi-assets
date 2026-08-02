@@ -177,10 +177,22 @@ the source and correctly left NULL, disclosed not guessed; three stale
 `lim/audit.py`/`company_intelligence.py` with zero behavior change
 verified; tag `fsi-phase23-baseline-2026-08-02`). This resolves the
 single most-cited blocker across the whole program and genuinely
-unblocks Sector-coverage view (Part 9's last Tier-1 item) for the
-first time -- built next, as Phase 24, per this session's own
-established build-then-consume pattern.
-All 23 phases are complete and frozen. Full
+unblocked Sector-coverage view (Part 9's last Tier-1 item) for the
+first time, and **FSI Phase 24** (Sector-Coverage View --
+`src/ngxrot/fre/sector_coverage.py`'s `coverage_by_sector()`, the
+fifth and last of Part 9's Tier-1 capabilities; three plain counts per
+sector (total/FSI-covered/watchlist tickers), never a combined
+coverage score -- Part 9's own pre-rejected "shadow ranking"
+alternative applies equally to an aggregate composite; an explicit
+UNKNOWN bucket for the 184 securities with no known sector, forced to
+sort last, never dropped; reuses `financial_ratios.list_tickers()`
+(Phase 3) and `watchlist.list_active()` (Phase 18) unmodified, zero
+write path; tag `fsi-phase24-baseline-2026-08-02`). **Part 9 (Portfolio
+Reasoning) Tier 1 is now closed in full** -- all five capabilities
+Part 9 names as buildable-now (Watchlist, Screening, Sector-coverage
+view, Qualitative correlation notes, Portfolio memory) exist,
+simultaneously, for the first time in this program's history.
+All 24 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-22 were
 executed under the owner's standing continuous-execution authorization
