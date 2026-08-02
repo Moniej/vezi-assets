@@ -127,11 +127,23 @@ count (Part 9's own pre-rejected alternative #2); pairwise-only, never
 an all-pairs/matrix mode; zero write path anywhere (AST-verified);
 confirmed against real data that `entity_relationships` holds 0
 `macro_exposure` rows today, so every real ticker pair honestly
-returns an empty note; tag `fsi-phase19-baseline-2026-08-02`). Part
-9's Tier 1 now stands at 4 of 5 built -- only Sector-coverage view
-remains, genuinely blocked on `securities.sector_ngx` population
-(0/320, an external data dependency).
-All 19 phases are complete and frozen. Full
+returns an empty note; tag `fsi-phase19-baseline-2026-08-02`), and
+**FSI Phase 20** (Portfolio-Context-Annotated Research Dossier —
+`src/ngxrot/fre/company_portfolio_context.py`'s `as_of()`/`render()`,
+closing the exact integration Part 9 itself specifies for Portfolio
+Memory ("attach a note to a CompanyThesis or watchlist entry") and
+that Phases 17/18 each explicitly deferred to "a future phase";
+composes `build_dossier()` (Phase 11), `list_active()` (Phase 18,
+reused specifically for its already-PIT-correct semantics), and
+`cross_reference()` (Phase 17) -- each called once, none modified,
+confirmed via `git diff --stat`; discloses that the portfolio-memory
+section is inherently non-PIT (always-live), an inherited Phase 17
+limitation, not fixed here; tag `fsi-phase20-baseline-2026-08-02`).
+Part 9's Tier 1 now stands at 4 of 5 built and fully wired together --
+only Sector-coverage view remains, genuinely blocked on
+`securities.sector_ngx` population (0/320, an external data
+dependency).
+All 20 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
