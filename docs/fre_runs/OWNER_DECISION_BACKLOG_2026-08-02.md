@@ -1,4 +1,4 @@
-# Owner Decision Backlog — 2026-08-02 Stable Baseline
+# Owner Decision Backlog — v1.0 (2026-08-02 Stable Baseline)
 
 *Every remaining capability this platform's own architecture has
 already designed or scoped, together with the exact external

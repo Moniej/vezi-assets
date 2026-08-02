@@ -232,7 +232,15 @@ an external reference-metadata source (Phase 23), and explicit
 follow-on instructions for Phases 26-27, as the owner decisions within
 that run; see `docs/fre_runs/
 fsi_final_architecture_audit_2026-08-02.md` (Revision 3) for the audit
-produced at the natural stopping point this authorization reached.
+produced at the natural stopping point this authorization reached. The
+owner accepted that stopping point and closed the program, tagged
+**v1.0** (`platform-baseline-2026-08-02-stable` / `v1.0`, same commit)
+— the platform's first versioned release point; see `docs/fre_runs/
+CONSOLIDATED_ARCHITECTURE_2026-08-02.md` and its companion close-out
+documents (dependency map, implementation timeline, owner decision
+backlog, dependency-ordered expansion roadmap) for the complete v1.0
+reference package. No further phase begins until a trigger named in
+`OWNER_DECISION_BACKLOG_2026-08-02.md` actually occurs.
 Everything below this line is
 the original, frozen design document and describes the program as first
 conceived; it is retained unmodified as the architectural reference, not

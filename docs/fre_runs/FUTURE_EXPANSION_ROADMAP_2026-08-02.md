@@ -1,4 +1,4 @@
-# Future Expansion Roadmap — 2026-08-02 Stable Baseline
+# Future Expansion Roadmap — v1.0 (2026-08-02 Stable Baseline)
 
 *Ordered strictly by dependency chain — what must happen before what
 becomes possible — not by estimated value, priority, or ease. Each

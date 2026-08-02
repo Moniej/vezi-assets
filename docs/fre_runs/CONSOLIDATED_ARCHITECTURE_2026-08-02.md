@@ -1,7 +1,9 @@
-# Fund Alpha / NGX Platform — Consolidated Architecture
+# Fund Alpha / NGX Platform — Consolidated Architecture (v1.0)
 
-*Frozen as the stable production baseline, 2026-08-02
-(tag `platform-baseline-2026-08-02-stable`). This document describes
+*Frozen as the stable production baseline, 2026-08-02 — **v1.0**, the
+platform's first versioned release point (tags
+`platform-baseline-2026-08-02-stable` and `v1.0`, same commit). This
+document describes
 the complete implemented system as of this date across every
 subsystem: Quant Engine, AI Intelligence Layer, Financial Reasoning
 Engine (FRE), Financial Statement Intelligence (FSI), Local

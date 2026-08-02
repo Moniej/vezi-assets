@@ -1,4 +1,4 @@
-# Implementation Timeline — 2026-08-02 Stable Baseline
+# Implementation Timeline — v1.0 (2026-08-02 Stable Baseline)
 
 *Every completed phase across FRE, FSI, Portfolio Reasoning, Knowledge
 Graph, CLI, and Validation, in execution order, with its tag. Dates
@@ -67,7 +67,7 @@ unlock) are included for context since later phases depend on them.*
 | `fsi-phase26-baseline-2026-08-02` | 26 | Sector-to-Company-Type Mapping (owner-directed) |
 | `fsi-phase27-baseline-2026-08-02` | 27 | Industry Exposure Integration (owner-directed) |
 | — | — | **Architecture audit, Revision 3** — stopping point after Phase 27, accepted by owner as final |
-| `platform-baseline-2026-08-02-stable` | — | **This close-out: consolidated docs, final verification, stable production baseline** |
+| `platform-baseline-2026-08-02-stable` / `v1.0` | — | **This close-out: consolidated docs, final verification, stable production baseline — the platform's first versioned release point** |
 
 ## Real defects/errors found and fixed during this program (disclosed, not hidden)
 

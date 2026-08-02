@@ -1,4 +1,4 @@
-# Dependency Map — 2026-08-02 Stable Baseline
+# Dependency Map — v1.0 (2026-08-02 Stable Baseline)
 
 *Every subsystem and how it depends on, or is depended on by, every
 other subsystem. Companion to `CONSOLIDATED_ARCHITECTURE_2026-08-02.md`.
