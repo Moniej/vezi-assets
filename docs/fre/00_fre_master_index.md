@@ -224,13 +224,14 @@ Engine company-type mapping; Company Intelligence Industry Exposure)
 are now complete.
 All 27 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
-discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-25 were
+discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-27 were
 executed under the owner's standing continuous-execution authorization
 (no per-phase approval checkpoint), with the owner's explicit
 authorization to introduce NGX's own official sector classification as
-an external reference-metadata source (Phase 23) as the one owner
-decision within that run; see `docs/fre_runs/
-fsi_final_architecture_audit_2026-08-02.md` (Revision 2) for the audit
+an external reference-metadata source (Phase 23), and explicit
+follow-on instructions for Phases 26-27, as the owner decisions within
+that run; see `docs/fre_runs/
+fsi_final_architecture_audit_2026-08-02.md` (Revision 3) for the audit
 produced at the natural stopping point this authorization reached.
 Everything below this line is
 the original, frozen design document and describes the program as first
