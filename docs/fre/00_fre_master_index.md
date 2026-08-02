@@ -39,7 +39,14 @@ Financial Reasoning Research Report — `render_report()`, a pure,
 template-based Markdown renderer over Phase 6's snapshots, zero LLM
 calls, zero new reasoning/scoring/ranking, determinism and sentence-to-
 field traceability verified directly; tag
-`fsi-phase7-baseline-2026-08-02`) are all complete and frozen. Full
+`fsi-phase7-baseline-2026-08-02`), and **FSI Phase 8** (Financial-
+Reasoning-Informed Investment Thesis — `CompanyThesis360.as_of()`, a
+pure composition of FRE-5's `CompanyThesis` and FSI Phase 6's
+`CompanyMemory360`, neither modified, connecting the Investment Thesis
+Engine to the FSI track's validated financial reasoning for the first
+time; real fired concern flags surfaced as cited evidence, zero
+scoring/weighting/ranking/synthesized-strength field; tag
+`fsi-phase8-baseline-2026-08-02`) are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
