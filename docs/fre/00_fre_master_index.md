@@ -99,7 +99,14 @@ new tickers, switching them to dynamic ticker discovery
 (`list_tickers()`) so a future coverage-expansion phase cannot silently
 under-test again; added a 4th "composition-layer smoke coverage"
 component to Phase 5's validation harness; zero modification to any
-production module; tag `fsi-phase16-baseline-2026-08-02`)
+production module; tag `fsi-phase16-baseline-2026-08-02`), and **FSI
+Phase 17** (Portfolio-Memory Cross-Reference — `src/ngxrot/fre/
+portfolio_memory.py`'s `cross_reference()`, the last of Part 9's three
+Tier-1 capabilities, closing that section of the frozen architecture
+doc; reuses `AlphaEngine().recommendations()` verbatim, zero
+modification to `alpha_engine.py`/`registry.py`, zero write path
+anywhere (AST-verified); deliberately not wired into `company_research_
+dossier.py` in this phase; tag `fsi-phase17-baseline-2026-08-02`)
 are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
