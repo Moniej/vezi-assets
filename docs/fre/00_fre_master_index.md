@@ -34,7 +34,12 @@ Point-in-Time Company Memory — `CompanyMemory360.as_of()`, a pure
 composition of FRE-3's `CompanyMemory` and Phase 4's
 `pit_financial_memory`, neither underlying module modified, 0
 discrepancies vs. both, 0 PIT leakage violations; tag
-`fsi-phase6-baseline-2026-08-01`) are all complete and frozen. Full
+`fsi-phase6-baseline-2026-08-01`), and **FSI Phase 7** (Deterministic
+Financial Reasoning Research Report — `render_report()`, a pure,
+template-based Markdown renderer over Phase 6's snapshots, zero LLM
+calls, zero new reasoning/scoring/ranking, determinism and sentence-to-
+field traceability verified directly; tag
+`fsi-phase7-baseline-2026-08-02`) are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
