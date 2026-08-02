@@ -55,6 +55,35 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
   prereg was written and frozen to test specifically the friction
   version of the size story, and the capacity result is consistent with
   that framing, not in tension with it.
+- **Cross-hypothesis statistical hardening (added 2026-08-02, METH-001 —
+  does NOT change the Validated status above, which reflects the
+  pre-existing per-hypothesis criteria that have not changed; this is an
+  ADDITIONAL, more conservative lens layered on top, per
+  `docs/PREREG_METH-001_statistical_hardening.md`)**: H-011's own
+  per-hypothesis correction (Holm p=0.049, placebo p=0.0099) does not
+  account for the fact that it is the 11th independently-executed
+  hypothesis tested against the same NGX return history. Applying the
+  Deflated Sharpe Ratio (Bailey & López de Prado, 2014) using the real,
+  recomputed daily excess-Sharpe ratios of all 11 resolved hypotheses:
+  **DSR = 0.0071** (N=11, full program) — the chance-benchmark Sharpe one
+  would expect from the best of 11 random trials (0.107, daily) actually
+  EXCEEDS H-011's own real daily excess Sharpe (0.056). Restricting the
+  trial pool to only the 7 structurally comparable cross-sectional-engine
+  hypotheses (H-006–H-012, excluding the four sector/event-era "lite"
+  engine hypotheses) gives **DSR = 0.130** — still a large reduction from
+  the per-hypothesis view, though sensitive to which hypotheses count as
+  comparable trials (H-005's large negative daily Sharpe, an outlier
+  driven by its very different event-window exposure profile, inflates
+  the full-pool variance estimate materially). HAC(Newey-West)-corrected
+  inference on H-011's own daily excess return series likewise weakens the
+  parametric case: t=2.205, p=0.027 (lag=7), versus the uncorrected
+  i.i.d. t=2.646, p=0.008. **Honest reading: H-011 remains the platform's
+  only per-hypothesis-confirmed factor and its capacity/economic-rationale
+  story is unaffected, but under a program-wide multiple-testing view its
+  statistical confidence is materially weaker than the per-hypothesis
+  number alone suggests — this is disclosed here permanently, not
+  averaged away or hidden.** Full derivation:
+  `docs/METH-001_STATISTICAL_HARDENING_REPORT_2026-08-02.md`.
 - **Practical implementation notes**: per-regime top contributors were
   consistently thin/illiquid names (LASACO in pre_float, MULTIVERSE in
   float_shock, NCR in OOS) — the effect is genuinely concentrated in the

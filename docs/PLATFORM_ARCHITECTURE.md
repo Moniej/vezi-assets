@@ -34,6 +34,19 @@ Two engines: `backtest_lite`/`engine_full` (index-level, sector era) and
 H-006/H-007 — rank and event-book modes). No discretionary changes survive
 first results; a changed design is a new hypothesis ID.
 
+**Statistical hardening (METH-001, added 2026-08-02)**: the per-hypothesis
+inference layer (`stats.py::excess_ttest`, Holm, Benjamini-Hochberg,
+placebo) is now supplemented, not replaced, by two cross-hypothesis-aware
+additions: `newey_west_tstat` (HAC correction for daily-return
+autocorrelation) and `deflated_sharpe_ratio`/`probabilistic_sharpe_ratio`
+(Bailey & López de Prado — corrects a hypothesis's headline confidence for
+the real, growing number of independent trials run against the same NGX
+history; N is sourced from the ledger's actual resolved-hypothesis count,
+not asserted). Full derivation and first real application (to H-011):
+`docs/METH-001_STATISTICAL_HARDENING_REPORT_2026-08-02.md`. Every future
+hypothesis's confirmation should report its DSR against the then-current
+trial count alongside its per-hypothesis correction.
+
 ## 3. Factor Library — LIVE (structure), EMPTY (contents, by design)
 
 `docs/FACTOR_REGISTRY.md` — the permanent knowledge base. Every completed
