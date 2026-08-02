@@ -80,7 +80,15 @@ this phase's own execution rather than a pre-existing defect — Phase 3's
 frozen compute scripts, re-run against the expanded ticker set,
 duplicated the 5 original tickers' financial-reasoning conclusions
 (no dedup check had ever been needed before); golden snapshot re-frozen
-at 137 facts / 267 conclusions; tag `fsi-phase13-baseline-2026-08-02`)
+at 137 facts / 267 conclusions; tag `fsi-phase13-baseline-2026-08-02`),
+and **FSI Phase 14** (Evidence-Based Screening — `src/ngxrot/fre/
+screening.py`'s `screen_by_flag()`/`screen_by_trend()`, the platform's
+first function to legitimately operate across all tickers at once,
+implementing Part 9's own long-frozen Tier-1 "Screening" design;
+categorical filters only, no numeric threshold; alphabetical-ticker
+ordering enforced mechanically; no score/rank field; verified to never
+import/be-imported-by `alpha_engine.py`/`runner.py`; zero writes, zero
+schema change, zero LLM calls; tag `fsi-phase14-baseline-2026-08-02`)
 are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
