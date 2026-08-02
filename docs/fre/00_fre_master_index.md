@@ -191,8 +191,14 @@ write path; tag `fsi-phase24-baseline-2026-08-02`). **Part 9 (Portfolio
 Reasoning) Tier 1 is now closed in full** -- all five capabilities
 Part 9 names as buildable-now (Watchlist, Screening, Sector-coverage
 view, Qualitative correlation notes, Portfolio memory) exist,
-simultaneously, for the first time in this program's history.
-All 24 phases are complete and frozen. Full
+simultaneously, for the first time in this program's history, and
+**FSI Phase 25** (Sector-Coverage View CLI --
+`scripts/fre/screen_sector_coverage.py`, a read-only wrapper around
+Phase 24's `coverage_by_sector()`, mirroring Phase 12/15/22's pattern;
+tag `fsi-phase25-baseline-2026-08-02`). Every one of Part 9's five
+Tier-1 capabilities is now both built AND operator-reachable from the
+command line.
+All 25 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-22 were
 executed under the owner's standing continuous-execution authorization
