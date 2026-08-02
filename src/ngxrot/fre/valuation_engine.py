@@ -34,10 +34,17 @@ with or without FSI Phase 1's data. **Updated 2026-08-02, FSI Phase 23**:
 `securities.sector_ngx` is now populated for 136/320 real equities (from
 NGX's own official Daily Official List, a genuine exchange-authoritative
 reference-metadata source, distinct from the analytical/investment-data
-boundary this module otherwise refuses to cross) -- `classify_company_
-type()` below does not consult this column at all, so this update changes
-no behavior in this module; it is noted here only so this docstring does
-not go stale the way the pre-Phase-23 "remains 0/320" claim did.
+boundary this module otherwise refuses to cross). **Updated 2026-08-02,
+FSI Phase 26**: `classify_company_type()` now DOES consult `sector_ngx`
+(via `sector_company_type_mapping.derive_company_type_for_ticker()`) as a
+new middle precedence tier, between the owner-override config (still
+highest) and the `"general"` default (still the final fallback) -- a
+deterministic translation, never inference, and confirmed to change zero
+readiness/valuation output for any of the 10 real FSI tickers (none
+resolve to `"bank"`/`"insurance"` under the new mapping; see Phase 26's
+own pre-registration for the real-data check). `compute()` itself is
+untouched and still unconditionally refuses on every adapter -- this
+remains architecture, not activation.
 
 ## The non-negotiable boundary, restated as code
 
@@ -58,6 +65,8 @@ import tomllib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from ngxrot.fre.sector_company_type_mapping import derive_company_type_for_ticker
 
 CONFIG_DIR = Path(__file__).resolve().parents[3] / "configs"
 
@@ -210,18 +219,24 @@ def _load_company_type_overrides() -> dict[str, str]:
     return data.get("overrides", {})
 
 
-def classify_company_type(ticker: str) -> str:
-    """Owner-judged override list (currently empty, disclosed) takes
-    precedence; everything else defaults to 'general'. Deliberately does
-    NOT read `securities.sector_ngx` (populated for 136/320 tickers as of
-    FSI Phase 23, 2026-08-02) to auto-derive a company_type -- mapping
-    NGX's 13 sector headings onto this module's own company_type taxonomy
-    (`configs/valuation_method_eligibility.toml`) is its own judgment call,
-    not yet made, and remains a distinct, separately-scoped design
-    decision for a future phase, not something Phase 23's data population
-    silently activates here."""
+def classify_company_type(con: sqlite3.Connection, ticker: str) -> str:
+    """Three-tier precedence, FSI Phase 26: (1) owner-judged override
+    list (`configs/company_type_overrides.toml`, currently empty,
+    disclosed) -- still highest precedence, unchanged; (2) NEW:
+    sector-derived mapping (`sector_company_type_mapping.
+    derive_company_type_for_ticker()`, from NGX's own official
+    `sector_ngx`, FSI Phase 23) -- only when unambiguously resolvable,
+    never a guess; (3) `"general"` -- unchanged final fallback, reached
+    whenever neither (1) nor (2) resolves (unknown ticker, NULL
+    sector_ngx, or a deliberately-unresolved sub-industry). This is a
+    deterministic translation layer, never inference -- confirmed to
+    change zero readiness/valuation output for any of the 10 real FSI
+    tickers (see docs/fre_runs/fsi_phase26_preregistration.md)."""
     overrides = _load_company_type_overrides()
-    return overrides.get(ticker, "general")
+    if ticker in overrides:
+        return overrides[ticker]
+    derived = derive_company_type_for_ticker(con, ticker)
+    return derived if derived is not None else "general"
 
 
 @dataclass
@@ -240,7 +255,7 @@ def value_company(con: sqlite3.Connection, ticker: str, as_of_date: str) -> Tria
     unless ready) and returns a fully honest, disclosed readiness report.
     On the real database today, `results` is always empty -- every real
     adapter is NOT_READY for every real ticker, verified, not assumed."""
-    company_type = classify_company_type(ticker)
+    company_type = classify_company_type(con, ticker)
     eligibility = _load_eligibility()
     eligible_methods = eligibility.get(company_type, eligibility["general"])
 

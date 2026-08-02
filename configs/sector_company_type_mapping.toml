@@ -1,0 +1,57 @@
+# Sector-to-Company-Type Mapping (FSI Phase 26, docs/fre_runs/
+# fsi_phase26_preregistration.md). CONFIGURABLE: adding/adjusting a
+# mapping is a config change, not a code change -- same pattern as
+# valuation_method_eligibility.toml/relation_taxonomy.toml.
+#
+# Maps NGX's own sector_ngx values (FSI Phase 23, from NGX's official
+# "Daily Official List (Equities)") onto valuation_engine.py's own
+# company_type taxonomy (configs/valuation_method_eligibility.toml).
+# Deterministic translation only -- never inference, never per-company
+# judgment. src/ngxrot/fre/sector_company_type_mapping.py's
+# derive_company_type_for_ticker() is the ONLY reader of this file;
+# classify_company_type() consults it as a NEW middle precedence tier,
+# between company_type_overrides.toml (still highest) and the
+# "general" default (still the final fallback).
+#
+# growth_company/turnaround_company are financial-LIFECYCLE
+# classifications, not industry classifications -- neither ever
+# appears as a value in this file, by design. Both remain reachable
+# ONLY via configs/company_type_overrides.toml's own owner-judged
+# mechanism, unchanged.
+
+[sector]
+AGRICULTURE = "general"
+CONGLOMERATES = "holding_company"
+"CONSTRUCTION/REAL ESTATE" = "general"
+"CONSUMER GOODS" = "general"
+HEALTHCARE = "general"
+ICT = "general"
+"INDUSTRIAL GOODS" = "general"
+INVESTMENT = "general"
+"NATURAL RESOURCES" = "general"
+"OIL AND GAS" = "general"
+SERVICES = "general"
+UTILITIES = "general"
+# FINANCIAL SERVICES is deliberately ABSENT here. NGX's own
+# "Financial Services" sector spans genuinely different company
+# types (Banking vs Insurance vs a heterogeneous "Other Financial
+# Institutions" grab-bag) -- resolved via [financial_services_sub_industry]
+# below instead of guessed at the top level.
+
+[financial_services_sub_industry]
+Banking = "bank"
+"Insurance Carriers, Brokers and Services" = "insurance"
+# Deliberately UNRESOLVED (left out, disclosed, per the
+# pre-registration's own alternative #3 -- confirmed against real data,
+# not assumed): "Micro-Finance Banks" (1 real ticker, NPFMCRFBK -- a
+# distinct economics profile from a full bank, no dedicated company_type
+# exists for it in valuation_method_eligibility.toml); "Mortgage
+# Carriers, Brokers and Services" (2 real tickers, ABBEYBDS/INFINITY --
+# same reasoning); "Other Financial Institutions" (9 real tickers --
+# AFRIPRUD, DEAPCAP, FCMB, NGXGROUP, ROYALEX, STANBIC, UCAP,
+# ACCESSCORP, FIRSTHOLDCO -- confirmed a genuine NGX-defined grab-bag
+# spanning a capital-markets firm, a capital-management firm, the
+# exchange operator itself, an insurance/general-commerce name, and
+# several de facto bank holding companies; resolving any of these
+# individually would be per-company inference, which this file's own
+# "deterministic translation, never inference" mandate forbids).

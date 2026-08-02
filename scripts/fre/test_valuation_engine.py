@@ -97,18 +97,38 @@ def main() -> int:
                   for m in ("dcf", "ev_ebitda", "pe")))
     con.close()
 
-    # --- company-type classification: defaults to 'general' regardless of
-    # sector_ngx's own population state -- classify_company_type() reads
-    # ONLY configs/company_type_overrides.toml (owner-judged), never
-    # securities.sector_ngx directly (FSI Phase 23 populated sector_ngx for
-    # 136/320 tickers, including GTCO itself, as FINANCIAL SERVICES -- this
-    # is confirmed NOT to change classify_company_type()'s own output,
-    # since it never consults that column) -----------------------------------
+    # --- company-type classification: FSI Phase 26 wired sector_ngx into
+    # classify_company_type() as a new middle precedence tier -- GTCO has
+    # no owner override, and its real sector_ngx/sub_industry (FINANCIAL
+    # SERVICES/Banking, FSI Phase 23) now resolves unambiguously to "bank"
+    # via configs/sector_company_type_mapping.toml, a real, intended
+    # behavior change (previously "general," since Phase 23 had populated
+    # the data but nothing consulted it yet) --------------------------------
     con = ro()
-    check("GTCO classifies as 'general' (no owner-confirmed override exists "
-          "in company_type_overrides.toml -- this module does not consult "
-          "sector_ngx and does not guess)",
-          ve.classify_company_type("GTCO") == "general")
+    check("GTCO classifies as 'bank' (no owner override; real sector_ngx="
+          "FINANCIAL SERVICES + sub_industry=Banking resolves unambiguously "
+          "via FSI Phase 26's sector-to-company-type mapping)",
+          ve.classify_company_type(con, "GTCO") == "bank")
+
+    # A ticker with no owner override and no known sector_ngx (UBN -- the
+    # one real FSI ticker absent from Phase 23's source document) still
+    # falls back to "general", identical to pre-Phase-26 behavior for every
+    # unresolvable ticker -- confirming backward compatibility directly.
+    check("UBN (no owner override, sector_ngx is NULL) still classifies as "
+          "'general' -- identical to every unresolvable ticker's pre-Phase-26 "
+          "behavior", ve.classify_company_type(con, "UBN") == "general")
+
+    # AFRIPRUD/UCAP: real FSI tickers whose sector_ngx IS known (FINANCIAL
+    # SERVICES) but whose sub_industry ("Other Financial Institutions") is
+    # deliberately left unresolved in the mapping config (a genuine
+    # NGX-defined grab-bag, not a single company type) -- both must still
+    # fall back to "general", confirming the deliberate-non-resolution
+    # design holds for real data, not just in the abstract.
+    check("AFRIPRUD and UCAP (sector_ngx=FINANCIAL SERVICES, sub_industry="
+          "'Other Financial Institutions', deliberately unresolved) both "
+          "still classify as 'general'",
+          ve.classify_company_type(con, "AFRIPRUD") == "general"
+          and ve.classify_company_type(con, "UCAP") == "general")
     con.close()
 
     # --- the compute() safety gate refuses unconditionally on real data ----

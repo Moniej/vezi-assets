@@ -197,8 +197,21 @@ simultaneously, for the first time in this program's history, and
 Phase 24's `coverage_by_sector()`, mirroring Phase 12/15/22's pattern;
 tag `fsi-phase25-baseline-2026-08-02`). Every one of Part 9's five
 Tier-1 capabilities is now both built AND operator-reachable from the
-command line.
-All 25 phases are complete and frozen. Full
+command line, and **FSI Phase 26** (Sector-to-Company-Type Mapping --
+`configs/sector_company_type_mapping.toml` + `src/ngxrot/fre/
+sector_company_type_mapping.py`'s `derive_company_type_for_ticker()`,
+closing the architectural disconnect between Phase 23's real sector
+data and FRE-6's company-type-conditioned valuation-method eligibility
+design; 12 of NGX's 13 top-level sectors resolve deterministically,
+`FINANCIAL SERVICES` resolved via sub-industry for Banking/Insurance
+only, three genuinely heterogeneous sub-industries left deliberately
+unresolved; `classify_company_type()` extended (not replaced) with one
+new precedence tier between the owner-override config and the
+`"general"` fallback -- confirmed, before and after implementation,
+that none of the 10 real FSI tickers' actual readiness/valuation
+output changes; no `ValuationMethodAdapter` subclass touched, no
+valuation output activated; tag `fsi-phase26-baseline-2026-08-02`).
+All 26 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-25 were
 executed under the owner's standing continuous-execution authorization
