@@ -90,11 +90,75 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
 
 ## Under Research
 
-*(none — H-010 moved to Rejected and H-011 moved to Validated, 2026-07-22)*
+*(none — H-010 moved to Rejected and H-011 moved to Validated, 2026-07-22;
+H-012 moved to Rejected, 2026-08-02)*
 
 ---
 
 ## Rejected — per-stock era
+
+### H-012 — Regime-Conditional Low-Volatility Gate (family: Low Volatility, regime-conditional variant) — REJECTED 2026-08-02
+- Verdict (mechanical, per PREREG_H-012): placebo p=0.9703 — a DECISIVE
+  failure, not a marginal one: real Sharpe (1.143) is BELOW the mean of
+  100 shuffled-label placebo draws (1.432), and far below their p95
+  (1.705). 0/6 stability-grid cells show positive net excess (best cell
+  −6.89%, median −9.28%) — the plateau is uniformly negative. 4/6 cells
+  significant after Holm correction, but in the WRONG direction (the
+  correction confirms the negative excess is real, not noise — it does
+  not rescue the hypothesis). Confidence rating **Moderate** (6/12 — the
+  corrected significance and 3-regime coverage score points even in
+  rejection, identical scoring logic to H-008). Memo:
+  `reports/IC_memo_H-012_h012_regime_vol_2026-08-02.md`.
+- Evidence summary — the central, honest finding: restricting H-008's
+  own low-volatility signal to formation dates classified STABLE by a
+  pre-declared, look-ahead-audited macro-event rule (no `critical`
+  macro/banking/commodity event, and ≤1 `high`-severity MPC event, in
+  the trailing 6 months) did **not** rescue the effect — if anything,
+  the STABLE-classified subset shows a LARGER, more statistically
+  significant negative excess in the `pre_float` regime (−13.9%,
+  t=−4.02, p=0.00006) than H-008's own unconditional full-window test.
+  `float_shock` was roughly flat (−0.1%); the untouched OOS window
+  (2025-01 → 2026-06, entirely STABLE by this rule) was −28.9%.
+- **Methodology-specific criterion (pre-registered as its own
+  confirmation requirement, independent of the factor's own verdict)**:
+  a standalone look-ahead audit — independently recomputing every
+  formation date's classification using ONLY events with
+  `announced_date <= f`, then diffing against `regime_stable_dates()`'s
+  own output — found **zero violations across all 36 real formation
+  dates**. The regime-gating METHOD is confirmed mechanically sound;
+  it is this specific application (macro-event proximity as the
+  regime variable, applied to the low-vol factor) that failed, not the
+  gating mechanism itself.
+- Capacity: median leg capacity ₦145.6m (much better than H-008's
+  ₦9.4m — fewer active-tilt rebalances, since roughly a third of dates
+  simply hold the benchmark); 67.5% legs rejected at ₦1bn — still
+  capacity-constrained, but the least of any low-vol variant tested.
+- Known weaknesses of the test: the regime rule's two thresholds
+  (6-month lookback, `>1` high-severity-MPC trigger) were pre-declared
+  and feasibility-checked against real dates before any performance
+  data was viewed (27/42 quarterly dates classified stable in the
+  original scoping pass; 23/36 of the engine's own actual month-end
+  formation dates in the realized run) — not swept or tuned, per the
+  prereg's own L1 disclosure; a different threshold choice was not
+  tried and would require a new hypothesis ID, not a revision of this
+  one.
+- What is now KNOWN (do not retest this exact regime rule without a
+  materially different design): **macro-event-shock proximity is NOT
+  the explanation for NGX's low-volatility underperformance** — the
+  effect (or its absence) appears present in calm periods too, at
+  least under this specific event-proximity regime definition. This
+  does NOT close the regime-conditioning methodology as a research
+  tool — the look-ahead-audited gating mechanism itself worked
+  correctly and is now validated, reusable infrastructure for any
+  FUTURE hypothesis that wants to condition on a pre-declared regime
+  variable. Successor space: a genuinely different regime variable
+  (e.g., a realized-volatility regime, or a trend/momentum regime,
+  rather than discrete macro-event proximity) applied to low-vol, OR
+  this same event-proximity gate applied to a DIFFERENT factor, would
+  each be its own new hypothesis ID — not a rerun of this one.
+- Interaction: n/a (library has one entry, H-011, disjoint
+  construction). Family: Low Volatility — H-008 (unconditional) remains
+  REJECTED and is not superseded or rehabilitated by this result.
 
 ### H-010 — Pooled Overlapping-Cohort Momentum (family: Momentum) — REJECTED 2026-07-22
 - Verdict (mechanical, per PREREG_H-010): placebo p=0.386 — a clean

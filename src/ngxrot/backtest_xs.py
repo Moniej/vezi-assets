@@ -674,6 +674,77 @@ def capacity_report(targets: dict, adtv60: pd.DataFrame, aum: float,
 
 
 # ---------------------------------------------------------------------------
+# regime-conditional gate (E2, 2026-08-02 — unlocks H-012 / Wave-3 candidate
+# C2, docs/PREREG_H-012.md). Design decision, stated explicitly: the gate is
+# applied to TARGETS, never to the score construction itself — vol_scores()
+# is called completely unmodified, so the already-scrutinized H-008 signal
+# path is untouched; the only new logic is which weight vector a formation
+# date's execution actually uses. This keeps H-012's incremental risk
+# surface to exactly one new function, mirroring how H-010's pooled-cohort
+# addition (above) extended this module without touching xs_rank/xs_vol.
+# ---------------------------------------------------------------------------
+
+def regime_stable_dates(con, formations: list, lookback_months: int = 6) -> dict:
+    """Pre-declared regime-classification rule, PREREG_H-012 (frozen
+    2026-08-02, before any performance data was viewed). A formation date
+    is STABLE unless, in the trailing `lookback_months`:
+      (1) a 'critical'-severity event occurred in the macro/banking/
+          commodity category of `events`, OR
+      (2) more than one 'high'-severity monetary (MPC) event occurred.
+    Uses ONLY events.announced_date (never effective_date) — a formation
+    date's classification depends only on events the market could
+    already have known about as of that date. No look-ahead by
+    construction: every comparison below is `announced_date <= f`."""
+    events = pd.read_sql(
+        "SELECT category, severity, announced_date FROM events", con,
+        parse_dates=["announced_date"])
+    critical = events[(events.severity == "critical") &
+                      (events.category.isin(["macro", "banking", "commodity"]))]
+    high_mpc = events[(events.severity == "high") & (events.category == "monetary")]
+    out = {}
+    for f in formations:
+        window_start = f - pd.DateOffset(months=lookback_months)
+        crit_hit = bool(((critical.announced_date > window_start) &
+                         (critical.announced_date <= f)).any())
+        mpc_hits = int(((high_mpc.announced_date > window_start) &
+                        (high_mpc.announced_date <= f)).sum())
+        out[f] = not (crit_hit or mpc_hits > 1)
+    return out
+
+
+def regime_gated_targets(con, panel, cfg, scores: dict, bt: dict,
+                         close_index: pd.DatetimeIndex, top_n: int,
+                         lag: int) -> tuple[dict, dict]:
+    """H-012: for each formation date, use the tilt's own target weights
+    (targets_from_scores, unmodified) if STABLE, else the benchmark's own
+    target weights (benchmark_targets, unmodified) for that same
+    execution date — an unstable-classified rebalance is simply "the
+    active tilt is off," never a blended or distorted weight vector.
+    Returns (targets, stability_by_execution_date) — the second element
+    is retained for the look-ahead audit and honest reporting of the
+    stable/unstable split, never dropped."""
+    tilt_targets = targets_from_scores(scores, close_index, top_n, lag)
+    stable = regime_stable_dates(
+        con, list(scores.keys()),
+        int(cfg["signal"].get("regime_lookback_months", 6)))
+    pos = {dt: i for i, dt in enumerate(close_index)}
+    out, flags = {}, {}
+    for f, is_stable in stable.items():
+        i = pos.get(f)
+        if i is None or i + lag >= len(close_index):
+            continue
+        exec_date = close_index[i + lag]
+        if is_stable and exec_date in tilt_targets:
+            out[exec_date] = tilt_targets[exec_date]
+        elif exec_date in bt:
+            out[exec_date] = bt[exec_date]
+        else:
+            continue
+        flags[exec_date] = is_stable
+    return out, flags
+
+
+# ---------------------------------------------------------------------------
 # entry point used by runner
 # ---------------------------------------------------------------------------
 
@@ -693,12 +764,20 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
     bench = simulate(close, bt, rates["buy_rate"], rates["sell_rate"],
                      d["sim_start"], d["sim_end"])
 
+    regime_flags = None
     if s["method"] in ("xs_rank", "xs_vol", "xs_size"):
         if s["method"] == "xs_size":
             panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)
         targets = targets_from_scores(scores, close.loc[:d["sim_end"]].index,
                                       int(p["top_n"]), lag)
+    elif s["method"] == "xs_vol_regime":
+        # H-012: reuses vol_scores() unmodified; only the target selection
+        # is regime-gated (see regime_gated_targets's own docstring).
+        scores = vol_scores(con, panel, cfg)
+        targets, regime_flags = regime_gated_targets(
+            con, panel, cfg, scores, bt, close.loc[:d["sim_end"]].index,
+            int(p["top_n"]), lag)
     elif s["method"] == "xs_event":
         sels = event_selections(con, panel, cfg, bench.net_returns)
         targets = event_targets(sels, close.loc[d["sim_start"]:d["sim_end"]].index,
@@ -713,6 +792,19 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
                       d["sim_start"], d["sim_end"],
                       bench_net=bench.net_returns)
     result.benchmark_returns = bench.net_returns
+    if regime_flags is not None:
+        n_stable = sum(1 for v in regime_flags.values() if v)
+        result.attribution = {
+            "regime_gate": {
+                "n_formation_dates": len(regime_flags),
+                "n_stable": n_stable,
+                "n_unstable": len(regime_flags) - n_stable,
+                "stable_dates": sorted(str(k.date()) for k, v in
+                                      regime_flags.items() if v),
+                "unstable_dates": sorted(str(k.date()) for k, v in
+                                         regime_flags.items() if not v),
+            }
+        }
     cap = capacity_report(
         targets, panel["adtv60"], cfg["engine"]["aum_ngn"],
         cfg["liquidity"]["adtv_participation_cap_pct"])
@@ -824,6 +916,36 @@ def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
                     sh[f] = pd.Series(vals)
             placebo.append(sharpe_of(
                 targets_from_scores(sh, idx, int(p["top_n"]), lag)))
+        return real, placebo
+
+    if s["method"] == "xs_vol_regime":
+        # H-012: identical persistence-preserving relabeling scheme as
+        # xs_vol above; the regime gate itself is UNCHANGED across real
+        # and placebo draws (classification depends only on calendar
+        # dates, never on which ticker holds which score) — this tests
+        # selection skill WITHIN the pre-declared stable regime, the
+        # same null every other xs_* placebo tests, applied here to a
+        # gated date population instead of the full one.
+        scores = vol_scores(con, panel, cfg)
+        idx = close.loc[:d["sim_end"]].index
+        real_targets, _ = regime_gated_targets(
+            con, panel, cfg, scores, bt, idx, int(p["top_n"]), lag)
+        real = sharpe_of(real_targets)
+        all_ticks = sorted({t for sc in scores.values() for t in sc.index})
+        placebo = []
+        for _ in range(n_iter):
+            perm = dict(zip(all_ticks,
+                            [all_ticks[j] for j in
+                             gen.permutation(len(all_ticks))]))
+            sh = {}
+            for f, sc in scores.items():
+                vals = {t: sc[perm[t]] for t in sc.index
+                        if perm[t] in sc.index}
+                if len(vals) >= 10:
+                    sh[f] = pd.Series(vals)
+            sh_targets, _ = regime_gated_targets(
+                con, panel, cfg, sh, bt, idx, int(p["top_n"]), lag)
+            placebo.append(sharpe_of(sh_targets))
         return real, placebo
 
     # xs_event: shuffle which of the cohort's events get selected

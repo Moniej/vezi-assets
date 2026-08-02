@@ -1,6 +1,6 @@
-# Data Coverage Dashboard — generated 2026-07-21T22:17:11+00:00
+# Data Coverage Dashboard — generated 2026-08-02T17:33:01+00:00
 
-**COVERAGE GATE v2 (IRU v2): PASS** — 12 ready years (need ≥6), recent-years ok.
+**COVERAGE GATE v2 (IRU v2): PASS** — 6 ready years (need ≥6), recent-years ok.
 
 IRU decides eligibility (rule-based, PIT, rename-canonical); this gate scores data quality within it: breadth ≥ 40, day-completeness ≥ 95%, unexplained-jump rate ≤ 2%. Jump scan: adjacency moves >12% (beyond NGX ±10% band) with no corporate-action filing within ±5 business days.
 
@@ -8,17 +8,17 @@ IRU decides eligibility (rule-based, PIT, rename-canonical); this gate scores da
 |---|---|---|---|---|---|
 | 2014 | 79 | 112 | 45.3% | 0.00% | ❌ |
 | 2015 | 99 | 247 | 100.0% | 0.00% | ✅ |
-| 2016 | 90 | 247 | 100.0% | 0.00% | ✅ |
+| 2016 | 90 | 247 | 100.0% | 1.11% | ✅ |
 | 2017 | 100 | 246 | 99.6% | 0.00% | ✅ |
-| 2018 | 100 | 248 | 100.0% | 0.00% | ✅ |
-| 2019 | 100 | 244 | 98.8% | 1.00% | ✅ |
-| 2020 | 94 | 248 | 100.0% | 1.06% | ✅ |
-| 2021 | 100 | 246 | 99.6% | 0.00% | ✅ |
-| 2022 | 100 | 245 | 99.2% | 1.00% | ✅ |
-| 2023 | 100 | 235 | 95.1% | 0.00% | ✅ |
-| 2024 | 100 | 242 | 98.0% | 0.00% | ✅ |
-| 2025 | 100 | 245 | 99.2% | 0.00% | ✅ |
-| 2026 | 100 | 135 | 99.3% | 0.00% | ✅ |
+| 2018 | 100 | 248 | 100.0% | 3.00% | ❌ |
+| 2019 | 100 | 244 | 98.8% | 2.00% | ✅ |
+| 2020 | 94 | 248 | 100.0% | 3.19% | ❌ |
+| 2021 | 100 | 246 | 99.6% | 6.00% | ❌ |
+| 2022 | 100 | 245 | 99.2% | 4.00% | ❌ |
+| 2023 | 100 | 235 | 95.1% | 5.00% | ❌ |
+| 2024 | 100 | 242 | 98.0% | 2.00% | ✅ |
+| 2025 | 100 | 245 | 99.2% | 1.00% | ✅ |
+| 2026 | 100 | 135 | 93.8% | 0.00% | ❌ |
 
 ## Per-stock inventory (top 60 by observations)
 
@@ -31,21 +31,21 @@ IRU decides eligibility (rule-based, PIT, rename-canonical); this gate scores da
 | DANGCEM | 2939 | 2014-06-30 | 2026-07-21 |  |
 | FCMB | 2939 | 2014-06-30 | 2026-07-21 |  |
 | ETI | 2939 | 2014-06-30 | 2026-07-21 |  |
-| AIICO | 2938 | 2014-06-30 | 2026-07-21 |  |
+| AIICO | 2938 | 2014-06-30 | 2026-07-21 | unexplained-jump |
 | UNILEVER | 2938 | 2014-06-30 | 2026-07-21 |  |
 | UACN | 2938 | 2014-06-30 | 2026-07-21 |  |
 | PZ | 2938 | 2014-06-30 | 2026-07-21 |  |
 | NB | 2938 | 2014-06-30 | 2026-07-21 |  |
 | GUINNESS | 2938 | 2014-06-30 | 2026-07-21 |  |
 | DANGSUGAR | 2938 | 2014-06-30 | 2026-07-21 |  |
-| AFRIPRUD | 2938 | 2014-06-30 | 2026-07-21 |  |
+| AFRIPRUD | 2938 | 2014-06-30 | 2026-07-21 | unexplained-jump |
 | CADBURY | 2938 | 2014-06-30 | 2026-07-21 |  |
 | TOTAL | 2937 | 2014-06-30 | 2026-07-21 |  |
 | OKOMUOIL | 2937 | 2014-06-30 | 2026-07-21 |  |
 | NASCON | 2937 | 2014-06-30 | 2026-07-21 |  |
 | NESTLE | 2937 | 2014-06-30 | 2026-07-21 |  |
 | HONYFLOUR | 2936 | 2014-06-30 | 2026-07-21 |  |
-| NAHCO | 2936 | 2014-06-30 | 2026-07-21 |  |
+| NAHCO | 2936 | 2014-06-30 | 2026-07-21 | unexplained-jump |
 | ETERNA | 2934 | 2014-06-30 | 2026-07-21 |  |
 | LIVESTOCK | 2933 | 2014-06-30 | 2026-07-21 |  |
 | VITAFOAM | 2932 | 2014-06-30 | 2026-07-21 |  |
@@ -57,16 +57,16 @@ IRU decides eligibility (rule-based, PIT, rename-canonical); this gate scores da
 | INTBREW | 2923 | 2014-06-30 | 2026-07-21 |  |
 | CONOIL | 2922 | 2014-06-30 | 2026-07-21 |  |
 | WEMABANK | 2916 | 2014-06-30 | 2026-07-21 |  |
-| JBERGER | 2913 | 2014-06-30 | 2026-07-21 |  |
-| NEM | 2913 | 2014-06-30 | 2026-07-21 |  |
+| JBERGER | 2913 | 2014-06-30 | 2026-07-21 | unexplained-jump |
+| NEM | 2913 | 2014-06-30 | 2026-07-21 | unexplained-jump |
 | PRESCO | 2910 | 2014-06-30 | 2026-07-21 |  |
 | SEPLAT | 2909 | 2014-06-30 | 2026-07-21 |  |
 | WAPIC | 2902 | 2014-06-30 | 2026-07-21 |  |
 | BERGER | 2890 | 2014-06-30 | 2026-07-21 |  |
 | CHAMPION | 2877 | 2014-06-30 | 2026-07-21 |  |
-| MANSARD | 2877 | 2014-06-30 | 2026-07-21 |  |
+| MANSARD | 2877 | 2014-06-30 | 2026-07-21 | unexplained-jump |
 | FIDSON | 2863 | 2014-06-30 | 2026-07-21 |  |
-| CUTIX | 2862 | 2014-06-30 | 2026-07-21 |  |
+| CUTIX | 2862 | 2014-06-30 | 2026-07-21 | unexplained-jump |
 | REDSTAREX | 2815 | 2014-06-30 | 2026-07-21 |  |
 | NEIMETH | 2813 | 2014-06-30 | 2026-07-21 |  |
 | LEARNAFRCA | 2796 | 2014-06-30 | 2026-07-21 |  |
@@ -82,5 +82,5 @@ IRU decides eligibility (rule-based, PIT, rename-canonical); this gate scores da
 | CORNERST | 2398 | 2014-07-02 | 2026-07-21 |  |
 | LASACO | 2371 | 2014-07-02 | 2026-07-21 | unexplained-jump |
 | UNITYBNK | 2366 | 2014-06-30 | 2024-07-05 |  |
-| LINKASSURE | 2364 | 2014-07-14 | 2026-07-21 |  |
+| LINKASSURE | 2364 | 2014-07-14 | 2026-07-21 | unexplained-jump |
 | ABCTRANS | 2356 | 2014-06-30 | 2026-07-21 |  |
