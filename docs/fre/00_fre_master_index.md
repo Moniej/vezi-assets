@@ -53,7 +53,11 @@ relationships` edges from the quant engine's own owner-verified
 `symbol_renames.csv` (was 0 real relations, 1 `effect_chains`
 artifact), closing Part 2's own long-standing, self-disclosed gap with
 zero new extraction and zero LLM call; tag
-`fsi-phase9-baseline-2026-08-02`) are all complete and frozen. Full
+`fsi-phase9-baseline-2026-08-02`), and **FSI Phase 10** (Knowledge
+Graph Context Integration — `entity_context.py`, connecting Phase 9's
+graph nodes to `CompanyMemory360` for the first time via a PIT-gated,
+read-only composition; zero new data, zero writes, zero LLM calls; tag
+`fsi-phase10-baseline-2026-08-02`) are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
