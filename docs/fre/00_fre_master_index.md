@@ -161,8 +161,26 @@ Phase 12's pattern exactly; also investigated and set aside, with real
 queried data rather than assumption, a candidate new financial-health
 flag using `cfo`/`cfi`/`cff`/`fcf` trend data -- each has 0-1 computed
 trend conclusions on the real database today, too thin to justify a
-phase yet; tag `fsi-phase22-baseline-2026-08-02`).
-All 22 phases are complete and frozen. Full
+phase yet; tag `fsi-phase22-baseline-2026-08-02`), and **FSI Phase 23**
+(Sector Classification Data -- `securities.sector_ngx` populated for
+136/320 real securities, including 9 of 10 FSI tickers, from NGX's own
+official "Daily Official List (Equities)," a genuine exchange-
+authoritative source introduced per the owner's explicit authorization
+as reference metadata, distinct from this platform's analytical/
+investment-data boundary; new `sector_ngx_provenance` table records
+source/URL/retrieval date for every populated value; corrected a wrong
+assumption in `docs/fre/10_dataset_strategy.md` that sector labels were
+a free side effect of existing filings -- checked directly against a
+real filing and found false; UBN is the one FSI ticker not found in
+the source and correctly left NULL, disclosed not guessed; three stale
+"0/320" claims corrected for factual accuracy in `valuation_engine.py`/
+`lim/audit.py`/`company_intelligence.py` with zero behavior change
+verified; tag `fsi-phase23-baseline-2026-08-02`). This resolves the
+single most-cited blocker across the whole program and genuinely
+unblocks Sector-coverage view (Part 9's last Tier-1 item) for the
+first time -- built next, as Phase 24, per this session's own
+established build-then-consume pattern.
+All 23 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. Phases 14-22 were
 executed under the owner's standing continuous-execution authorization

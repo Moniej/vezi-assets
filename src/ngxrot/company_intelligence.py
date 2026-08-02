@@ -53,9 +53,12 @@ UNAVAILABLE_FIELDS = {
     "Macro Sensitivity": "H-004 (oil lead-lag) and H-005 (MPC windows) "
                          "both rejected; no validated macro-conditioning "
                          "exists yet (Wave 3 candidate C2, not yet built)",
-    "Industry Exposure": "securities.sector_ngx is unpopulated "
-                         "(0/320 rows) — no sector classification dataset "
-                         "acquired despite the schema column existing",
+    "Industry Exposure": "securities.sector_ngx is now populated for 136/320 "
+                         "rows (FSI Phase 23, 2026-08-02, from NGX's own "
+                         "official Daily Official List) -- still listed as "
+                         "unavailable here because coverage remains partial "
+                         "and build_profile() has no logic wired to consume "
+                         "it yet; not activated by this disclosure update",
     "Ownership": "no ownership/shareholding dataset acquired",
 }
 

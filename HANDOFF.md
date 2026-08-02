@@ -209,7 +209,10 @@ artifact hypothesis for H-009's original near-miss).
    Exposures, Expected Return, Confidence) but populates ONLY from
    evidence-grade data — everything else returns an explicit blocking
    reason via `unavailable` (e.g. Industry Exposure: `securities.
-   sector_ngx` is 0/320 populated). Cites REJECTED factor families too
+   sector_ngx` is now populated for 136/320 tickers as of FSI Phase 23,
+   2026-08-02, but `build_profile()` has no logic wired to consume it
+   yet, so the field remains `unavailable`, disclosed as such rather
+   than silently activated). Cites REJECTED factor families too
    (Momentum/Low-Vol/PEAD, each with its finding) — a rejection is
    evidence, not silence. Only Size (H-011) has a real computed value,
    via the SAME `backtest_xs.size_scores` construction, unchanged, for

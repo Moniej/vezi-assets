@@ -738,6 +738,24 @@ CREATE TABLE IF NOT EXISTS watchlist_entries (
 );
 CREATE INDEX IF NOT EXISTS ix_watchlist_entries_ticker ON watchlist_entries (ticker);
 
+-- FSI Phase 23: full provenance for every securities.sector_ngx value
+-- ever populated -- source, retrieval date, and document/URL, mirroring
+-- the same "never a bare value with no traceable source" discipline
+-- extracted_facts/evidence already establish. One row per populated
+-- ticker; sector_ngx here always matches the value written to
+-- securities.sector_ngx at the time of population.
+CREATE TABLE IF NOT EXISTS sector_ngx_provenance (
+    provenance_id   INTEGER PRIMARY KEY,
+    ticker          TEXT NOT NULL REFERENCES securities(ticker),
+    sector_ngx      TEXT NOT NULL,
+    sub_industry    TEXT,
+    board_section   TEXT,
+    source_document TEXT NOT NULL,
+    source_url      TEXT NOT NULL,
+    retrieval_date  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_sector_ngx_provenance_ticker ON sector_ngx_provenance (ticker);
+
 -- ----------------------------------------------------------------------------
 -- Point-in-time views: latest as_of per (entity, trade_date).
 -- The Python layer exposes as-of-a-knowledge-date variants of these.

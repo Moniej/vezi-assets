@@ -97,11 +97,17 @@ def main() -> int:
                   for m in ("dcf", "ev_ebitda", "pe")))
     con.close()
 
-    # --- company-type classification: defaults to 'general' since
-    # sector_ngx is unpopulated and the override list is deliberately empty -
+    # --- company-type classification: defaults to 'general' regardless of
+    # sector_ngx's own population state -- classify_company_type() reads
+    # ONLY configs/company_type_overrides.toml (owner-judged), never
+    # securities.sector_ngx directly (FSI Phase 23 populated sector_ngx for
+    # 136/320 tickers, including GTCO itself, as FINANCIAL SERVICES -- this
+    # is confirmed NOT to change classify_company_type()'s own output,
+    # since it never consults that column) -----------------------------------
     con = ro()
-    check("GTCO classifies as 'general' (no owner-confirmed override exists, "
-          "sector_ngx is 0/320 populated -- this module does not guess)",
+    check("GTCO classifies as 'general' (no owner-confirmed override exists "
+          "in company_type_overrides.toml -- this module does not consult "
+          "sector_ngx and does not guess)",
           ve.classify_company_type("GTCO") == "general")
     con.close()
 
@@ -148,7 +154,15 @@ def main() -> int:
     sector_populated = con.execute(
         "SELECT COUNT(*) FROM securities WHERE sector_ngx IS NOT NULL"
     ).fetchone()[0]
-    check("securities.sector_ngx is confirmed 0/320 populated", sector_populated == 0)
+    # FSI Phase 23 populated sector_ngx from NGX's own official Daily
+    # Official List (136/320 real equities verified; bonds/ETFs/synthetic
+    # placeholders/pre-rename aliases/unmatched tickers correctly left
+    # NULL) -- this module's own compute()/classify_company_type() logic is
+    # unaffected either way, confirmed by every other check in this file
+    # still passing unchanged.
+    check("securities.sector_ngx is populated for exactly 136/320 tickers "
+          "(FSI Phase 23, NGX's own official Daily Official List) -- no "
+          "longer 0/320", sector_populated == 136)
     con.close()
 
     # --- config files load correctly ---------------------------------------

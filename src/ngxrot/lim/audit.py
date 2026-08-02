@@ -143,8 +143,10 @@ def compute_audit(examples: list, con=None, sector_lookup: dict | None = None) -
         },
         "sector_distribution": (
             {"status": "not_computable",
-            "reason": "securities.sector_ngx is 0/320 populated platform-wide -- "
-                     "same disclosed gap as coverage_assessment.py's own dimension"}
+            "reason": "no sector_lookup was supplied to compute_audit() for this run "
+                     "(securities.sector_ngx is now populated for 136/320 tickers "
+                     "platform-wide as of FSI Phase 23, 2026-08-02, but no caller of "
+                     "this function has been wired to build sector_lookup from it yet)"}
             if sector_lookup is None or n_sector_known == 0
             else {"status": "computed", "n_known": n_sector_known}
         ),

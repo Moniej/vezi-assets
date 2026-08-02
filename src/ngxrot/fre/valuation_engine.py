@@ -30,8 +30,14 @@ formula for any method (see the `NotImplementedError` in the base class
 below), so `value_company()` catches that specifically and reports
 "ready, but not yet implemented" rather than crashing or fabricating a
 number -- `TriangulatedValuation.results` remains empty for every ticker,
-with or without FSI Phase 1's data. `securities.sector_ngx` remains 0/320
-populated, unaffected by FSI Phase 1 (which populated facts, not sectors).
+with or without FSI Phase 1's data. **Updated 2026-08-02, FSI Phase 23**:
+`securities.sector_ngx` is now populated for 136/320 real equities (from
+NGX's own official Daily Official List, a genuine exchange-authoritative
+reference-metadata source, distinct from the analytical/investment-data
+boundary this module otherwise refuses to cross) -- `classify_company_
+type()` below does not consult this column at all, so this update changes
+no behavior in this module; it is noted here only so this docstring does
+not go stale the way the pre-Phase-23 "remains 0/320" claim did.
 
 ## The non-negotiable boundary, restated as code
 
@@ -206,9 +212,14 @@ def _load_company_type_overrides() -> dict[str, str]:
 
 def classify_company_type(ticker: str) -> str:
     """Owner-judged override list (currently empty, disclosed) takes
-    precedence; everything else defaults to 'general' -- securities.
-    sector_ngx is 0/320 populated, so no automatic classification is
-    possible today, and this module does not guess."""
+    precedence; everything else defaults to 'general'. Deliberately does
+    NOT read `securities.sector_ngx` (populated for 136/320 tickers as of
+    FSI Phase 23, 2026-08-02) to auto-derive a company_type -- mapping
+    NGX's 13 sector headings onto this module's own company_type taxonomy
+    (`configs/valuation_method_eligibility.toml`) is its own judgment call,
+    not yet made, and remains a distinct, separately-scoped design
+    decision for a future phase, not something Phase 23's data population
+    silently activates here."""
     overrides = _load_company_type_overrides()
     return overrides.get(ticker, "general")
 
