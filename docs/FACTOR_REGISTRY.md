@@ -96,8 +96,25 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
   earned H-011 its Validated status is unchanged, but the absolute number
   is materially lower than what was reported before today. Full evidence
   across all 11 hypotheses: `docs/METH-002_RISK_FREE_RATE_REPORT_2026-08-02.md`.
-  Not yet done: recomputing METH-001's DSR using real-rf Sharpe ratios
-  (a distinct exercise, named but not performed in either report).
+- **DSR recomputed on a real-risk-free basis (added 2026-08-02, METH-001b —
+  a reconciliation, not a replacement of the figure above; full reasoning:
+  `docs/METH-001b_DSR_CONSISTENCY_RECONCILIATION_2026-08-02.md`)**: using
+  real-risk-free daily excess returns instead of benchmark-excess daily
+  returns as the DSR input, H-011's DSR is **0.396** (N=10, full pool
+  excluding H-006 for lack of rate coverage) or **0.964** (N=6,
+  cross-sectional peers only) — much higher than the benchmark-excess
+  figures above (0.0071 / 0.130). **This is NOT read as strengthened
+  validation.** 8 of 10 hypotheses flip from negative/near-zero to
+  positive Sharpe under the real-rf basis — the signature of shared
+  long-only NGX market-beta exposure (equities broadly beat cash over
+  this window) rather than factor-specific skill, since the passive
+  EW-IRU benchmark itself was also beating cash. **The benchmark-excess
+  DSR (0.0071 / 0.130) remains the primary, decision-relevant figure** —
+  it is the one that actually isolates whether H-011's size tilt beats
+  the passive alternative, which is what every hypothesis on this
+  platform has always been pre-registered to test. The real-rf DSR is
+  retained as a disclosed secondary diagnostic (does the strategy also
+  clear a cash hurdle?), not a substitute confirmation criterion.
 - **Practical implementation notes**: per-regime top contributors were
   consistently thin/illiquid names (LASACO in pre_float, MULTIVERSE in
   float_shock, NCR in OOS) — the effect is genuinely concentrated in the
