@@ -154,8 +154,15 @@ invocation targets a disposable scratch copy via an NGXROT_DB_PATH
 override, confirmed via real-database row-count diffing; tag
 `fsi-phase21-baseline-2026-08-02`). Part 9's Tier 1 is now fully
 built AND fully operable from the command line (modulo Sector-coverage
-view's external blocker).
-All 21 phases are complete and frozen. Full
+view's external blocker), and **FSI Phase 22** (Portfolio-Context
+Dossier CLI -- `scripts/fre/generate_portfolio_context_dossier.py`, a
+read-only wrapper around Phase 20's `as_of()`/`render()`, mirroring
+Phase 12's pattern exactly; also investigated and set aside, with real
+queried data rather than assumption, a candidate new financial-health
+flag using `cfo`/`cfi`/`cff`/`fcf` trend data -- each has 0-1 computed
+trend conclusions on the real database today, too thin to justify a
+phase yet; tag `fsi-phase22-baseline-2026-08-02`).
+All 22 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
