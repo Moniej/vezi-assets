@@ -142,8 +142,20 @@ limitation, not fixed here; tag `fsi-phase20-baseline-2026-08-02`).
 Part 9's Tier 1 now stands at 4 of 5 built and fully wired together --
 only Sector-coverage view remains, genuinely blocked on
 `securities.sector_ngx` population (0/320, an external data
-dependency).
-All 20 phases are complete and frozen. Full
+dependency), and **FSI Phase 21** (Watchlist CLI --
+`scripts/fre/manage_watchlist.py`'s `add`/`remove`/`list`/`history`
+subcommands, a thin wrapper around Phase 18's own functions, called
+unmodified; the platform's FIRST standing operator tool able to write
+to the real production database -- every prior CLI is read-only by
+construction; the new risk is disclosed and mitigated structurally
+(no new write logic, every write routes through Phase 18's own
+already-validated, append-only functions); every write-path test
+invocation targets a disposable scratch copy via an NGXROT_DB_PATH
+override, confirmed via real-database row-count diffing; tag
+`fsi-phase21-baseline-2026-08-02`). Part 9's Tier 1 is now fully
+built AND fully operable from the command line (modulo Sector-coverage
+view's external blocker).
+All 21 phases are complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
