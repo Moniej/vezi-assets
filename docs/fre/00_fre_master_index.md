@@ -88,7 +88,11 @@ implementing Part 9's own long-frozen Tier-1 "Screening" design;
 categorical filters only, no numeric threshold; alphabetical-ticker
 ordering enforced mechanically; no score/rank field; verified to never
 import/be-imported-by `alpha_engine.py`/`runner.py`; zero writes, zero
-schema change, zero LLM calls; tag `fsi-phase14-baseline-2026-08-02`)
+schema change, zero LLM calls; tag `fsi-phase14-baseline-2026-08-02`),
+and **FSI Phase 15** (Screening CLI — `scripts/fre/screen_companies.py`,
+a thin wrapper around Phase 14's `screen_by_flag()`/`screen_by_trend()`,
+mirroring Phase 12's CLI pattern exactly; zero writes, zero schema
+change; tag `fsi-phase15-baseline-2026-08-02`)
 are all complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
