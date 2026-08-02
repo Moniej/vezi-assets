@@ -47,6 +47,21 @@ not asserted). Full derivation and first real application (to H-011):
 hypothesis's confirmation should report its DSR against the then-current
 trial count alongside its per-hypothesis correction.
 
+**Point-in-time risk-free rate (METH-002, added 2026-08-02)**: fixes the
+`metrics.py::compute()` `rf_annual_pct=0.0` placeholder every hypothesis
+through H-012 silently used. `src/ngxrot/riskfree.py` provides a
+look-ahead-safe as-of lookup against `data/reference/cbn_mpr_history.csv`
+(50 hand-verified CBN Monetary Policy Rate decisions, 2015-07-23 to
+2026-07-21); `metrics.compute()` gained an additive `rf_series` parameter
+(reports `sharpe_vs_real_rf` alongside, never replacing, the existing
+`sharpe_vs_rf`); `runner.py` gained an opt-in `validation
+.use_real_risk_free_rate` config flag (default `False` — every existing
+frozen config's behavior is exactly unchanged). Applied read-only to all
+11 resolved hypotheses: `docs/METH-002_RISK_FREE_RATE_REPORT_2026-08-02.md`.
+Uses MPR as a disclosed proxy for the true NGN T-bill rate (a real, stated
+limitation, not resolved by this phase — see the design record's rejected
+alternatives).
+
 ## 3. Factor Library — LIVE (structure), EMPTY (contents, by design)
 
 `docs/FACTOR_REGISTRY.md` — the permanent knowledge base. Every completed

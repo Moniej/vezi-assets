@@ -84,6 +84,20 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
   number alone suggests — this is disclosed here permanently, not
   averaged away or hidden.** Full derivation:
   `docs/METH-001_STATISTICAL_HARDENING_REPORT_2026-08-02.md`.
+- **Point-in-time risk-free rate (added 2026-08-02, METH-002 — fixes the
+  platform-wide `rf_annual_pct=0.0` placeholder every hypothesis through
+  H-012 used, per `docs/PREREG_METH-002_risk_free_rate.md`)**: using CBN's
+  real, dated Monetary Policy Rate history (50 verified decisions,
+  2015-07-23 to 2026-07-21) instead of a flat 0%, H-011's Sharpe over its
+  real-rf-covered window falls from the previously-reported **2.244 to
+  1.228** (real average policy rate over the window: 14.95%). This remains
+  the **highest real-rf Sharpe of any of the 10 hypotheses with full rate
+  coverage** (next highest: H-010 at 0.728) — the relative ranking that
+  earned H-011 its Validated status is unchanged, but the absolute number
+  is materially lower than what was reported before today. Full evidence
+  across all 11 hypotheses: `docs/METH-002_RISK_FREE_RATE_REPORT_2026-08-02.md`.
+  Not yet done: recomputing METH-001's DSR using real-rf Sharpe ratios
+  (a distinct exercise, named but not performed in either report).
 - **Practical implementation notes**: per-regime top contributors were
   consistently thin/illiquid names (LASACO in pre_float, MULTIVERSE in
   float_shock, NCR in OOS) — the effect is genuinely concentrated in the

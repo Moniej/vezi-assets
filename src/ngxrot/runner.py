@@ -23,7 +23,7 @@ from pathlib import Path
 import pandas as pd
 
 from . import (backtest_lite, costs, db, diagnostics, engine_full,
-               failure_conditions, metrics, registry, rng)
+               failure_conditions, metrics, registry, riskfree, rng)
 from . import signal as sig
 from .ingest import ingest
 from .providers import SyntheticProvider
@@ -39,7 +39,7 @@ _DEFAULTS = {
     "costs": {"source": "db", "brokerage_override_pct": -1.0},
     "liquidity": {"adtv_participation_cap_pct": 10.0, "adtv_window_days": 60,
                   "enforced": False},
-    "validation": {"risk_free_annual_pct": 0.0},
+    "validation": {"risk_free_annual_pct": 0.0, "use_real_risk_free_rate": False},
     "engine": {"type": "lite", "aum_ngn": 2e9, "slippage_bps": 30.0,
                "impact_coeff_bps": 15.0},
     "rng": {"algorithm": "PCG64", "seed": None, "iterations": 0},
@@ -100,6 +100,15 @@ def _ensure_data(con, sources: list[str], sim_end: str) -> None:
     elif missing:
         raise RuntimeError(f"no ingested data for sources {sorted(missing)} — "
                            f"run the relevant provider ingestion first")
+
+
+def _rf_series_if_enabled(v: dict, index: pd.DatetimeIndex):
+    """None unless validation.use_real_risk_free_rate is set — opt-in,
+    additive; every existing config's behavior is unchanged without it.
+    See docs/PREREG_METH-002_risk_free_rate.md."""
+    if not v.get("use_real_risk_free_rate"):
+        return None
+    return riskfree.mpr_asof_series(index)
 
 
 def build_scores(cfg: dict, universe: pd.DataFrame, con) -> pd.DataFrame:
@@ -207,7 +216,8 @@ def run_resolved(cfg: dict, label: str = "", config_path: str | None = None,
         from . import backtest_xs
         result, capacity, data_conf = backtest_xs.run_from_config(
             con, cfg, rates)
-        m = metrics.compute(result, v["risk_free_annual_pct"])
+        m = metrics.compute(result, v["risk_free_annual_pct"],
+                            _rf_series_if_enabled(v, result.net_returns.index))
         m["capacity"] = capacity
         m["sector_contribution"] = result.sector_contribution
         if result.attribution:
@@ -226,7 +236,8 @@ def run_resolved(cfg: dict, label: str = "", config_path: str | None = None,
             result.sector_contribution, phase4_evidence)
     elif cfg["engine"]["type"] == "full":
         result = engine_full.run_full(con, cfg)
-        m = metrics.compute(result, v["risk_free_annual_pct"])
+        m = metrics.compute(result, v["risk_free_annual_pct"],
+                            _rf_series_if_enabled(v, result.net_returns.index))
         capacity = engine_full.capacity_report(result, cfg["engine"]["aum_ngn"])
         m["capacity"] = capacity
         m["cost_attribution_cum"] = {k: round(val, 5) for k, val
@@ -252,7 +263,8 @@ def run_resolved(cfg: dict, label: str = "", config_path: str | None = None,
             impairment_window_months=p["impairment_window_months"],
             buy_rate=rates["buy_rate"], sell_rate=rates["sell_rate"],
             sim_start=d["sim_start"], sim_end=d["sim_end"])
-        m = metrics.compute(result, v["risk_free_annual_pct"])
+        m = metrics.compute(result, v["risk_free_annual_pct"],
+                            _rf_series_if_enabled(v, result.net_returns.index))
         m["sector_contribution"] = result.sector_contribution
         fc_eval = failure_conditions.evaluate(
             cfg["failure_conditions"], m, {}, result.sector_contribution,
@@ -268,7 +280,9 @@ def run_resolved(cfg: dict, label: str = "", config_path: str | None = None,
         "within_sector_weights_are_adtv_proxy": full,
         "liquidity_constraint_enforced": full,
         "is_holdout_clean": not holdout or d["sim_end"] < holdout,
-        "risk_free_rate_is_placeholder": v["risk_free_annual_pct"] == 0.0,
+        "risk_free_rate_is_placeholder": (
+            v["risk_free_annual_pct"] == 0.0 and not (
+                v.get("use_real_risk_free_rate") and m.get("real_rf_coverage_gap") == 0)),
         "diagnostics": diag_summary,
         "failure_conditions": fc_eval,
         "hypothesis_reject_recommended": bool(

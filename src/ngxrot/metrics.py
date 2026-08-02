@@ -29,7 +29,14 @@ def _max_drawdown(r: pd.Series) -> float:
     return float((nav / nav.cummax() - 1).min())
 
 
-def compute(result, rf_annual_pct: float = 0.0) -> dict:
+def compute(result, rf_annual_pct: float = 0.0, rf_series: pd.Series | None = None) -> dict:
+    """rf_series (optional, additive): a date-indexed real, point-in-time
+    annual risk-free rate (%) covering result.net_returns.index, e.g. from
+    riskfree.mpr_asof_series(). When given, it is used INSTEAD of the flat
+    rf_annual_pct scalar for the Sharpe calculation (a real per-day rate,
+    not one constant across the whole backtest) -- see
+    docs/PREREG_METH-002_risk_free_rate.md. When absent, behavior is
+    byte-for-byte unchanged from before this parameter existed."""
     r = result.net_returns
     years = len(r) / TRADING_DAYS
     ann = _ann_return(r)
@@ -47,7 +54,7 @@ def compute(result, rf_annual_pct: float = 0.0) -> dict:
         total += 1
         hits += int((1 + seg).prod() > (1 + bseg).prod())
 
-    return {
+    out = {
         "ann_return": round(ann, 4),
         "ann_return_benchmark": round(bench_ann, 4),
         "excess_return_ann": round(ann - bench_ann, 4),
@@ -65,3 +72,17 @@ def compute(result, rf_annual_pct: float = 0.0) -> dict:
         "period_days": len(r),
         "excess_ttest": stats.excess_ttest(r, result.benchmark_returns),
     }
+    if rf_series is not None:
+        rf_aligned = rf_series.reindex(r.index)
+        if rf_aligned.isna().any():
+            out["sharpe_vs_real_rf"] = None
+            out["real_rf_coverage_gap"] = int(rf_aligned.isna().sum())
+        else:
+            daily_rf = (1.0 + rf_aligned / 100.0) ** (1.0 / TRADING_DAYS) - 1.0
+            daily_excess = r - daily_rf
+            out["sharpe_vs_real_rf"] = (
+                round(float(daily_excess.mean() / daily_excess.std() * np.sqrt(TRADING_DAYS)), 3)
+                if daily_excess.std() > 0 else None)
+            out["real_rf_ann_pct_mean"] = round(float(rf_aligned.mean()), 3)
+            out["real_rf_coverage_gap"] = 0
+    return out

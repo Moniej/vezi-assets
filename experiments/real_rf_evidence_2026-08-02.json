@@ -1,0 +1,101 @@
+{
+  "H-001": {
+    "flat_0pct_sharpe_recomputed": 1.554,
+    "flat_0pct_sharpe_stored": 1.554,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "7657564f-5699-44e5-8489-a8e63ec3e5ef",
+    "real_mpr_sharpe": 0.753,
+    "real_rf_ann_pct_mean": 16.684,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-003": {
+    "flat_0pct_sharpe_recomputed": 0.624,
+    "flat_0pct_sharpe_stored": 0.624,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "34da70a4-ebad-46eb-986e-89c3a36ebcde",
+    "real_mpr_sharpe": 0.067,
+    "real_rf_ann_pct_mean": 15.195,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-004": {
+    "flat_0pct_sharpe_recomputed": 1.093,
+    "flat_0pct_sharpe_stored": 1.093,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "58c0b810-5b79-4313-a419-4fb7c46ea600",
+    "real_mpr_sharpe": 0.416,
+    "real_rf_ann_pct_mean": 15.195,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-005": {
+    "flat_0pct_sharpe_recomputed": -1.108,
+    "flat_0pct_sharpe_stored": -1.108,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "b155f16a-d753-45f2-9cda-74c05a17b996",
+    "real_mpr_sharpe": -1.84,
+    "real_rf_ann_pct_mean": 15.171,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-006": {
+    "flat_0pct_sharpe_recomputed": 0.134,
+    "flat_0pct_sharpe_stored": 0.134,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "e489d131-ad2a-4a18-ac44-2901c9d6af69",
+    "real_mpr_sharpe": null,
+    "real_rf_ann_pct_mean": null,
+    "real_rf_coverage_gap_days": 14
+  },
+  "H-007": {
+    "flat_0pct_sharpe_recomputed": 1.136,
+    "flat_0pct_sharpe_stored": 1.136,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "8f4e05b5-4751-4f53-819c-a66eb1477f18",
+    "real_mpr_sharpe": 0.365,
+    "real_rf_ann_pct_mean": 14.951,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-008": {
+    "flat_0pct_sharpe_recomputed": 1.164,
+    "flat_0pct_sharpe_stored": 1.164,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "b896af65-4434-4acf-9b8e-b2fadf99853b",
+    "real_mpr_sharpe": -0.099,
+    "real_rf_ann_pct_mean": 14.951,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-009": {
+    "flat_0pct_sharpe_recomputed": 1.624,
+    "flat_0pct_sharpe_stored": 1.624,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "2acbcd8c-0929-4f1e-a22a-284ae7048aa2",
+    "real_mpr_sharpe": 0.708,
+    "real_rf_ann_pct_mean": 14.951,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-010": {
+    "flat_0pct_sharpe_recomputed": 1.721,
+    "flat_0pct_sharpe_stored": 1.721,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "6b2253f0-5a1d-4fa8-9729-34b6f1f74c20",
+    "real_mpr_sharpe": 0.728,
+    "real_rf_ann_pct_mean": 14.951,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-011": {
+    "flat_0pct_sharpe_recomputed": 2.244,
+    "flat_0pct_sharpe_stored": 2.244,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "real_mpr_sharpe": 1.228,
+    "real_rf_ann_pct_mean": 14.951,
+    "real_rf_coverage_gap_days": 0
+  },
+  "H-012": {
+    "flat_0pct_sharpe_recomputed": 1.143,
+    "flat_0pct_sharpe_stored": 1.143,
+    "integrity_check_pass": true,
+    "orig_experiment_id": "5f010036-cec8-4f98-9151-6e27c56fa8ca",
+    "real_mpr_sharpe": 0.013,
+    "real_rf_ann_pct_mean": 14.951,
+    "real_rf_coverage_gap_days": 0
+  }
+}
