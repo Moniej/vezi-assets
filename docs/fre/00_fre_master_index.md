@@ -63,7 +63,14 @@ dossier()`, closing the reporting gap between Phase 6/7 (Company
 Memory) and Phase 8/10 (Thesis Evidence, Knowledge Graph Context) by
 reusing `render_report()` verbatim and appending two new sections;
 zero new data, zero writes, zero LLM calls; tag
-`fsi-phase11-baseline-2026-08-02`) are all complete and frozen. Full
+`fsi-phase11-baseline-2026-08-02`), and **FSI Phase 12** (Operational
+Research Dossier Generation — `scripts/fre/generate_research_dossier.
+py`, the platform's first real CLI entry point, wrapping Phase 11's
+`build_dossier()`/`render_dossier()` unmodified; two real bugs found
+and fixed, both genuine first-exercised-boundary findings (console
+UTF-8 encoding, subprocess-capture mojibake); zero new reasoning, zero
+database writes; tag `fsi-phase12-baseline-2026-08-02`) are all
+complete and frozen. Full
 implementation history, results, and an architectural-defect
 discovery-and-fix precedent are in `docs/fre_runs/`. No further phase has
 been approved or started as of this writing. Everything below this line is
