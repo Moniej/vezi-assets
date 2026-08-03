@@ -78,6 +78,25 @@ not change H-011's own Validated status; narrows how it should be
 understood. No standalone Liquidity/Momentum/Volatility factor claim is
 made.
 
+**Standalone Liquidity factor test (H-016, added 2026-08-03)**: a new
+`xs_liquidity_scores()` and `xs_liquidity` signal method (additive,
+reuses the existing `xs_rank`/`xs_vol`/`xs_size` dispatch path unchanged;
+Phase R2's own `liquidity_scores()` untouched) tested whether a
+whole-universe ADTV sort carries a return premium independent of Size, in
+either pre-registered direction (illiquid, classic Amihud & Mendelson
+1986; or liquid, the direction Phase R2's own evidence hinted at).
+**Rejected in full** — neither direction produced a credible premium
+(Leg B, long-liquid, was rejected more decisively than Leg A: placebo
+p=1.000, negative excess in every regime including OOS). Full derivation:
+`docs/H016_LIQUIDITY_REPORT_2026-08-03.md`. Closes
+`docs/FACTOR_CANDIDATE_REGISTRY.md`'s Liquidity (A1) candidate with a
+disclosed, both-directions-tested answer: liquidity appears to matter on
+this platform only as a conditioning characteristic on Size (per H-013),
+not as an independent source of return. The pre-registration's Economic
+Capacity Validation section (a filter-ladder robustness check for
+whichever leg might have confirmed) was not run, since neither leg
+cleared confirmation.
+
 ## 3. Factor Library — LIVE (structure), EMPTY (contents, by design)
 
 `docs/FACTOR_REGISTRY.md` — the permanent knowledge base. Every completed

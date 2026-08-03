@@ -1,0 +1,316 @@
+{
+  "corrections": {
+    "bh": 0,
+    "holm": 0,
+    "min_p_holm": 0.97093,
+    "n_tests": 6,
+    "raw": 0
+  },
+  "daily_realrf_excess_sharpe": 0.03436879775480071,
+  "dsr_context_vs_existing_pool": {
+    "dsr": 0.01234,
+    "focal_sharpe": 0.03437,
+    "n_trials": 11,
+    "sr_star_chance_benchmark": 0.08144
+  },
+  "failure_conditions": {
+    "_any_triggered": true,
+    "_scalability_limited": false,
+    "_signal_reject_recommended": true,
+    "capacity_below_minimum": {
+      "category": "scalability",
+      "evidence": "median capacity 712,992 NGN vs mandate 0; signal validity unaffected \u2014 deployable AUM is capped near the median capacity figure",
+      "triggered": false
+    },
+    "cost_drag_eliminates_excess": {
+      "category": "signal_quality",
+      "evidence": "gross excess +5.42%, net excess -3.13%",
+      "triggered": true
+    },
+    "oos_performance_collapses": {
+      "category": "signal_quality",
+      "evidence": "OOS Sharpe 4.46 vs IS 2.04 (retention floor 25%)",
+      "triggered": false
+    },
+    "placebo_performs_similarly": {
+      "category": "signal_quality",
+      "evidence": "placebo p=0.168 (alpha=0.05): real strategy NOT distinguishable from shuffled sector labels",
+      "triggered": true
+    },
+    "single_regime_dependency": {
+      "category": "signal_quality",
+      "evidence": "regime 'oos_2025_26' contributes 63% of positive excess (limit 80%); per-regime excess: pre_float=-5.8%, float_shock=+16.7%, oos_2025_26=+28.2%",
+      "triggered": false
+    },
+    "single_sector_dependency": {
+      "category": "signal_quality",
+      "evidence": "RTBRISCOE contributes 11% of positive return (limit 100%)",
+      "triggered": false
+    }
+  },
+  "final_metrics": {
+    "ann_cost_drag": 0.0663,
+    "ann_return": 0.2394,
+    "ann_return_benchmark": 0.2707,
+    "ann_turnover_oneway": 1.807,
+    "ann_vol": 0.1638,
+    "avg_oneway_turnover_per_rebalance": 0.4508,
+    "capacity": {
+      "bottleneck_constituents": {
+        "BERGER": 14,
+        "LEARNAFRCA": 14,
+        "MCNICHOLS": 13,
+        "REGALINS": 16,
+        "TRANSCOHOT": 14
+      },
+      "configured_aum_ngn": 1000000000.0,
+      "median_capacity_ngn": 712991.8620409605,
+      "n_legs": 534,
+      "p25_capacity_ngn": 237854.62171114606,
+      "pct_legs_rejected": 100.0,
+      "worst_capacity_date": "2019-04-01",
+      "worst_capacity_ngn": 4914.28
+    },
+    "excess_return_ann": -0.0313,
+    "excess_ttest": {
+      "n_obs": 2201,
+      "p_value": 0.65933,
+      "t_stat": -0.441
+    },
+    "gross_ann_return": 0.3249,
+    "hit_rate_vs_benchmark": 0.486,
+    "max_drawdown": -0.3556,
+    "n_rebalances": 35,
+    "period_days": 2201,
+    "rf_annual_pct_used": 0.0,
+    "sector_contribution": {
+      "ABBEYBDS": -0.00224,
+      "ABCTRANS": 0.03288,
+      "ACADEMY": 0.04553,
+      "AFRINSURE": 0.0,
+      "AGLEVENT": 0.02707,
+      "AIICO": -0.00519,
+      "AIRSERVICE": 0.02017,
+      "ASHAKACEM": 0.0,
+      "BERGER": 0.00327,
+      "BETAGLAS": -0.02794,
+      "BOCGAS": 0.08712,
+      "CADBURY": 0.00964,
+      "CAVERTON": 0.03539,
+      "CHAMPION": -0.00618,
+      "CHAMS": 0.00858,
+      "CHIPLC": 0.03642,
+      "CILEASING": 0.00647,
+      "CONTINSURE": 0.01017,
+      "CORNERST": 0.07828,
+      "COSTAIN": 0.0,
+      "COURTVILLE": 0.01086,
+      "CUTIX": 0.04419,
+      "CWG": -0.01331,
+      "DAARCOMM": -0.01917,
+      "DUNLOP": -0.03919,
+      "ELLAHLAKES": 0.004,
+      "EQUITYASUR": -0.01986,
+      "ETRANZACT": 0.09285,
+      "EVANSMED": 0.0,
+      "FIDSON": -0.0137,
+      "FIRSTALUM": -0.00459,
+      "FTNCOCOA": 0.01492,
+      "GUINEAINS": 0.07257,
+      "HMARKINS": 0.00194,
+      "HONYFLOUR": -0.00969,
+      "IKEJAHOTEL": 0.12517,
+      "IMG": 0.11262,
+      "INTENEGINS": 0.00163,
+      "JAPAULOIL": 0.00592,
+      "JOHNHOLT": 0.03241,
+      "LASACO": 0.00708,
+      "LAWUNION": 0.04239,
+      "LEARNAFRCA": 0.07862,
+      "LINKASSURE": 0.07267,
+      "LIVESTOCK": -0.02369,
+      "LIVINGTRUST": 0.00363,
+      "MANSARD": 0.00452,
+      "MAYBAKER": 0.13347,
+      "MBENEFIT": 0.02258,
+      "MCNICHOLS": 0.00349,
+      "MECURE": -0.0048,
+      "MEDVIEWAIR": 0.00358,
+      "MEYER": -0.0133,
+      "MORISON": 0.00456,
+      "MRS": -0.02304,
+      "MULTIVERSE": 0.2062,
+      "NCR": 0.01652,
+      "NEIMETH": 0.10876,
+      "NEM": -0.00542,
+      "NIDF": 0.0,
+      "NIGERINS": -0.03499,
+      "NNFM": 0.01006,
+      "NPFMCRFBK": 0.04448,
+      "NSLTECH": -0.00482,
+      "OMATEK": -0.00045,
+      "PHARMDEKO": 0.00017,
+      "PORTPAINT": 0.01253,
+      "PRESTIGE": -0.00038,
+      "REDSTAREX": 0.00236,
+      "REGALINS": 0.07192,
+      "ROYALEX": 0.09447,
+      "RTBRISCOE": 0.30402,
+      "SCOA": -0.00988,
+      "SKYAVN": 0.12685,
+      "SKYEBANK": 0.01241,
+      "SOVRENINS": 0.05081,
+      "SUNUASSUR": 0.01321,
+      "TANTALIZER": 0.09499,
+      "THOMASWY": 0.01317,
+      "TIP": 0.01156,
+      "TRANSCOHOT": 0.12239,
+      "TRANSEXPR": -0.00468,
+      "TRIPPLEG": 0.01688,
+      "UBN": -0.00102,
+      "UNIONDAC": -0.00578,
+      "UNITYBNK": 0.01413,
+      "UNIVINSURE": 0.0,
+      "UPDC": 0.01648,
+      "UPL": 0.07585,
+      "VERITASKAP": -0.00808,
+      "VFDGROUP": -0.00088,
+      "VONO": 0.0,
+      "WAPIC": 0.131,
+      "WEMABANK": 0.00503
+    },
+    "sharpe_vs_rf": 1.462
+  },
+  "hac_ttest": {
+    "lag": 7,
+    "n_obs": 2201,
+    "p_value": 0.71405,
+    "t_stat": -0.366
+  },
+  "hyp_id": "H-016",
+  "leg": "A",
+  "placebo": {
+    "n_iterations": 100,
+    "placebo_max_sharpe": 2.07,
+    "placebo_mean_sharpe": 1.292,
+    "placebo_p95_sharpe": 1.638,
+    "placebo_p_value": 0.1683,
+    "real_sharpe": 1.462
+  },
+  "plateau": {
+    "best_cell_excess": 0.0316,
+    "best_minus_median": 0.0322,
+    "frac_positive_excess": 0.5,
+    "median_cell_excess": -0.0005500000000000001,
+    "n_cells": 6
+  },
+  "rating": {
+    "rating": "Moderate",
+    "reasons": [
+      "data: exchange-official grade (+2)",
+      "sample: only 35 decisions (+0)",
+      "regimes: 3 covered (+2)",
+      "significance: corrected p=0.971 (+0)",
+      "robustness: 50% plateau (+1)",
+      "placebo: FAILED \u2014 indistinguishable from noise (+0)"
+    ],
+    "score": 5
+  },
+  "stability": [
+    {
+      "cell": "rebalance=quarterly top_n=15",
+      "excess": -0.0315,
+      "p_raw": 0.71414,
+      "rebalance": "quarterly",
+      "sharpe": 1.38,
+      "top_n": 15
+    },
+    {
+      "cell": "rebalance=quarterly top_n=20",
+      "excess": -0.0313,
+      "p_raw": 0.65933,
+      "rebalance": "quarterly",
+      "sharpe": 1.462,
+      "top_n": 20
+    },
+    {
+      "cell": "rebalance=quarterly top_n=30",
+      "excess": 0.0257,
+      "p_raw": 0.50841,
+      "rebalance": "quarterly",
+      "sharpe": 1.917,
+      "top_n": 30
+    },
+    {
+      "cell": "rebalance=semiannual top_n=15",
+      "excess": 0.0092,
+      "p_raw": 0.75946,
+      "rebalance": "semiannual",
+      "sharpe": 1.334,
+      "top_n": 15
+    },
+    {
+      "cell": "rebalance=semiannual top_n=20",
+      "excess": -0.0103,
+      "p_raw": 0.97093,
+      "rebalance": "semiannual",
+      "sharpe": 1.406,
+      "top_n": 20
+    },
+    {
+      "cell": "rebalance=semiannual top_n=30",
+      "excess": 0.0316,
+      "p_raw": 0.41159,
+      "rebalance": "semiannual",
+      "sharpe": 1.793,
+      "top_n": 30
+    }
+  ],
+  "walk_forward": [
+    {
+      "ann_cost_drag": 0.065,
+      "ann_return": 0.0863,
+      "ann_return_benchmark": 0.1438,
+      "catalyst": false,
+      "excess_return_ann": -0.0575,
+      "exp_id": "83cc03b5",
+      "max_drawdown": -0.3556,
+      "median_cap_bn": 0.0,
+      "p_raw": 0.28897,
+      "regime": "pre_float",
+      "sharpe_vs_rf": 0.656,
+      "stage": "development",
+      "t_stat": -1.06
+    },
+    {
+      "ann_cost_drag": 0.0716,
+      "ann_return": 0.8742,
+      "ann_return_benchmark": 0.7073,
+      "catalyst": false,
+      "excess_return_ann": 0.1669,
+      "exp_id": "bdcac7bb",
+      "max_drawdown": -0.3303,
+      "median_cap_bn": 0.0,
+      "p_raw": 0.43023,
+      "regime": "float_shock",
+      "sharpe_vs_rf": 3.422,
+      "stage": "development",
+      "t_stat": 0.789
+    },
+    {
+      "ann_cost_drag": 0.0708,
+      "ann_return": 1.1017,
+      "ann_return_benchmark": 0.82,
+      "catalyst": false,
+      "excess_return_ann": 0.2817,
+      "exp_id": "a64a57ad",
+      "max_drawdown": -0.2078,
+      "median_cap_bn": 0.02,
+      "p_raw": 0.2106,
+      "regime": "oos_2025_26",
+      "sharpe_vs_rf": 4.463,
+      "stage": "final_oos",
+      "t_stat": 1.252
+    }
+  ]
+}

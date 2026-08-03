@@ -184,6 +184,43 @@ H-012 moved to Rejected, 2026-08-02)*
 
 ## Rejected — per-stock era
 
+### H-016 — Liquidity (family: Liquidity, first and only standalone test) — REJECTED 2026-08-03
+- **Genuinely new, standalone factor test** — not an extension or
+  forensic decomposition of H-011. Tested whether a whole-universe
+  cross-sectional sort on trailing 60-day ADTV carries a return premium
+  against the equal-weighted-IRU benchmark, in EITHER pre-registered
+  direction. Full derivation: `docs/H016_LIQUIDITY_REPORT_2026-08-03.md`.
+  Pre-registration (including the Economic Capacity Validation section,
+  added before implementation): `docs/PREREG_H-016_liquidity.md`.
+- **Leg A (illiquid, classic Amihud & Mendelson 1986 direction) — rejected.**
+  Base-cell net excess -3.13% (gross +5.42%; `cost_drag_eliminates_excess`
+  triggered), only 3/6 stability-grid cells positive, 0/6 significant
+  even before correction, placebo p=0.168 (fails ≤0.05), HAC p=0.714.
+  Median leg capacity ₦712,992 — strikingly close to H-011's own
+  ₦694,336, direct numerical confirmation of the expected Size/Liquidity
+  entanglement.
+- **Leg B (liquid, the direction Phase R2's own H-013 evidence hinted
+  at) — rejected, more decisively than Leg A.** 0/6 grid cells positive
+  (uniformly negative across the entire grid); placebo p=1.000 (real
+  Sharpe sits BELOW the placebo mean); negative excess in every
+  walk-forward regime including the untouched OOS window (-34.48%);
+  HAC p=0.088. `placebo_performs_similarly` triggered.
+- **Economic Capacity Validation ladder not run** — per its own
+  conditional framing (applied only to a leg clearing confirmation),
+  and neither leg qualified.
+- **Interpretation — does not conflict with H-013.** H-013 asked whether
+  H-011's Size premium survives controlling for Liquidity (concentrated
+  in the liquid half). H-016 asked whether Liquidity itself, independent
+  of Size, carries its own premium (no, in neither direction). The
+  economically meaningful liquidity-related effect on this platform
+  remains H-011's own Size premium, concentrated in liquid names — not a
+  standalone Liquidity factor. Liquidity appears to matter only as a
+  CONDITIONING characteristic on Size, not as an independent source of
+  return.
+- **Closes** `docs/FACTOR_CANDIDATE_REGISTRY.md`'s Liquidity (A1) entry,
+  open since 2026-08-02, with a real, disclosed, both-directions-tested
+  answer.
+
 ### H-013/H-014/H-015 — Size Interaction Forensics (family: Size, forensic decomposition — NOT standalone Liquidity/Momentum/Volatility factor claims) — REJECTED 2026-08-03
 - **These are not standalone factor tests.** Each asks a narrow question:
   does H-011's confirmed Size premium survive a double sort against

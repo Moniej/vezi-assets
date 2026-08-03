@@ -71,7 +71,14 @@ platform's own established precedent, not yet a fair test.
     exists on this platform — see B7). This is a pure trading-activity
     liquidity premium.
 - **Dependencies**: none. No owner decision, no vendor, no OCR.
-- **Current status**: **Available** — not yet Pre-Registered.
+- **Current status**: **Rejected** (2026-08-03, both directions tested —
+  H-016, `docs/H016_LIQUIDITY_REPORT_2026-08-03.md`). Neither a long-
+  illiquid (classic Amihud & Mendelson) nor a long-liquid whole-universe
+  tilt produced a credible standalone premium against the EW-IRU
+  benchmark. See `docs/FACTOR_REGISTRY.md`'s H-016 entry for full
+  evidence. Liquidity appears to matter on this platform only as a
+  conditioning characteristic on Size (per H-013), not as an independent
+  factor.
 
 ### A2. Dividend Yield — **payer-status (binary) variant only**
 
@@ -263,7 +270,7 @@ status.
 
 | Family | Status | Blocker (if any) |
 |---|---|---|
-| Liquidity (trading-activity) | **Available** | none |
+| Liquidity (trading-activity) | **Rejected** (H-016, 2026-08-03, both directions) | none — resolved |
 | Dividend Yield (payer-status) | **Available** | none (yield-magnitude sub-variant separately blocked, already disclosed) |
 | Interaction (Size×Vol/Mom/Liquidity) | **Available** | none |
 | Value | Data-Blocked | FSI 10-ticker ceiling |
@@ -281,13 +288,18 @@ status.
 | Composite Factors | Proposed / blocked | needs ≥2 validated components (only 1 exists) |
 | Interaction × blocked fundamentals | Data-Blocked | inherits Section B |
 
-**Bottom line**: of 16 named candidates, **3 are genuinely ready to
-pre-register today** (Liquidity, Dividend payer-status, Interaction
-factors), **11 share one single root blocker** (FSI's 10-ticker statement
-extraction ceiling — already a known, disclosed, labor-bounded backlog item,
-not a new discovery), **1 needs an internal classification pass** (Share
-Issuance), and **1 is transitively gated** on validating a second factor
-first (Composite Factors).
+**Bottom line (updated 2026-08-03)**: of 16 named candidates, the 3 that
+were genuinely ready to pre-register as of this audit's original writing
+(Liquidity, Dividend payer-status, Interaction factors) have now been
+resolved for 2 of the 3: Interaction Factors ran as H-013/H-014/H-015
+(rejected as standalone claims, per their own forensic scope) and
+Liquidity ran standalone as H-016 (rejected in full, both directions —
+`docs/H016_LIQUIDITY_REPORT_2026-08-03.md`). **Only Dividend payer-status
+(A2) remains untested and ready.** **11 share one single root blocker**
+(FSI's 10-ticker statement extraction ceiling — already a known,
+disclosed, labor-bounded backlog item, not a new discovery), **1 needs an
+internal classification pass** (Share Issuance), and **1 is transitively
+gated** on validating a second factor first (Composite Factors).
 
 ## Methodology note on this audit itself
 
@@ -301,7 +313,7 @@ for the audit method itself — the specific factual findings above (NGX's
 particular data-coverage shape) are original to this platform's own
 archive, not to any technique.
 
-## Next step (Priority 2, pending owner review)
+## Next step (Priority 2, pending owner review) — original 2026-08-02 text, superseded, kept for audit trail
 
 Recommend pre-registering the Interaction Factors program (A3) next: it
 requires no new data whatsoever (100% already-computed inputs), directly
@@ -311,3 +323,13 @@ directly answers the earlier directive's Phase 30 request. Liquidity (A1)
 and Dividend payer-status (A2) remain available as parallel low-cost
 candidates. No hypothesis has been pre-registered or run as part of this
 audit — this document reports availability only, per Priority 1's scope.
+
+## Status as of 2026-08-03
+
+A3 ran as H-013/H-014/H-015 (rejected as standalone claims per their own
+forensic scope — Phase R2). A1 ran standalone as H-016 (rejected in
+full, both directions). **A2 (Dividend payer-status) is now the only
+remaining zero-acquisition-cost, fully-available candidate from this
+audit's original list** — see `docs/WAVE_4_RESEARCH_DIRECTIONS_2026-08-03.md`
+(named there as H-017, not yet pre-registered) for its full research-value
+writeup and ranking rationale.

@@ -16,6 +16,15 @@ Modes (signal.method):
                validated 2026-07-22, full-issue/not float-adjusted — a
                disclosed limitation, see load_market_cap_panel). Approved
                2026-07-22 for H-011 (Wave 3 candidate C4).
+  xs_liquidity — liquidity: score = standardized trailing 60-day ADTV,
+               signed by signal.direction ("illiquid": negative, long the
+               LEAST liquid names, classic Amihud & Mendelson 1986 premium
+               direction; "liquid": positive, long the MOST liquid names).
+               Optional signal.min_adtv_ngn applies an additional
+               eligibility floor for the Economic Capacity Validation
+               ladder. H-016, pre-registered docs/PREREG_H-016_liquidity.md
+               (2026-08-03) -- both directions are open questions, neither
+               assumed correct in advance.
   xs_event   — event book: pre-registered event set -> reaction-ranked
                selections enter at a fixed lag, hold a fixed number of
                sessions, sized 1/max_concurrent of NAV each; residual NAV
@@ -376,6 +385,59 @@ def liquidity_scores(con, panel, cfg) -> dict:
     return out
 
 
+def xs_liquidity_scores(con, panel, cfg) -> dict:
+    """{formation_date -> Series(score)} for xs_liquidity (H-016, standalone
+    Liquidity factor -- docs/PREREG_H-016_liquidity.md). Reuses
+    panel["adtv60"] (already computed by load_panel) -- no new data source.
+    Distinct from Phase R2's liquidity_scores() (frozen, consumed only by
+    xs_size_interaction): this function supports both pre-registered
+    directions via signal.direction --
+
+      "illiquid" (Leg A, classic Amihud & Mendelson 1986 direction):
+          score = NEGATIVE standardized ADTV, nlargest selects the LEAST
+          liquid names.
+      "liquid" (Leg B, the direction H-013's own evidence hints at):
+          score = POSITIVE standardized ADTV, nlargest selects the MOST
+          liquid names.
+
+    -- and an optional signal.min_adtv_ngn floor: the Economic Capacity
+    Validation filter ladder (prereg Section 10), applied as an ADDITIONAL
+    eligibility gate on top of the existing breadth guard below, never a
+    change to that guard itself. Default 0.0 reproduces the unfiltered
+    base configuration exactly."""
+    s, d = cfg["signal"], cfg["data"]
+    direction = s.get("direction", "illiquid")
+    if direction not in ("illiquid", "liquid"):
+        raise ValueError(f"xs_liquidity_scores: unknown direction {direction!r}")
+    min_adtv_ngn = float(s.get("min_adtv_ngn", 0.0))
+    close = panel["close_ff"]
+    adtv60 = panel["adtv60"]
+    dates = close.loc[:d["sim_end"]].index
+    formations = _month_ends(dates)
+    step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
+    formations = formations[::step] if step == 1 else [
+        f for i, f in enumerate(formations) if i % step == 0]
+    iru_rules = universe.load_rules()
+    out = {}
+    for f in formations:
+        if f < pd.Timestamp(d["sim_start"]) or f not in adtv60.index:
+            continue
+        elig = _eligible(con, panel, f, iru_rules,
+                         int(s.get("min_obs_formation", 120)),
+                         int(s.get("lookback_months", 12) * 31))
+        if len(elig) < 10:
+            continue
+        adtv = adtv60.loc[f, elig].dropna()
+        adtv = adtv[adtv > 0]
+        if min_adtv_ngn > 0:
+            adtv = adtv[adtv >= min_adtv_ngn]
+        if len(adtv) < 10 or adtv.std() == 0:
+            continue
+        z = (adtv - adtv.mean()) / adtv.std()
+        out[f] = z if direction == "liquid" else -z
+    return out
+
+
 REBALANCE_STEP_MONTHS = {"monthly": 1, "quarterly": 3, "semiannual": 6,
                          "annual": 12}
 
@@ -388,6 +450,8 @@ def scores_for_method(con, panel, cfg) -> dict:
         return vol_scores(con, panel, cfg)
     if method == "xs_size":
         return size_scores(con, panel, cfg)
+    if method == "xs_liquidity":
+        return xs_liquidity_scores(con, panel, cfg)
     raise ValueError(f"scores_for_method: unsupported method {method!r}")
 
 
@@ -890,7 +954,7 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
                      d["sim_start"], d["sim_end"])
 
     regime_flags = None
-    if s["method"] in ("xs_rank", "xs_vol", "xs_size"):
+    if s["method"] in ("xs_rank", "xs_vol", "xs_size", "xs_liquidity"):
         if s["method"] == "xs_size":
             panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)
@@ -1043,7 +1107,7 @@ def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
         res.benchmark_returns = bench.net_returns
         return _metrics.compute(res, rf)["sharpe_vs_rf"]
 
-    if s["method"] in ("xs_rank", "xs_vol", "xs_size"):
+    if s["method"] in ("xs_rank", "xs_vol", "xs_size", "xs_liquidity"):
         if s["method"] == "xs_size":
             panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)
