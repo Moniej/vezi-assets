@@ -1,0 +1,66 @@
+# H-013 — Size x Liquidity interaction, HIGH-liquidity bucket.
+# Executable encoding of docs/PREREG_H013-015_size_interactions.md (frozen
+# 2026-08-03). Forensic decomposition of H-011, not a standalone factor.
+
+[experiment]
+name = "h013_size_x_liquidity_high"
+hypothesis_id = "H-013"
+stage = "development"
+seed = 20260803
+
+[data]
+sim_start = "2016-01-02"
+sim_end = "2024-12-31"
+sources = ["ngx_pricelist_v1", "ngx_dol_v1", "ngx_list2_v1"]
+min_confidence = 0.9
+vintage = "2026-07-21"
+requires_coverage_gate = true
+iru_version = "v2"
+universe = []
+benchmark = "EW_IRU"
+
+[signal]
+method = "xs_size_interaction"
+interaction_factor = "liquidity"
+bucket = "high"
+min_obs_formation = 120
+lookback_months = 12
+
+[portfolio]
+top_n = 8
+rebalance = "quarterly"
+execution_lag_days = 1
+construction = "equal_weight"
+
+[costs]
+source = "db"
+
+[liquidity]
+adtv_participation_cap_pct = 10.0
+adtv_window_days = 60
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0
+
+[engine]
+type = "cross_sectional"
+aum_ngn = 1e9
+
+[rng]
+algorithm = "PCG64"
+seed = 20260803
+
+[failure_conditions]
+placebo_alpha = 0.05
+max_single_regime_share = 1.0
+min_oos_sharpe_retention = 0.25
+max_single_sector_share = 1.0
+
+[phase4]
+[phase4.stability.grid]
+"portfolio.rebalance" = ["quarterly", "semiannual"]
+"portfolio.top_n" = [8, 12]
+
+[phase4.placebo]
+iterations = 100

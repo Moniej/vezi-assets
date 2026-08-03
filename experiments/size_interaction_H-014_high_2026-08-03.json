@@ -1,0 +1,85 @@
+{
+  "attribution": {
+    "size_interaction": {
+      "avg_bucket_size_high": 46.1,
+      "avg_bucket_size_low": 45.7,
+      "bucket": "high",
+      "interaction_factor": "momentum",
+      "n_formation_dates": 36
+    }
+  },
+  "bucket": "high",
+  "daily_realrf_excess_sharpe": 0.041359930710395426,
+  "dsr_context_vs_existing_pool": {
+    "dsr": 0.01969,
+    "focal_sharpe": 0.04136,
+    "n_trials": 11,
+    "sr_star_chance_benchmark": 0.08192
+  },
+  "final_excess_return_ann": 0.0461,
+  "final_sharpe_vs_bucket_bench_rf0": 1.236,
+  "hac_ttest": {
+    "lag": 7,
+    "n_obs": 2201,
+    "p_value": 0.4452,
+    "t_stat": 0.763
+  },
+  "hyp_id": "H-014",
+  "iid_ttest": {
+    "n_obs": 2201,
+    "p_value": 0.4422,
+    "t_stat": 0.768
+  },
+  "n_cells": 4,
+  "n_sig_bh": 1,
+  "n_sig_holm": 1,
+  "placebo": {
+    "n_iterations": 100,
+    "placebo_max_sharpe": 1.534,
+    "placebo_mean_sharpe": 0.777,
+    "placebo_p95_sharpe": 1.103,
+    "placebo_p_value": 0.0297,
+    "real_sharpe": 1.236
+  },
+  "plateau": {
+    "best_cell_excess": 0.2191,
+    "best_minus_median": 0.0853,
+    "frac_positive_excess": 1.0,
+    "median_cell_excess": 0.1338,
+    "n_cells": 4
+  },
+  "stability": [
+    {
+      "cell": "rebalance=quarterly top_n=8",
+      "excess": 0.0461,
+      "p_raw": 0.4422,
+      "rebalance": "quarterly",
+      "sharpe": 1.236,
+      "top_n": 8
+    },
+    {
+      "cell": "rebalance=quarterly top_n=12",
+      "excess": 0.0859,
+      "p_raw": 0.1711,
+      "rebalance": "quarterly",
+      "sharpe": 1.521,
+      "top_n": 12
+    },
+    {
+      "cell": "rebalance=semiannual top_n=8",
+      "excess": 0.1817,
+      "p_raw": 0.04238,
+      "rebalance": "semiannual",
+      "sharpe": 1.835,
+      "top_n": 8
+    },
+    {
+      "cell": "rebalance=semiannual top_n=12",
+      "excess": 0.2191,
+      "p_raw": 0.00704,
+      "rebalance": "semiannual",
+      "sharpe": 2.006,
+      "top_n": 12
+    }
+  ]
+}

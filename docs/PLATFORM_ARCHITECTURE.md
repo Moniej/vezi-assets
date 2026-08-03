@@ -62,6 +62,22 @@ Uses MPR as a disclosed proxy for the true NGN T-bill rate (a real, stated
 limitation, not resolved by this phase — see the design record's rejected
 alternatives).
 
+**Size interaction forensics (Phase R2, H-013/H-014/H-015, added
+2026-08-03)**: a double-sort extension to `backtest_xs.py` — new
+`liquidity_scores()` (reuses `panel["adtv60"]`, already loaded for
+capacity reporting; no new data), `interaction_bucket_members()`,
+`targets_from_bucketed_size()`, `benchmark_targets_bucket()`, and an
+`xs_size_interaction` signal method — tests whether H-011's Size premium
+survives independently of Liquidity, Momentum, or Volatility via a median
+split + bucket-scoped benchmark, reusing `size_scores()`/`rank_scores()`/
+`vol_scores()` completely unmodified. Real finding: the premium does not
+survive fully independently of any of the three — concentrated among
+liquid, low-volatility, (partially) low-momentum small caps. Full
+derivation: `docs/PHASE_R2_SIZE_INTERACTIONS_REPORT_2026-08-03.md`. Does
+not change H-011's own Validated status; narrows how it should be
+understood. No standalone Liquidity/Momentum/Volatility factor claim is
+made.
+
 ## 3. Factor Library — LIVE (structure), EMPTY (contents, by design)
 
 `docs/FACTOR_REGISTRY.md` — the permanent knowledge base. Every completed

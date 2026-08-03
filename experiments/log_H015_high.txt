@@ -1,0 +1,17 @@
+
+======================================================================
+H-015 / high bucket : configs/h015_size_x_volatility_high.toml
+======================================================================
+--- stability grid (4 cells) ---
+ rebalance  top_n  excess  sharpe   p_raw                          cell
+ quarterly      8  0.0139   1.216 0.68113   rebalance=quarterly top_n=8
+ quarterly     12  0.0227   1.430 0.55397  rebalance=quarterly top_n=12
+semiannual      8 -0.0183   1.031 0.93820  rebalance=semiannual top_n=8
+semiannual     12  0.0449   1.354 0.33808 rebalance=semiannual top_n=12
+plateau: {'n_cells': 4, 'frac_positive_excess': 0.75, 'best_cell_excess': 0.0449, 'median_cell_excess': 0.0183, 'best_minus_median': 0.0266} | significant after Holm: 0/4 | after BH: 0/4
+--- placebo (100 iterations) ---
+{'real_sharpe': 1.216, 'placebo_mean_sharpe': 0.886, 'placebo_p95_sharpe': 1.43, 'placebo_max_sharpe': 1.674, 'placebo_p_value': 0.1287, 'n_iterations': 100}
+--- final single run (base cell, development stage, no walk-forward) ---
+RESULT summary: excess_ann=0.0139 iid_p=0.68113 hac_p=0.71986 placebo_p=0.1287
+
+written: experiments/size_interaction_H-015_high_2026-08-03.json

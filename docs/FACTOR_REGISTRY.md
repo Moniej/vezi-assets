@@ -121,6 +121,33 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
   most illiquid tail of the universe, exactly where the economic
   rationale predicts it should be, and exactly where real-world
   implementation would be hardest.
+- **Phase R2 interaction forensics (added 2026-08-03, H-013/H-014/H-015 —
+  full derivation: `docs/PHASE_R2_SIZE_INTERACTIONS_REPORT_2026-08-03.md`,
+  pre-registration: `docs/PREREG_H013-015_size_interactions.md`)**: a
+  double sort against Liquidity, Momentum, and Volatility found the Size
+  premium does **not** survive fully independently of any of the three.
+  **Size × Liquidity**: explained away — concentrated in the
+  high-liquidity half (Sharpe 2.272, placebo p=0.0099) with a clean null
+  in the low-liquidity half (Sharpe 0.574, placebo p=0.703). **This is
+  the OPPOSITE direction from the bullet immediately above** — the
+  per-regime top CONTRIBUTORS to H-011's own top-20 selection were
+  thin/illiquid names, yet a bucket-level median split of the WHOLE
+  eligible universe by ADTV finds the premium concentrated in the liquid
+  half. Both facts are real and now both on permanent record; they are
+  different cuts of the data (which few names drove an already-tiny
+  selection, vs. which half of the universe the effect holds in) and are
+  not logically required to agree — the apparent tension is disclosed,
+  not resolved by assumption. **Size × Momentum**: partially explained —
+  real and placebo-passing in both the high- and low-momentum halves, but
+  materially more robust (i.i.d. p=0.0004 vs 0.442, HAC p=0.0064 vs
+  0.445) among low-momentum ("laggard") small caps. **Size × Volatility**:
+  explained away — concentrated in the low-volatility half (Sharpe 1.835,
+  placebo p=0.0099), null in the high-volatility half (placebo p=0.1287).
+  **Overall**: the confirmed premium is concentrated among small caps
+  that are simultaneously liquid, low-volatility, and (partially)
+  low-momentum — not a generic "small caps" effect. This qualifies, but
+  does not revoke, H-011's Validated status (earned under its own,
+  different, unchanged criteria).
 - **Known limitations**: full-issue market cap, NOT float-adjusted (no
   shares-outstanding/free-float dataset exists yet — a stated
   construct-validity limitation: could partly proxy cross-holding
@@ -156,6 +183,42 @@ H-012 moved to Rejected, 2026-08-02)*
 ---
 
 ## Rejected — per-stock era
+
+### H-013/H-014/H-015 — Size Interaction Forensics (family: Size, forensic decomposition — NOT standalone Liquidity/Momentum/Volatility factor claims) — REJECTED 2026-08-03
+- **These are not standalone factor tests.** Each asks a narrow question:
+  does H-011's confirmed Size premium survive a double sort against
+  Liquidity (H-013), Momentum (H-014), or Volatility (H-015), independent
+  of that characteristic? Full derivation:
+  `docs/PHASE_R2_SIZE_INTERACTIONS_REPORT_2026-08-03.md`. Pre-registration:
+  `docs/PREREG_H013-015_size_interactions.md`.
+- **H-013 (Size × Liquidity) — explained away.** High-liquidity bucket:
+  Sharpe 2.272, placebo p=0.0099, HAC p=0.0225 — strong. Low-liquidity
+  bucket: Sharpe 0.574 (below its own placebo mean 0.731), placebo
+  p=0.703 — a clean null. The premium is concentrated in the LIQUID half,
+  the opposite direction from H-011's own disclosed finding that its
+  per-regime top contributors were thin/illiquid names (see H-011's own
+  entry above) — a real, disclosed tension between two different cuts of
+  the data, not resolved by assumption.
+- **H-014 (Size × Momentum) — partially explained.** Both buckets
+  directionally positive and placebo-passing (p=0.0297 high-momentum,
+  p=0.0099 low-momentum), but the high-momentum bucket fails both
+  parametric tests (i.i.d. p=0.442, HAC p=0.445) while the low-momentum
+  bucket is comprehensively strong (i.i.d. p=0.0004, HAC p=0.0064). Real
+  in both, materially concentrated among low-momentum ("laggard") small
+  caps.
+- **H-015 (Size × Volatility) — explained away.** High-volatility bucket:
+  placebo p=0.1287, i.i.d./HAC both >0.68 — null. Low-volatility bucket:
+  placebo p=0.0099, HAC p=0.0218 — strong. Premium concentrated in the
+  LOW-volatility half.
+- **Overall finding**: H-011's confirmed Size premium is concentrated
+  among small caps that are simultaneously liquid, low-volatility, and
+  (partially) low-momentum — not a generic small-cap effect. Does not
+  change H-011's own Validated status (different, unchanged criteria);
+  materially narrows how that confirmation should be understood and
+  potentially deployed.
+- **No standalone Liquidity/Momentum/Volatility factor status is implied
+  or claimed** — those remain untested independent candidates per
+  `docs/FACTOR_CANDIDATE_REGISTRY.md`.
 
 ### H-012 — Regime-Conditional Low-Volatility Gate (family: Low Volatility, regime-conditional variant) — REJECTED 2026-08-02
 - Verdict (mechanical, per PREREG_H-012): placebo p=0.9703 — a DECISIVE

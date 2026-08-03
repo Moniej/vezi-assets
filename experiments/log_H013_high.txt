@@ -1,0 +1,17 @@
+
+======================================================================
+H-013 / high bucket : configs/h013_size_x_liquidity_high.toml
+======================================================================
+--- stability grid (4 cells) ---
+ rebalance  top_n  excess  sharpe   p_raw                          cell
+ quarterly      8  0.2337   2.272 0.00430   rebalance=quarterly top_n=8
+ quarterly     12  0.1339   2.100 0.03036  rebalance=quarterly top_n=12
+semiannual      8  0.0924   1.612 0.18938  rebalance=semiannual top_n=8
+semiannual     12  0.0384   1.568 0.44207 rebalance=semiannual top_n=12
+plateau: {'n_cells': 4, 'frac_positive_excess': 1.0, 'best_cell_excess': 0.2337, 'median_cell_excess': 0.11315, 'best_minus_median': 0.1205} | significant after Holm: 1/4 | after BH: 1/4
+--- placebo (100 iterations) ---
+{'real_sharpe': 2.272, 'placebo_mean_sharpe': 0.965, 'placebo_p95_sharpe': 1.393, 'placebo_max_sharpe': 1.605, 'placebo_p_value': 0.0099, 'n_iterations': 100}
+--- final single run (base cell, development stage, no walk-forward) ---
+RESULT summary: excess_ann=0.2337 iid_p=0.0043 hac_p=0.02254 placebo_p=0.0099
+
+written: experiments/size_interaction_H-013_high_2026-08-03.json

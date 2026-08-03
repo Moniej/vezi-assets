@@ -337,6 +337,45 @@ def size_scores(con, panel, cfg) -> dict:
     return out
 
 
+def liquidity_scores(con, panel, cfg) -> dict:
+    """{formation_date -> Series(score)} for the Liquidity dimension of an
+    interaction test (Phase R2, 2026-08-03). Score = NEGATIVE standardized
+    trailing 60-day ADTV — panel["adtv60"] is ALREADY computed by
+    load_panel (used today only for capacity_report); this reuses it as-is,
+    no new data. nlargest therefore selects the LEAST-liquid names,
+    consistent with the economic prior that illiquidity commands a return
+    premium (Amihud & Mendelson, 1986) already used to frame this
+    dimension in docs/FACTOR_CANDIDATE_REGISTRY.md. NOT wired into
+    scores_for_method/xs_rank et al — this is a new dimension consumed
+    only by xs_size_interaction below, not a standalone tradeable Liquidity
+    factor method (that remains a separate, not-yet-run candidate)."""
+    s, d = cfg["signal"], cfg["data"]
+    close = panel["close_ff"]
+    adtv60 = panel["adtv60"]
+    dates = close.loc[:d["sim_end"]].index
+    formations = _month_ends(dates)
+    step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
+    formations = formations[::step] if step == 1 else [
+        f for i, f in enumerate(formations) if i % step == 0]
+    iru_rules = universe.load_rules()
+    out = {}
+    for f in formations:
+        if f < pd.Timestamp(d["sim_start"]) or f not in adtv60.index:
+            continue
+        elig = _eligible(con, panel, f, iru_rules,
+                         int(s.get("min_obs_formation", 120)),
+                         int(s.get("lookback_months", 12) * 31))
+        if len(elig) < 10:
+            continue
+        adtv = adtv60.loc[f, elig].dropna()
+        adtv = adtv[adtv > 0]
+        if len(adtv) < 10 or adtv.std() == 0:
+            continue
+        z = (adtv - adtv.mean()) / adtv.std()
+        out[f] = -z          # least liquid -> higher score
+    return out
+
+
 REBALANCE_STEP_MONTHS = {"monthly": 1, "quarterly": 3, "semiannual": 6,
                          "annual": 12}
 
@@ -745,6 +784,92 @@ def regime_gated_targets(con, panel, cfg, scores: dict, bt: dict,
 
 
 # ---------------------------------------------------------------------------
+# Size interaction forensics (Phase R2, 2026-08-03 — H-013/H-014/H-015,
+# docs/PREREG_H013-015_size_interactions.md). Diagnostic decomposition of
+# H-011, NOT a new factor search: does the confirmed Size premium survive
+# a double sort against Liquidity, Momentum, or Volatility, or is it
+# partially/fully explained by one of them? size_scores(), rank_scores(),
+# vol_scores() are called completely UNCHANGED — the only new logic is the
+# bucket split and a bucket-scoped benchmark, mirroring exactly how H-012's
+# regime gate extended this module without touching vol_scores() itself.
+# ---------------------------------------------------------------------------
+
+def interaction_dimension_scores(con, panel, cfg) -> dict:
+    """The interacting (non-size) dimension's scores for
+    signal.interaction_factor in {'liquidity','momentum','volatility'} —
+    each delegates to its own existing, unmodified scoring function."""
+    factor = cfg["signal"]["interaction_factor"]
+    if factor == "liquidity":
+        return liquidity_scores(con, panel, cfg)
+    if factor == "momentum":
+        return rank_scores(con, panel, cfg)
+    if factor == "volatility":
+        return vol_scores(con, panel, cfg)
+    raise ValueError(f"unknown interaction_factor {factor!r}")
+
+
+def interaction_bucket_members(size: dict, x: dict) -> dict:
+    """{formation_date -> {'high': [tickers], 'low': [tickers]}} — median
+    split by the interacting factor's own z-score (as returned by its
+    scoring function; sign convention doesn't matter for a median split),
+    restricted each date to tickers scored by BOTH dimensions that date —
+    the shared population any double sort must draw from."""
+    out = {}
+    for f in sorted(set(size) & set(x)):
+        common = size[f].index.intersection(x[f].index)
+        if len(common) < 10:
+            continue
+        xz = x[f].loc[common]
+        med = xz.median()
+        out[f] = {"high": sorted(xz[xz >= med].index),
+                  "low": sorted(xz[xz < med].index)}
+    return out
+
+
+def targets_from_bucketed_size(size: dict, buckets: dict, bucket: str,
+                               close_index: pd.DatetimeIndex, top_n: int,
+                               lag: int) -> dict:
+    """Within the requested bucket at each date, select the top_n by SIZE
+    score only — H-011's own selection rule (size_scores: higher z =
+    smaller cap; nlargest = smallest names), applied to a pre-filtered
+    sub-population instead of the whole universe."""
+    pos = {dt: i for i, dt in enumerate(close_index)}
+    targets = {}
+    for f, members in buckets.items():
+        if f not in size:
+            continue
+        i = pos.get(f)
+        if i is None or i + lag >= len(close_index):
+            continue
+        names = size[f].index.intersection(members[bucket])
+        sub = size[f].loc[names]
+        if len(sub) < 5:
+            continue
+        sel = sub.nlargest(min(top_n, len(sub)))
+        targets[close_index[i + lag]] = pd.Series(1.0 / len(sel), index=sel.index)
+    return targets
+
+
+def benchmark_targets_bucket(buckets: dict, bucket: str,
+                             close_index: pd.DatetimeIndex, lag: int) -> dict:
+    """EW over ALL members of the requested bucket (not size-filtered) —
+    the bucket-scoped null. Isolates whether being SMALL adds anything
+    BEYOND simply belonging to this liquidity/momentum/volatility half,
+    rather than comparing against the whole-universe EW-IRU benchmark
+    (which would conflate a bucket-level tilt with the size effect
+    itself)."""
+    pos = {dt: i for i, dt in enumerate(close_index)}
+    out = {}
+    for f, members in buckets.items():
+        names = members[bucket]
+        i = pos.get(f)
+        if not names or i is None or i + lag >= len(close_index):
+            continue
+        out[close_index[i + lag]] = pd.Series(1.0 / len(names), index=names)
+    return out
+
+
+# ---------------------------------------------------------------------------
 # entry point used by runner
 # ---------------------------------------------------------------------------
 
@@ -778,6 +903,19 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
         targets, regime_flags = regime_gated_targets(
             con, panel, cfg, scores, bt, close.loc[:d["sim_end"]].index,
             int(p["top_n"]), lag)
+    elif s["method"] == "xs_size_interaction":
+        # H-013/H-014/H-015 (Phase R2): size_scores() and the interacting
+        # dimension's scoring function are BOTH called unmodified; the
+        # benchmark for this method is the BUCKET-scoped one (below), not
+        # the whole-universe `bench` computed above — set after simulate().
+        panel["mcap"] = load_market_cap_panel(close)
+        size = size_scores(con, panel, cfg)
+        xdim = interaction_dimension_scores(con, panel, cfg)
+        buckets = interaction_bucket_members(size, xdim)
+        idx = close.loc[:d["sim_end"]].index
+        targets = targets_from_bucketed_size(
+            size, buckets, s["bucket"], idx, int(p["top_n"]), lag)
+        bucket_bt = benchmark_targets_bucket(buckets, s["bucket"], idx, lag)
     elif s["method"] == "xs_event":
         sels = event_selections(con, panel, cfg, bench.net_returns)
         targets = event_targets(sels, close.loc[d["sim_start"]:d["sim_end"]].index,
@@ -792,6 +930,21 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
                       d["sim_start"], d["sim_end"],
                       bench_net=bench.net_returns)
     result.benchmark_returns = bench.net_returns
+    if s["method"] == "xs_size_interaction":
+        bucket_bench = simulate(close, bucket_bt, rates["buy_rate"],
+                                rates["sell_rate"], d["sim_start"], d["sim_end"])
+        result.benchmark_returns = bucket_bench.net_returns
+        avg_high = sum(len(m["high"]) for m in buckets.values()) / len(buckets)
+        avg_low = sum(len(m["low"]) for m in buckets.values()) / len(buckets)
+        result.attribution = {
+            "size_interaction": {
+                "interaction_factor": s["interaction_factor"],
+                "bucket": s["bucket"],
+                "n_formation_dates": len(buckets),
+                "avg_bucket_size_high": round(avg_high, 1),
+                "avg_bucket_size_low": round(avg_low, 1),
+            }
+        }
     if regime_flags is not None:
         n_stable = sum(1 for v in regime_flags.values() if v)
         result.attribution = {
@@ -947,6 +1100,56 @@ def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
                 con, panel, cfg, sh, bt, idx, int(p["top_n"]), lag)
             placebo.append(sharpe_of(sh_targets))
         return real, placebo
+
+    if s["method"] == "xs_size_interaction":
+        # H-013/H-014/H-015: ONE fixed ticker relabeling per iteration,
+        # applied to BOTH the size score series and the interacting
+        # dimension's score series together (perm[t]'s TRUE size AND TRUE
+        # x-value, jointly) — preserves the real, persistent RELATIONSHIP
+        # between a name's own size and its own liquidity/momentum/vol
+        # history, while randomizing which real return series is paired
+        # with that (size, x) identity. The bucket-scoped benchmark is
+        # rebuilt from the SAME shuffled buckets each iteration, not the
+        # whole-universe one, matching the real run's own comparison.
+        panel["mcap"] = load_market_cap_panel(close)
+        size = size_scores(con, panel, cfg)
+        xdim = interaction_dimension_scores(con, panel, cfg)
+        idx = close.loc[:d["sim_end"]].index
+
+        def bucket_sharpe(size_d, x_d):
+            buckets = interaction_bucket_members(size_d, x_d)
+            tgt = targets_from_bucketed_size(
+                size_d, buckets, s["bucket"], idx, int(p["top_n"]), lag)
+            b_bt = benchmark_targets_bucket(buckets, s["bucket"], idx, lag)
+            if not tgt or not b_bt:
+                return None
+            res = simulate(close, tgt, rates["buy_rate"], rates["sell_rate"],
+                           d["sim_start"], d["sim_end"])
+            res.benchmark_returns = simulate(
+                close, b_bt, rates["buy_rate"], rates["sell_rate"],
+                d["sim_start"], d["sim_end"]).net_returns
+            return _metrics.compute(res, rf)["sharpe_vs_rf"]
+
+        real = bucket_sharpe(size, xdim)
+        all_ticks = sorted({t for sc in size.values() for t in sc.index} |
+                           {t for sc in xdim.values() for t in sc.index})
+        placebo = []
+        for _ in range(n_iter):
+            perm = dict(zip(all_ticks,
+                            [all_ticks[j] for j in
+                             gen.permutation(len(all_ticks))]))
+            sh_size, sh_x = {}, {}
+            for f, sc in size.items():
+                vals = {t: sc[perm[t]] for t in sc.index if perm[t] in sc.index}
+                if len(vals) >= 10:
+                    sh_size[f] = pd.Series(vals)
+            for f, sc in xdim.items():
+                vals = {t: sc[perm[t]] for t in sc.index if perm[t] in sc.index}
+                if len(vals) >= 10:
+                    sh_x[f] = pd.Series(vals)
+            sh_sharpe = bucket_sharpe(sh_size, sh_x)
+            placebo.append(sh_sharpe if sh_sharpe is not None else 0.0)
+        return (real if real is not None else 0.0), placebo
 
     # xs_event: shuffle which of the cohort's events get selected
     sels = event_selections(con, panel, cfg, bench.net_returns)
