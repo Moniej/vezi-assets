@@ -1,0 +1,162 @@
+{
+  "code_fingerprint": "5665817bab49be68",
+  "config_hash": "b93515769ba41c95",
+  "config_json": {
+    "costs": {
+      "brokerage_override_pct": -1.0,
+      "source": "db"
+    },
+    "data": {
+      "benchmark": "EW_IRU",
+      "iru_version": "v2",
+      "min_confidence": 0.9,
+      "requires_coverage_gate": true,
+      "sim_end": "2024-12-31",
+      "sim_start": "2016-01-02",
+      "sources": [
+        "ngx_pricelist_v1",
+        "ngx_dol_v1",
+        "ngx_list2_v1"
+      ],
+      "universe": [],
+      "vintage": "2026-07-21"
+    },
+    "diagnostics": {
+      "params": {},
+      "run": true
+    },
+    "engine": {
+      "aum_ngn": 1000000000.0,
+      "impact_coeff_bps": 15.0,
+      "slippage_bps": 30.0,
+      "type": "cross_sectional"
+    },
+    "experiment": {
+      "hypothesis_id": "H-017",
+      "name": "p4_placebo_shuffled_labels_xs",
+      "seed": 20260804,
+      "stage": "placebo"
+    },
+    "failure_conditions": {
+      "max_single_regime_share": 0.8,
+      "max_single_sector_share": 1.0,
+      "min_median_capacity_ngn": 0.0,
+      "min_oos_sharpe_retention": 0.25,
+      "placebo_alpha": 0.05
+    },
+    "liquidity": {
+      "adtv_participation_cap_pct": 10.0,
+      "adtv_window_days": 60,
+      "enforced": false
+    },
+    "phase4": {
+      "placebo": {
+        "iterations": 100
+      },
+      "regimes": [
+        {
+          "end": "2023-05-31",
+          "name": "pre_float",
+          "stage": "development",
+          "start": "2016-01-02"
+        },
+        {
+          "end": "2024-12-31",
+          "name": "float_shock",
+          "stage": "development",
+          "start": "2023-06-01"
+        },
+        {
+          "end": "2026-06-30",
+          "name": "oos_2025_26",
+          "stage": "final_oos",
+          "start": "2025-01-02"
+        }
+      ],
+      "stability": {
+        "grid": {
+          "portfolio.rebalance": [
+            "quarterly",
+            "semiannual"
+          ],
+          "signal.payer_window_days": [
+            365,
+            545
+          ]
+        }
+      }
+    },
+    "portfolio": {
+      "catalyst_filter": false,
+      "construction": "equal_weight",
+      "execution_lag_days": 1,
+      "impairment_window_months": 12,
+      "rebalance": "quarterly",
+      "top_n": 200
+    },
+    "rng": {
+      "algorithm": "PCG64",
+      "iterations": 100,
+      "seed": 20260804
+    },
+    "signal": {
+      "lookback_months": 12,
+      "method": "xs_payer_status",
+      "min_obs_formation": 120,
+      "min_payers": 10,
+      "payer_window_days": 365
+    },
+    "validation": {
+      "holdout_start": "2025-01-02",
+      "risk_free_annual_pct": 0.0,
+      "use_real_risk_free_rate": false
+    }
+  },
+  "config_path": null,
+  "construction": "equal_weight",
+  "cost_assumptions": {
+    "brokerage_override_pct": -1.0,
+    "source": "db"
+  },
+  "created_at": "2026-08-04T08:01:03+00:00",
+  "experiment_id": "665b337d-6a31-4f7f-ad6e-4af33aff91bd",
+  "git_commit": "8788ab604c0c394be7539429a245bfd3dae6e3e4",
+  "hypothesis_id": "H-017",
+  "liquidity_constraints": {
+    "adtv_participation_cap_pct": 10.0,
+    "adtv_window_days": 60,
+    "enforced": false
+  },
+  "lookbacks_months": {
+    "lookback_months": 12,
+    "min_obs_formation": 120,
+    "min_payers": 10,
+    "payer_window_days": 365
+  },
+  "metrics": {
+    "n_iterations": 100,
+    "placebo_max_sharpe": 1.973,
+    "placebo_mean_sharpe": 1.624,
+    "placebo_p95_sharpe": 1.888,
+    "placebo_p_value": 0.3663,
+    "real_sharpe": 1.692
+  },
+  "min_confidence": 0.9,
+  "notes": "xs placebo (within-date/cohort label shuffle), 100 seeded iterations",
+  "provider": "ngx_pricelist_v1,ngx_dol_v1,ngx_list2_v1",
+  "rebalance": "quarterly",
+  "rng_algorithm": "PCG64",
+  "rng_iterations": 100,
+  "rng_seed": 20260804,
+  "seed": 20260804,
+  "sim_end": "2024-12-31",
+  "sim_start": "2016-01-02",
+  "stage": "placebo",
+  "top_n": 200,
+  "validation_flags": {
+    "counts_as_evidence": false,
+    "placebo_suite": true,
+    "synthetic_data": true
+  },
+  "vintage": "2026-07-21"
+}

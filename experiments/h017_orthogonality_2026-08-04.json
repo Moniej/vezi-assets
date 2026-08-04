@@ -1,0 +1,255 @@
+{
+  "bucket_decomposition": [
+    {
+      "ann_excess": -0.029790849009803888,
+      "hac_p": 0.71623,
+      "hac_t": -0.364,
+      "label": "size_small_half",
+      "n_formations": 27,
+      "sharpe": -0.12993313175334065,
+      "status": "ok"
+    },
+    {
+      "ann_excess": -0.0031092594030903697,
+      "hac_p": 0.96703,
+      "hac_t": -0.041,
+      "label": "size_large_half",
+      "n_formations": 27,
+      "sharpe": -0.014121749105759451,
+      "status": "ok"
+    },
+    {
+      "ann_excess": -0.03085911384618889,
+      "hac_p": 0.68714,
+      "hac_t": -0.403,
+      "label": "liquidity_illiquid_half",
+      "n_formations": 27,
+      "sharpe": -0.14331169045353348,
+      "status": "ok"
+    },
+    {
+      "ann_excess": 0.0018613072781079598,
+      "hac_p": 0.84892,
+      "hac_t": 0.19,
+      "label": "liquidity_liquid_half",
+      "n_formations": 27,
+      "sharpe": 0.06128723811830265,
+      "status": "ok"
+    }
+  ],
+  "correlation_by_date": [
+    {
+      "formation": "2016-03-31",
+      "n_elig": 89,
+      "n_payers": 63,
+      "rho_liquidity": 0.25741454132200964,
+      "rho_size": -0.24551205966130918
+    },
+    {
+      "formation": "2016-06-30",
+      "n_elig": 89,
+      "n_payers": 59,
+      "rho_liquidity": 0.2683115677991283,
+      "rho_size": -0.3404781274140663
+    },
+    {
+      "formation": "2016-09-30",
+      "n_elig": 86,
+      "n_payers": 57,
+      "rho_liquidity": 0.24026850715114775,
+      "rho_size": -0.23036052747481175
+    },
+    {
+      "formation": "2016-12-30",
+      "n_elig": 82,
+      "n_payers": 57,
+      "rho_liquidity": 0.13374253186071677,
+      "rho_size": -0.18074827527619883
+    },
+    {
+      "formation": "2017-03-31",
+      "n_elig": 84,
+      "n_payers": 56,
+      "rho_liquidity": 0.3478688581152043,
+      "rho_size": -0.27496221120483216
+    },
+    {
+      "formation": "2017-06-30",
+      "n_elig": 83,
+      "n_payers": 50,
+      "rho_liquidity": 0.1253608454382791,
+      "rho_size": -0.0945344080354236
+    },
+    {
+      "formation": "2017-09-29",
+      "n_elig": 86,
+      "n_payers": 49,
+      "rho_liquidity": 0.21144633371321522,
+      "rho_size": -0.12724622767081634
+    },
+    {
+      "formation": "2017-12-29",
+      "n_elig": 88,
+      "n_payers": 51,
+      "rho_liquidity": 0.21342286950807857,
+      "rho_size": -0.16992266680579504
+    },
+    {
+      "formation": "2018-03-29",
+      "n_elig": 93,
+      "n_payers": 51,
+      "rho_liquidity": 0.15694867754307482,
+      "rho_size": -0.23099625874288446
+    },
+    {
+      "formation": "2018-06-29",
+      "n_elig": 93,
+      "n_payers": 25,
+      "rho_liquidity": 0.2629064922984202,
+      "rho_size": -0.2936240893367236
+    },
+    {
+      "formation": "2018-09-28",
+      "n_elig": 96,
+      "n_payers": 14,
+      "rho_liquidity": 0.2257916463088988,
+      "rho_size": -0.23218197592141482
+    },
+    {
+      "formation": "2018-12-31",
+      "n_elig": 99,
+      "n_payers": 61,
+      "rho_liquidity": 0.3059869926225142,
+      "rho_size": -0.3132550922097473
+    },
+    {
+      "formation": "2019-03-29",
+      "n_elig": 93,
+      "n_payers": 54,
+      "rho_liquidity": 0.3246860206245482,
+      "rho_size": -0.3311797410370392
+    },
+    {
+      "formation": "2019-06-28",
+      "n_elig": 94,
+      "n_payers": 23,
+      "rho_liquidity": 0.19471173790260024,
+      "rho_size": -0.2603756495137816
+    },
+    {
+      "formation": "2021-09-30",
+      "n_elig": 96,
+      "n_payers": 63,
+      "rho_liquidity": 0.4293539385277447,
+      "rho_size": -0.42064814438248166
+    },
+    {
+      "formation": "2021-12-31",
+      "n_elig": 96,
+      "n_payers": 64,
+      "rho_liquidity": 0.4114600539753075,
+      "rho_size": -0.4250159084667421
+    },
+    {
+      "formation": "2022-03-31",
+      "n_elig": 98,
+      "n_payers": 63,
+      "rho_liquidity": 0.4076442517470079,
+      "rho_size": -0.44904856171207796
+    },
+    {
+      "formation": "2022-06-30",
+      "n_elig": 98,
+      "n_payers": 59,
+      "rho_liquidity": 0.4837974552701648,
+      "rho_size": -0.4427537678876166
+    },
+    {
+      "formation": "2022-09-30",
+      "n_elig": 99,
+      "n_payers": 61,
+      "rho_liquidity": 0.4825378218230141,
+      "rho_size": -0.4817937388286841
+    },
+    {
+      "formation": "2022-12-30",
+      "n_elig": 98,
+      "n_payers": 61,
+      "rho_liquidity": 0.3843188665714522,
+      "rho_size": -0.48547316974556387
+    },
+    {
+      "formation": "2023-03-31",
+      "n_elig": 98,
+      "n_payers": 59,
+      "rho_liquidity": 0.43442284825858674,
+      "rho_size": -0.4849926281971678
+    },
+    {
+      "formation": "2023-06-30",
+      "n_elig": 97,
+      "n_payers": 62,
+      "rho_liquidity": 0.381038176782719,
+      "rho_size": -0.41027792744995784
+    },
+    {
+      "formation": "2023-09-29",
+      "n_elig": 95,
+      "n_payers": 64,
+      "rho_liquidity": 0.38232889916885765,
+      "rho_size": -0.39072097241804177
+    },
+    {
+      "formation": "2023-12-29",
+      "n_elig": 100,
+      "n_payers": 65,
+      "rho_liquidity": 0.40782270315720076,
+      "rho_size": -0.5031828057783967
+    },
+    {
+      "formation": "2024-03-28",
+      "n_elig": 98,
+      "n_payers": 56,
+      "rho_liquidity": 0.43005154429089276,
+      "rho_size": -0.45870478522142655
+    },
+    {
+      "formation": "2024-06-28",
+      "n_elig": 99,
+      "n_payers": 53,
+      "rho_liquidity": 0.3401746698097087,
+      "rho_size": -0.3779659429932965
+    },
+    {
+      "formation": "2024-09-30",
+      "n_elig": 100,
+      "n_payers": 57,
+      "rho_liquidity": 0.2943226513494614,
+      "rho_size": -0.30787535471770583
+    },
+    {
+      "formation": "2024-12-31",
+      "n_elig": 99,
+      "n_payers": 58,
+      "rho_liquidity": 0.2891856284426559,
+      "rho_size": -0.2844143680209661
+    }
+  ],
+  "correlation_summary": {
+    "n_dates": 28,
+    "rho_liquidity": {
+      "frac_abs_ge_0_6": 0.0,
+      "mean": 0.31526168326366466,
+      "median": 0.3153365066235312,
+      "p25": 0.2366492919405855,
+      "p75": 0.4076888645995561
+    },
+    "rho_size": {
+      "frac_abs_ge_0_6": 0.0,
+      "mean": -0.3302944780758918,
+      "median": -0.3222174166233932,
+      "p25": -0.42945037332196073,
+      "p75": -0.24217953872633557
+    }
+  }
+}

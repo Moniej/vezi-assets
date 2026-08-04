@@ -25,6 +25,17 @@ Modes (signal.method):
                ladder. H-016, pre-registered docs/PREREG_H-016_liquidity.md
                (2026-08-03) -- both directions are open questions, neither
                assumed correct in advance.
+  xs_payer_status — dividend payer-status: score = 1.0 for every IRU-
+               eligible name with a real, PIT-known dividend closure
+               within the trailing signal.payer_window_days (default
+               365; data/reference/exdiv_closure_calendar.csv, DOL-
+               derived); non-payers omitted (characteristic-membership
+               screen, not a rank). Long ALL eligible payers, equal-
+               weighted (Fama & French 2001 convention), via
+               signal.top_n set above the IRU cap. H-017, pre-registered
+               docs/PREREG_H-017_dividend_payer_status.md (2026-08-04) --
+               mandatory orthogonality check against Size and Liquidity
+               required before any positive result is interpreted.
   xs_event   — event book: pre-registered event set -> reaction-ranked
                selections enter at a fixed lag, hold a fixed number of
                sessions, sized 1/max_concurrent of NAV each; residual NAV
@@ -346,6 +357,71 @@ def size_scores(con, panel, cfg) -> dict:
     return out
 
 
+PAYER_CAL_PATH = PKG_ROOT / "data" / "reference" / "exdiv_closure_calendar.csv"
+
+
+def _load_payer_calendar() -> pd.DataFrame:
+    """PIT-safe dividend-closure calendar (real, DOL-derived — NOT the
+    synthetic-fixture-only `corporate_actions` table). first_seen = the
+    earliest Daily Official List that publicly showed the closure date
+    (scripts/build_exdiv_calendar.py's own PIT guarantee); used as the
+    knowability cutoff below, never closure_date itself."""
+    cal = pd.read_csv(PAYER_CAL_PATH, parse_dates=["closure_date", "first_seen"])
+    chain = universe.rename_chain()
+    cal["symbol"] = cal["symbol"].map(lambda t: chain.get(t, t))
+    return cal
+
+
+def payer_status_scores(con, panel, cfg) -> dict:
+    """{formation_date -> Series(1.0)} for xs_payer_status (H-017,
+    docs/PREREG_H-017_dividend_payer_status.md). payer=1.0 iff at least
+    one (symbol, closure_date) pair has closure_date within the trailing
+    signal.payer_window_days (default 365) of the formation date AND
+    first_seen <= formation date (PIT-safe). Non-payers are OMITTED from
+    the returned Series entirely — this is a characteristic-MEMBERSHIP
+    screen, not a ranked score. Combined with a signal.top_n set above
+    the IRU's own 100-member cap in the executable config,
+    targets_from_scores() selects the WHOLE eligible-payer set every
+    formation date (Fama & French 2001 characteristic-portfolio
+    convention), not a fixed-N rank subset — targets_from_scores() and
+    simulate() are reused completely unmodified.
+
+    Requires >= signal.min_payers (default 10, the platform's standard
+    breadth floor) eligible payers, else the formation date is skipped.
+    This is the SAME generic rule every other xs_* method uses for
+    len(elig)<10 — it mechanically excludes the 2019-09/2021-06 DOL
+    ex-div coverage gap documented in PREREG_H-017 Section 6 without a
+    hand-picked date carve-out."""
+    s, d = cfg["signal"], cfg["data"]
+    close = panel["close_ff"]
+    dates = close.loc[:d["sim_end"]].index
+    formations = _month_ends(dates)
+    step = REBALANCE_STEP_MONTHS[cfg["portfolio"]["rebalance"]]
+    formations = formations[::step] if step == 1 else [
+        f for i, f in enumerate(formations) if i % step == 0]
+    iru_rules = universe.load_rules()
+    cal = _load_payer_calendar()
+    window = pd.Timedelta(days=int(s.get("payer_window_days", 365)))
+    min_payers = int(s.get("min_payers", 10))
+    out = {}
+    for f in formations:
+        if f < pd.Timestamp(d["sim_start"]):
+            continue
+        elig = _eligible(con, panel, f, iru_rules,
+                         int(s.get("min_obs_formation", 120)),
+                         int(s.get("lookback_months", 12) * 31))
+        if len(elig) < 10:
+            continue
+        known = cal[cal.first_seen <= f]
+        recent = known[(known.closure_date > f - window) &
+                       (known.closure_date <= f)]
+        payers = set(recent.symbol.unique()) & set(elig)
+        if len(payers) < min_payers:
+            continue
+        out[f] = pd.Series(1.0, index=sorted(payers))
+    return out
+
+
 def liquidity_scores(con, panel, cfg) -> dict:
     """{formation_date -> Series(score)} for the Liquidity dimension of an
     interaction test (Phase R2, 2026-08-03). Score = NEGATIVE standardized
@@ -452,6 +528,8 @@ def scores_for_method(con, panel, cfg) -> dict:
         return size_scores(con, panel, cfg)
     if method == "xs_liquidity":
         return xs_liquidity_scores(con, panel, cfg)
+    if method == "xs_payer_status":
+        return payer_status_scores(con, panel, cfg)
     raise ValueError(f"scores_for_method: unsupported method {method!r}")
 
 
@@ -954,7 +1032,8 @@ def run_from_config(con, cfg, rates) -> tuple[XSResult, dict, float]:
                      d["sim_start"], d["sim_end"])
 
     regime_flags = None
-    if s["method"] in ("xs_rank", "xs_vol", "xs_size", "xs_liquidity"):
+    if s["method"] in ("xs_rank", "xs_vol", "xs_size", "xs_liquidity",
+                       "xs_payer_status"):
         if s["method"] == "xs_size":
             panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)
@@ -1107,7 +1186,8 @@ def placebo_stats(con, cfg, rates, n_iter: int, gen) -> tuple[float, list]:
         res.benchmark_returns = bench.net_returns
         return _metrics.compute(res, rf)["sharpe_vs_rf"]
 
-    if s["method"] in ("xs_rank", "xs_vol", "xs_size", "xs_liquidity"):
+    if s["method"] in ("xs_rank", "xs_vol", "xs_size", "xs_liquidity",
+                       "xs_payer_status"):
         if s["method"] == "xs_size":
             panel["mcap"] = load_market_cap_panel(close)
         scores = scores_for_method(con, panel, cfg)

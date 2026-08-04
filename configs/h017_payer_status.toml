@@ -1,0 +1,89 @@
+# H-017 — Dividend Payer-Status. Executable encoding of
+# docs/PREREG_H-017_dividend_payer_status.md (frozen 2026-08-04). Any
+# change after first results = new hypothesis ID.
+
+[experiment]
+name = "h017_payer_status"
+hypothesis_id = "H-017"
+stage = "development"
+seed = 20260804
+
+[data]
+sim_start = "2016-01-02"
+sim_end = "2024-12-31"
+sources = ["ngx_pricelist_v1", "ngx_dol_v1", "ngx_list2_v1"]
+min_confidence = 0.9
+vintage = "2026-07-21"
+requires_coverage_gate = true
+iru_version = "v2"
+universe = []
+benchmark = "EW_IRU"
+
+[signal]
+method = "xs_payer_status"
+min_obs_formation = 120
+lookback_months = 12
+payer_window_days = 365            # base cell; grid also tests 545
+min_payers = 10                    # breadth floor -- mechanically
+                                    # excludes the 2019-09/2021-06
+                                    # DOL coverage gap (PREREG_H-017 S6)
+
+[portfolio]
+top_n = 200                        # above the IRU's own 100-member cap
+                                    # -- never binds; selects ALL
+                                    # eligible payers (characteristic
+                                    # portfolio, not a rank portfolio)
+rebalance = "quarterly"             # base
+execution_lag_days = 1
+construction = "equal_weight"
+
+[costs]
+source = "db"
+
+[liquidity]
+adtv_participation_cap_pct = 10.0
+adtv_window_days = 60
+
+[validation]
+holdout_start = "2025-01-02"
+risk_free_annual_pct = 0.0
+
+[engine]
+type = "cross_sectional"
+aum_ngn = 1e9
+
+[rng]
+algorithm = "PCG64"
+seed = 20260804
+
+[failure_conditions]
+placebo_alpha = 0.05
+max_single_regime_share = 0.8
+min_oos_sharpe_retention = 0.25
+max_single_sector_share = 1.0
+
+[phase4]
+[phase4.stability.grid]
+"portfolio.rebalance" = ["quarterly", "semiannual"]
+"signal.payer_window_days" = [365, 545]
+
+[phase4.placebo]
+iterations = 100
+
+[[phase4.regimes]]
+name = "pre_float"
+stage = "development"
+start = "2016-01-02"
+end = "2023-05-31"
+
+[[phase4.regimes]]
+name = "float_shock"
+stage = "development"
+start = "2023-06-01"
+end = "2024-12-31"
+
+[[phase4.regimes]]
+name = "oos_2025_26"
+stage = "final_oos"
+start = "2025-01-02"
+end = "2026-06-30"

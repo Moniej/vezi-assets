@@ -97,6 +97,19 @@ Capacity Validation section (a filter-ladder robustness check for
 whichever leg might have confirmed) was not run, since neither leg
 cleared confirmation.
 
+**Dividend Payer-Status factor test (H-017, added 2026-08-04)**: a new
+`payer_status_scores()` and `xs_payer_status` signal method (additive,
+reuses `targets_from_scores`/`simulate`/the placebo scheme unchanged) —
+the first characteristic-MEMBERSHIP test on this platform (long ALL
+eligible payers, not a top-N rank selection), using the real DOL-derived
+`data/reference/exdiv_closure_calendar.csv`. **Rejected, cleanly** — 0/4
+grid cells positive, placebo p=0.366, untouched final-OOS excess -12.2%.
+A mandatory orthogonality assessment against Size and Liquidity
+(Spearman correlation every formation date, plus a bucket decomposition)
+found the base effect was never positive to begin with in any subset —
+classified as a genuine null result, not a construct-validity failure.
+Full derivation: `docs/H017_DIVIDEND_PAYER_STATUS_REPORT_2026-08-04.md`.
+
 ## 3. Factor Library — LIVE (structure), EMPTY (contents, by design)
 
 `docs/FACTOR_REGISTRY.md` — the permanent knowledge base. Every completed

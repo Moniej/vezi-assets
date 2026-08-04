@@ -184,6 +184,40 @@ H-012 moved to Rejected, 2026-08-02)*
 
 ## Rejected — per-stock era
 
+### H-017 — Dividend Payer-Status (family: Dividend, first standalone test) — REJECTED 2026-08-04
+- **Genuinely new hypothesis** — binary payer/non-payer characteristic
+  tilt (not yield magnitude, which remains closed for data reasons).
+  Full derivation: `docs/H017_DIVIDEND_PAYER_STATUS_REPORT_2026-08-04.md`.
+  Pre-registration: `docs/PREREG_H-017_dividend_payer_status.md`.
+- **Clean, non-marginal rejection.** 0/4 stability-grid cells positive
+  (best -2.34%, worst -5.22%); gross excess essentially zero (+0.02%) —
+  no real gross signal existed to be eliminated by costs. Placebo
+  p=0.366 (real Sharpe 1.692 sits below the placebo mean 1.624, well
+  inside the null distribution). HAC p=0.289. 0/4 cells survive Holm or
+  BH. Untouched final-OOS (2025-26) excess -12.2%, the worst of any
+  regime; `single_regime_dependency` triggered (float_shock = 100% of
+  positive excess). DSR=0.018, below the pool's own chance-benchmark
+  Sharpe of 0.082. Confidence rating: Low (4/12).
+- **Mandatory orthogonality check against Size and Liquidity (both
+  reported regardless of the base result, per pre-registration):**
+  Spearman ρ vs. Size mean -0.33, vs. Liquidity mean +0.32 — both real,
+  directionally as predicted (payers skew larger/more liquid), but
+  moderate, never crossing the pre-registered \|ρ\|≥0.6 threshold at any
+  formation date. Bucket decomposition (small/large size,
+  illiquid/liquid halves) shows uniformly null excess in all four
+  buckets (HAC p 0.69-0.97). **Classified as a genuine null result, not
+  a construct-validity failure explained by Size or Liquidity** — the
+  effect was never positive to begin with, in any subset.
+- **Not a capacity failure** — median capacity ₦460.75M, well above
+  H-011's illiquid-name constraint; `capacity_below_minimum` did not
+  fire. A pure signal-quality rejection.
+- **A data-quality erratum was caught and disclosed during this
+  hypothesis's own pre-registration**: `corporate_actions`'s 31 rows
+  were previously (incorrectly) characterized as real dividend data in
+  `docs/METHODOLOGY_HARDENING_2026-08-04.md`; they are entirely
+  synthetic test fixtures. The real source used throughout
+  (`data/reference/exdiv_closure_calendar.csv`) was unaffected.
+
 ### H-016 — Liquidity (family: Liquidity, first and only standalone test) — REJECTED 2026-08-03
 - **Genuinely new, standalone factor test** — not an extension or
   forensic decomposition of H-011. Tested whether a whole-universe
