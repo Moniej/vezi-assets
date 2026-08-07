@@ -75,7 +75,16 @@ CREATE TABLE IF NOT EXISTS securities (
                                                -- rows: they are the survivorship-bias defense.
     delisting_reason TEXT,                     -- 'voluntary','regulatory','merger','nationalised',...
     sector_ngx    TEXT,                        -- NGX's own sector classification label
-    notes         TEXT
+    notes         TEXT,
+    -- Added 2026-08-04, MC-001 (docs/MULTI_CURRENCY_FINANCIAL_ARCHITECTURE_
+    -- REVIEW_2026-08-04.md): the currency this company's own FINANCIAL
+    -- STATEMENTS are reported in -- independent of trading currency, which
+    -- is always NGN for every NGX-listed security and needs no column.
+    -- Nullable by design: set only where directly confirmed (e.g.
+    -- AIRTELAFRI='USD', a UK-incorporated dual LSE/NGX listing); NULL means
+    -- no claim has been made, not an assumed NGN default. For a pre-existing
+    -- database this column is added via db.py's init_db() ALTER TABLE call.
+    reporting_currency TEXT CHECK (reporting_currency IS NULL OR reporting_currency GLOB '[A-Z][A-Z][A-Z]')
 );
 
 -- ----------------------------------------------------------------------------
@@ -439,7 +448,18 @@ CREATE TABLE IF NOT EXISTS extracted_facts (
     prompt_version        TEXT,               -- NULL for regex/manual
     grounding_check        TEXT NOT NULL DEFAULT 'not_run'
                              CHECK (grounding_check IN ('not_run','passed','failed','overridden')),
-    extracted_at          TEXT NOT NULL
+    extracted_at          TEXT NOT NULL,
+    -- Added 2026-08-04, MC-001 (docs/MULTI_CURRENCY_FINANCIAL_ARCHITECTURE_
+    -- REVIEW_2026-08-04.md): the currency numeric_value is denominated in.
+    -- Nullable at the schema level (a NULL is treated as "unknown", never
+    -- as an implicit NGN match, by financial_ratios.py's same-currency
+    -- guard) but required in practice by every write path going forward
+    -- (src/ngxrot/documents/extract.py defaults to the security's own
+    -- reporting_currency, falling back to 'NGN' only because every fact
+    -- written before this column existed was independently confirmed
+    -- NGN-denominated at backfill time). For a pre-existing database this
+    -- column is added via db.py's init_db() ALTER TABLE call.
+    currency               TEXT CHECK (currency IS NULL OR currency GLOB '[A-Z][A-Z][A-Z]')
 );
 CREATE INDEX IF NOT EXISTS ix_extracted_facts_doc ON extracted_facts (doc_id);
 CREATE INDEX IF NOT EXISTS ix_extracted_facts_type ON extracted_facts (fact_type);

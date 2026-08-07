@@ -63,6 +63,24 @@ def extract_document(con, provider: LLMProvider, doc_id: int,
     if row is None:
         raise ValueError(f"doc_id {doc_id} not found in documents")
     ticker, raw_symbol, doc_type, filing_date, text_path, source_confidence = row
+
+    # MC-001 (2026-08-04, docs/MULTI_CURRENCY_FINANCIAL_ARCHITECTURE_
+    # REVIEW_2026-08-04.md): reporting currency for facts drawn from this
+    # document. securities.reporting_currency is authoritative when set
+    # (populated only where directly confirmed, e.g. AIRTELAFRI='USD');
+    # 'NGN' is the sole fallback because every fact ever extracted before
+    # this column existed was independently confirmed NGN-denominated at
+    # backfill time -- this default changes no existing behavior, it only
+    # makes an assumption that was always implicit into an explicit,
+    # overridable one.
+    fact_currency = "NGN"
+    if ticker:
+        rc = con.execute(
+            "SELECT reporting_currency FROM securities WHERE ticker=?",
+            (ticker,)).fetchone()
+        if rc and rc[0]:
+            fact_currency = rc[0]
+
     if not text_path:
         raise ValueError(f"doc_id {doc_id} has no extracted text (Phase A "
                          f"extraction_method is not 'native') — cannot run "
@@ -125,13 +143,13 @@ def extract_document(con, provider: LLMProvider, doc_id: int,
             "INSERT INTO extracted_facts (doc_id, fact_type, description, "
             "numeric_value, qualification_date, payment_date, agm_date, "
             "closure_date, evidence_id, extraction_confidence, model_id, "
-            "prompt_version, grounding_check, extracted_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "prompt_version, grounding_check, extracted_at, currency) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (doc_id, fact_type, fact.get("description", ""), fact.get("numeric_value"),
              fact.get("qualification_date"), fact.get("payment_date"),
              fact.get("agm_date"), fact.get("closure_date"), evidence_id,
              extraction_confidence, resp.model_id, DRAFT_PROMPT_VERSION,
-             grounding_status, as_of)).lastrowid
+             grounding_status, as_of, fact_currency)).lastrowid
         result.fact_ids.append(fact_id)
 
         for i, step in enumerate(fact.get("causal_chain", [])):

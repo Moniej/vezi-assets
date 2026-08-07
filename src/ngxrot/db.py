@@ -167,6 +167,22 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
         con.execute("ALTER TABLE llm_calls ADD COLUMN document_hash TEXT")
     except sqlite3.OperationalError:
         pass
+    # additive migration, 2026-08-04, MC-001 (docs/MULTI_CURRENCY_FINANCIAL_
+    # ARCHITECTURE_REVIEW_2026-08-04.md). Both nullable, no existing row is
+    # affected -- schema.sql's CREATE TABLE IF NOT EXISTS already carries
+    # these for a fresh database; this covers a database that already has
+    # extracted_facts/securities from before this change (same try/except
+    # OperationalError pattern as every other ALTER in this function).
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN currency TEXT "
+                    "CHECK (currency IS NULL OR currency GLOB '[A-Z][A-Z][A-Z]')")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        con.execute("ALTER TABLE securities ADD COLUMN reporting_currency TEXT "
+                    "CHECK (reporting_currency IS NULL OR reporting_currency GLOB '[A-Z][A-Z][A-Z]')")
+    except sqlite3.OperationalError:
+        pass
     con.executescript((SCHEMA_DIR / "schema.sql").read_text(encoding="utf-8"))
     if seed:
         con.executescript((SCHEMA_DIR / "seed_reference.sql").read_text(encoding="utf-8"))

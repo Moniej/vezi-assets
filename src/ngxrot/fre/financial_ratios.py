@@ -75,12 +75,19 @@ def _periods_for_ticker(con: sqlite3.Connection, ticker: str) -> list[tuple[str,
 
 
 def _fact_for(con: sqlite3.Connection, ticker: str, fact_type: str,
-              period_start: str, period_end: str) -> tuple[int, float, str | None] | None:
-    """Returns (fact_id, numeric_value, confidence_tier) for the unique fact
-    matching ticker/fact_type/exact-period, or None if it doesn't exist."""
+              period_start: str, period_end: str
+              ) -> tuple[int, float, str | None, str | None] | None:
+    """Returns (fact_id, numeric_value, confidence_tier, currency) for the
+    unique fact matching ticker/fact_type/exact-period, or None if it
+    doesn't exist. `currency` added MC-001 (2026-08-04,
+    docs/MULTI_CURRENCY_FINANCIAL_ARCHITECTURE_REVIEW_2026-08-04.md
+    Section 7 rule 2) -- every existing fact backfilled to 'NGN'; may be
+    NULL only for a fact written before this column existed and never
+    backfilled, which the same-currency guard below treats as unknown,
+    not as a silent match."""
     rows = con.execute(
-        "SELECT f.fact_id, f.numeric_value, f.confidence_tier FROM extracted_facts f "
-        "JOIN documents d ON d.doc_id = f.doc_id "
+        "SELECT f.fact_id, f.numeric_value, f.confidence_tier, f.currency "
+        "FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
         "WHERE d.ticker = ? AND f.fact_type = ? AND f.period_start = ? AND f.period_end = ? "
         "AND f.numeric_value IS NOT NULL",
         (ticker, fact_type, period_start, period_end),
@@ -126,8 +133,33 @@ def compute_ratios_for_ticker(con: sqlite3.Connection, ticker: str) -> list[Rati
                 ))
                 continue
 
-            num_id, num_value, num_tier = numerator
-            den_id, den_value, den_tier = denominator
+            num_id, num_value, num_tier, num_ccy = numerator
+            den_id, den_value, den_tier, den_ccy = denominator
+
+            # MC-001 (2026-08-04): same-currency guard. A single ticker's
+            # own filing is always one currency, so this has never fired on
+            # real data -- added as a defensive invariant now that a
+            # foreign-currency reporter (AIRTELAFRI) exists on the
+            # platform, per docs/MULTI_CURRENCY_FINANCIAL_ARCHITECTURE_
+            # REVIEW_2026-08-04.md Section 7 rule 2. NULL currency (a fact
+            # written before this column existed and never backfilled) is
+            # treated as unknown, not as an implicit match.
+            if num_ccy is None or den_ccy is None or num_ccy != den_ccy:
+                results.append(RatioResult(
+                    ticker=ticker, metric=metric, status="insufficient_data",
+                    period_start=period_start, period_end=period_end,
+                    value_numeric=None, confidence_tier=None, method=method,
+                    limitations=(
+                        f"Numerator ({num_type}, currency={num_ccy!r}) and denominator "
+                        f"({den_type}, currency={den_ccy!r}) do not share a confirmed "
+                        f"common currency -- ratio would be meaningless without an "
+                        f"explicit conversion, which this module does not perform. "
+                        f"Not computed."
+                    ),
+                    input_fact_ids=input_fact_ids,
+                ))
+                continue
+
             if den_value == 0:
                 results.append(RatioResult(
                     ticker=ticker, metric=metric, status="insufficient_data",
