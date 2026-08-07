@@ -62,3 +62,7 @@ logs/
 .idea/
 .DS_Store
 Thumbs.db
+
+# SQLite backup files
+data/*.sqlite*
+data/ngx.sqlite.pre_*
