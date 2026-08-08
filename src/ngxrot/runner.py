@@ -231,9 +231,17 @@ def run_resolved(cfg: dict, label: str = "", config_path: str | None = None,
             # nested diagnostics dict, not flat numeric costs — do not
             # apply the same {k: round(v,5)} transform to it).
             m["attribution"] = result.attribution
+        # Stage 1 / A-2 (2026-08-08): the cross-sectional engine's own
+        # sector_contribution is already keyed by TICKER, not sector (see
+        # XSResult's field comment) — reused here, honestly relabeled, as
+        # the new single_name_dependency check's input. The `full` engine
+        # branch below does NOT get this (its sector_contribution is
+        # genuinely per-sector), so it correctly stays "not evaluable"
+        # rather than being fed the wrong granularity.
         fc_eval = failure_conditions.evaluate(
             cfg["failure_conditions"], m, capacity,
-            result.sector_contribution, phase4_evidence)
+            result.sector_contribution, phase4_evidence,
+            name_contribution=result.sector_contribution)
     elif cfg["engine"]["type"] == "full":
         result = engine_full.run_full(con, cfg)
         m = metrics.compute(result, v["risk_free_annual_pct"],

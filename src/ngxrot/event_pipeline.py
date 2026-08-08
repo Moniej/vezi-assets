@@ -11,8 +11,13 @@ table. Enforces, per batch:
                 flagged; nothing dated after the batch as_of is accepted;
   unknowns    — missing effective dates/directions stay NULL/'unknown'.
                 The pipeline never infers, backfills, or fabricates;
-  duplicates  — same (event_type, announced_date, scope, index_code) within
-                the batch or already in the DB from the same source;
+  duplicates  — same (event_type, announced_date, scope, index_code, ticker)
+                within the batch or already in the DB from the same source
+                (ticker added 2026-08-08 — see Stage 10D: a scope='ticker'
+                batch with two DIFFERENT companies sharing an event_type/
+                announced_date previously collided without it; NULL for
+                every market/sector-scope row, so this is a no-op for
+                every event source used before that fix);
   conflicts   — same natural key already in the DB from a DIFFERENT source
                 with different effective_date or direction: both rows are
                 preserved (PIT append-only), the conflict is logged and
@@ -111,7 +116,20 @@ def validate_batch(df: pd.DataFrame, con, as_of: str,
                                  f"announced_date {ann}")
 
     # duplicates within batch
-    key = ["event_type", "announced_date", "scope", "index_code"]
+    # Stage 10D (2026-08-08) fix: "ticker" added to the natural key. Every
+    # prior use of this pipeline (CBN/MPC events) was scope='market' or
+    # scope='sector', where ticker is NULL on every row and index_code
+    # already differentiated rows -- adding a column that is uniformly NULL
+    # for those rows is a no-op (pandas' duplicated() treats NaN==NaN), so
+    # this is additive and does not change behavior for any event source
+    # used before this fix. The bug it fixes: a scope='ticker' batch with
+    # TWO DIFFERENT companies sharing the same (event_type, announced_date)
+    # — e.g. two insurers suspended by NGX the same day for the same reason
+    # — previously collided on the old 4-column key and the second ticker's
+    # real, distinct event was rejected as a false-positive "duplicate"
+    # (found live, Stage 10D, docs/STAGE10D_FSI_NEWS_INTEGRATION_2026-08-08.md
+    # Section 5.1).
+    key = ["event_type", "announced_date", "scope", "index_code", "ticker"]
     have = [k for k in key if k in df.columns]
     dup = df.duplicated(subset=have, keep="first")
     for i in df.index[dup & ~drop]:
@@ -121,13 +139,18 @@ def validate_batch(df: pd.DataFrame, con, as_of: str,
     # duplicates / conflicts vs existing DB
     existing = pd.read_sql(
         "SELECT e.event_type, e.event_uid, e.announced_date, e.scope, "
-        "e.index_code, e.effective_date, e.direction, e.outcome_numeric, "
-        "e.headline, s.name AS src "
+        "e.index_code, e.ticker, e.effective_date, e.direction, "
+        "e.outcome_numeric, e.headline, s.name AS src "
         "FROM events e JOIN sources s USING (source_id)", con)
     for i, r in df[~drop].iterrows():
+        # ticker compared via fillna('') on both sides, same NaN-safe
+        # pattern already used below for effective_date/direction —  a
+        # bare == on two NaN/None ticker values (market/sector-scope rows)
+        # would otherwise evaluate False and silently skip real matches.
         m = existing[(existing.event_type == r.get("event_type"))
                      & (existing.announced_date == r.get("announced_date"))
-                     & (existing.scope == r.get("scope"))]
+                     & (existing.scope == r.get("scope"))
+                     & (existing.ticker.fillna("") == str(r.get("ticker") or ""))]
         if m.empty:
             continue
         ref = f"{r.get('event_type')}@{r.get('announced_date')}"
@@ -143,10 +166,26 @@ def validate_batch(df: pd.DataFrame, con, as_of: str,
                             f"in-place; resolve the legacy rows first")
                     drop[i] = True
                     continue
+                # NaN-safe numeric equality: astype(float).round(4) == round(x or 0, 4)
+                # previously treated a stored NULL as 0, so NaN == 0 was always False
+                # and a verbatim resubmission of a NULL-outcome event (e.g. a
+                # qualitative regulatory_action with no numeric outcome) could never
+                # match "identical" and fell through to RESTATEMENT instead of REJECT
+                # (found Stage 10E, docs/STAGE10E_EVENT_IDENTITY_AND_NEWS_INGESTION_
+                # INTEGRITY_2026-08-08.md §9). Both-NULL now compares equal; one-NULL
+                # compares unequal; both-numeric compares as before (rounded to 4dp).
+                new_outcome = r.get("outcome_numeric")
+                new_is_null = new_outcome is None or pd.isna(new_outcome)
+
+                def _outcome_matches(v, new_outcome=new_outcome, new_is_null=new_is_null):
+                    v_is_null = v is None or pd.isna(v)
+                    if v_is_null or new_is_null:
+                        return v_is_null and new_is_null
+                    return round(float(v), 4) == round(float(new_outcome), 4)
+
                 identical = prior_uid[
                     (prior_uid.headline == r.get("headline"))
-                    & (prior_uid.outcome_numeric.astype(float).round(4)
-                       == round(float(r.get("outcome_numeric") or 0), 4))]
+                    & prior_uid.outcome_numeric.apply(_outcome_matches)]
                 if len(identical):
                     rep.add("REJECT", ref, "already ingested from this source "
                                            "with identical payload")

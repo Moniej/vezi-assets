@@ -1,0 +1,31 @@
+# Core dependencies for the NGX rotation research platform (src/ngxrot,
+# scripts/ excluding scripts/lim/). Pinned to the versions verified working
+# in this environment.
+#
+# Setup for a fresh machine:
+#   1. Python 3.11+ required (the codebase uses stdlib `tomllib`, added in
+#      3.11). Developed/tested on 3.14.3 — anything 3.11+ should work.
+#   2. python -m venv .venv && source .venv/bin/activate   (or .venv\Scripts\activate on Windows)
+#   3. pip install -r requirements.txt
+#   4. There is no setup.py/pyproject.toml yet — the package is not
+#      `pip install`-able as-is. Run everything with `src/` on PYTHONPATH,
+#      e.g.: PYTHONPATH=src python scripts/ledger_cli.py list
+#      (PowerShell: $env:PYTHONPATH="src"; python scripts\ledger_cli.py list)
+#   5. If using the Gemini-backed FSI/document pipeline, set GEMINI_API_KEY
+#      (or GOOGLE_API_KEY) in the environment — see
+#      src/ngxrot/documents/llm_providers.py.
+#
+# The local model fine-tuning/training subsystem (src/ngxrot/lim/,
+# scripts/lim/) has its own, separate, heavier dependency set (torch,
+# transformers, peft, unsloth, psutil) — see lim_training/requirements.lock.txt.
+# Not duplicated here so that day-to-day quant research work doesn't require
+# installing a full GPU/ML training stack.
+
+numpy==2.4.2
+pandas==2.3.3
+scipy==1.17.0
+requests==2.32.5
+tenacity==9.1.4
+pdfplumber==0.11.9
+pypdf==6.14.2
+google-genai==2.13.0

@@ -1,0 +1,80 @@
+{
+  "generated": "2026-08-08",
+  "stage": "10B",
+  "note": "Machine-readable form of docs/STAGE10A_NEWS_ARCHITECTURE_AND_SOURCE_AUDIT_2026-08-08.md Section 3 plus docs/STAGE10B_SOURCE_FEASIBILITY_WITH_MARKETFORCES_2026-08-08.md. One access-policy mistake occurred and is disclosed: dmarketforces.com/feed was fetched once before its robots.txt (which disallows /feed/) was checked; not repeated; all MarketForces findings below derive from permitted WebSearch/robots.txt checks only, not the disallowed feed.",
+  "sources": [
+    {
+      "source": "Reuters",
+      "ngx_coverage": "macro/index-level only; no micro-cap evidence found",
+      "historical_depth": "unknown - robots.txt not fetchable",
+      "timestamp_quality": "not evaluated - inaccessible",
+      "structured_access": "none public; Refinitiv/LSEG enterprise only",
+      "permitted_automated_access": false,
+      "access_basis": "WebSearch confirms Reuters defaults to blocking AI crawlers since May 2026, allowlisting only Amazon/Google/Bing/OpenAI",
+      "cost": "enterprise/paid (Refinitiv)",
+      "h011_coverage_count_of_20": 0,
+      "verdict": "NOT VIABLE"
+    },
+    {
+      "source": "Bloomberg",
+      "ngx_coverage": "quote/profile pages exist for larger H-011-adjacent names; no confirmed original articles on any H-011 ticker",
+      "historical_depth": "unknown",
+      "timestamp_quality": "not evaluated",
+      "structured_access": "none public; Terminal/enterprise only",
+      "permitted_automated_access": false,
+      "access_basis": "robots.txt fetched directly this session: explicit Disallow for AI/LLM bots (Claude-Web, GPTBot, anthropic-ai) across entire site except /professional, /company, /latam, /faq, /tc",
+      "cost": "enterprise/Terminal (paid)",
+      "h011_coverage_count_of_20": 0,
+      "verdict": "NOT VIABLE"
+    },
+    {
+      "source": "Financial Times",
+      "ngx_coverage": "not tested - assumed minimal to none given pattern of Reuters/Bloomberg",
+      "historical_depth": "unknown",
+      "timestamp_quality": "not evaluated",
+      "structured_access": "none public; licensed data products only",
+      "permitted_automated_access": false,
+      "access_basis": "robots.txt not fetchable this session; paywalled subscription product by design, treated as a hard access barrier absent evidence otherwise",
+      "cost": "subscription/enterprise",
+      "h011_coverage_count_of_20": 0,
+      "verdict": "NOT VIABLE"
+    },
+    {
+      "source": "BusinessDay Nigeria",
+      "ngx_coverage": "real NGX coverage exists (not yet quantified against H-011 specifically)",
+      "historical_depth": "unknown - not tested, blocked before evaluation",
+      "timestamp_quality": "unknown - RSS feed returned HTTP 403 on direct fetch this session",
+      "structured_access": "RSS feed exists (businessday.ng/feed) but technically blocked; sitemap_index.xml exists as an alternate path, untested",
+      "permitted_automated_access": "policy-permitted (robots.txt allows), technically blocked in practice (403, likely bot detection)",
+      "access_basis": "robots.txt fetched directly this session: no disallow beyond /wp-login.php, /wp-register.php, search endpoints - RSS/feed path itself is not policy-blocked",
+      "cost": "free (pending access fix)",
+      "h011_coverage_count_of_20": null,
+      "verdict": "CONDITIONAL - resolve technical access via sitemap before evaluating further"
+    },
+    {
+      "source": "Nairametrics",
+      "ngx_coverage": "extensive, ticker-tagged, confirmed directly this session across a majority of H-011's 20 names",
+      "historical_depth": "at least one 2021 example found (Tantalizer); systematic multi-year depth not yet verified",
+      "timestamp_quality": "high - RFC-822 pubDate, second precision, stable WordPress post-id, verified live via RSS fetch",
+      "structured_access": "RSS feed (nairametrics.com/feed) fully functional; per-company tag archive at stocks.nairametrics.com/tag/<company>/ verified live",
+      "permitted_automated_access": true,
+      "access_basis": "robots.txt fetched directly this session: Disallow empty, explicit sitemap reference, no automated-access restriction found",
+      "cost": "free",
+      "h011_coverage_count_of_20": "13-15 (bounded pilot, not exhaustive - see Section 5 for per-ticker detail)",
+      "verdict": "VIABLE - the only source in Stage 10A clearing both the access-policy bar and the H-011-coverage bar"
+    },
+    {
+      "source": "MarketForces Africa (dmarketforces.com)",
+      "ngx_coverage": "extensive - daily market-mover roundups plus individual-company earnings and regulatory articles",
+      "historical_depth": "2022 confirmed for one H-011 name (Caverton H1-2022 earnings article); systematic multi-year depth not verified",
+      "timestamp_quality": "structurally high (WordPress RSS shape observed before the feed was found to be policy-disallowed); not independently re-verified via a permitted path (sitemap/article page) this session",
+      "structured_access": "sitemap_index.xml and news-sitemap.xml exist and are policy-permitted; the RSS feed exists but robots.txt explicitly disallows /feed/, /*/feed/, /tag/*/feed/, /category/*/feed/",
+      "permitted_automated_access": "partial - general pages and sitemaps allowed (Allow: /, Googlebot/Googlebot-News/Bingbot explicitly permitted); feed paths explicitly disallowed; known SEO-scraper bots (AhrefsBot, SemrushBot, MJ12bot) explicitly blocked",
+      "access_basis": "robots.txt fetched directly this session",
+      "cost": "free (via permitted sitemap path)",
+      "h011_coverage_count_of_20": "13 (bounded pilot, not exhaustive - see Stage 10B Section 3 for per-ticker detail)",
+      "novelty_finding": "1 confirmed NOVEL event (REGALINS trading suspension, effective 2025-09-01, absent from the entire existing archive - verified by direct query), 1 likely-NOVEL fundamental data point (CAVERTON H1-2022 profit figure, absent from extracted_facts entirely), several confirmed REDUNDANT price-roundup articles",
+      "verdict": "VIABLE, conditional on using the sitemap (not the disallowed feed) for any systematic collection"
+    }
+  ]
+}

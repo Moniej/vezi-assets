@@ -32,7 +32,20 @@ default_sectors = ["NGXOILGAS"]
 description = "Company corporate events (aggregated to sector where used)"
 types = ["earnings_release", "earnings_deadline", "dividend_declaration",
          "rights_issue", "bonus_issue", "stock_split", "merger", "acquisition",
-         "listing", "delisting", "suspension", "resumption"]
+         "listing", "delisting", "suspension", "resumption",
+         # Stage 10 (2026-08-08, news-event-taxonomy design pass) — additive
+         # leaves for company events that would plausibly be REPORTED by
+         # news outlets before/alongside the formal NGX corporate-action
+         # filing, distinct from the filing-derived types above. Every one
+         # of these already fits this category's existing "ticker" scope
+         # and the event_pipeline.py chronology/dedup machinery unchanged —
+         # no new pipeline code required, only new valid leaves.
+         "management_change", "litigation", "regulatory_action",
+         "regulatory_approval", "capital_raise", "debt_issuance",
+         "debt_default_or_restructuring", "credit_rating_change",
+         "major_contract", "strategic_partnership", "asset_disposal",
+         "corporate_restructuring", "production_disruption",
+         "ownership_change"]
 default_scope = "ticker"
 
 [macro]

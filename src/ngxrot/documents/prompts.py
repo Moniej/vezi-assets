@@ -25,7 +25,19 @@ CRITIQUE_PROMPT_VERSION = "self_critique_v1"
 # SPECIFICATION.md §10): capital_and_balance_sheet fact types, matching
 # Phase B's dividend/rights/bonus ground truth so precision/recall against
 # deterministic facts is actually measurable.
-PILOT_FACT_TYPES = ["dividend", "rights_issue", "bonus_issue"]
+#
+# Stage 10D (2026-08-08) widened this list, additively, ONLY — the original
+# 3 filing-pilot types are untouched, so nothing about the existing 18-fact
+# filing pilot's behavior changes. Root cause of Stage 10C's 0/2 news
+# extraction result: this constant, not the model or the pipeline (see
+# docs/STAGE10D_FSI_NEWS_INTEGRATION_2026-08-08.md Section 1). The 6 added
+# types are exactly financial_statements leaves already in
+# configs/fact_taxonomy.toml (no new taxonomy needed) that news earnings
+# articles actually state -- e.g. CAVERTON's FY2024 article (Stage 10C)
+# gave precise revenue/gross_profit/ebit/ebitda figures the pilot's old
+# 3-type scope could never have returned even though the model read them.
+PILOT_FACT_TYPES = ["dividend", "rights_issue", "bonus_issue",
+                    "revenue", "net_profit", "ebit", "ebitda"]
 
 _DRAFT_SYSTEM_PROMPT = """You are the Financial Reasoning Engine of an institutional equity research \
 platform. You read one corporate filing at a time and produce structured, \

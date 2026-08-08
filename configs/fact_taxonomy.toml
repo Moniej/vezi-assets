@@ -12,9 +12,15 @@ types = ["management_change", "ceo_resignation", "acquisition", "asset_sale",
          "major_contract", "product_launch", "factory_shutdown", "capacity_expansion"]
 
 [capital_and_balance_sheet]
+# Stage 3C (2026-08-08): share_reconstruction added -- distinct mechanism
+# from bonus_issue (share COUNT is REDUCED via consolidation, e.g. "every
+# N shares become 1", the opposite direction of a bonus). NEM, LASACO and
+# TRANSCORP's real, sourced corporate actions are this type, not
+# bonus_issue -- forcing them into bonus_issue would misrepresent the
+# adjustment direction. See docs/STAGE3_EXECUTION_2026-08-08.md Section 4.
 types = ["capital_raise", "share_buyback", "dividend", "rights_issue",
-         "bonus_issue", "private_placement", "debt_change", "cash_change",
-         "capex", "credit_rating_change"]
+         "bonus_issue", "share_reconstruction", "private_placement",
+         "debt_change", "cash_change", "capex", "credit_rating_change"]
 
 [legal_and_regulatory]
 types = ["litigation", "regulation_change", "government_policy", "tax_change"]
@@ -39,7 +45,14 @@ types = ["other"]   # catch-all; a fact landing here is a taxonomy-triage flag, 
 # confidence_tier='derived' (cfo - capex, per configs/financial_ontology
 # .toml's existing definitional edges) -- it is never independently
 # extracted from a stated line, by design.
+#
+# Stage 3B (2026-08-08): cogs, gross_profit -- both already existed as
+# financial_ontology.toml income_statement nodes (component_of edges into
+# gross_profit) but had no extractable fact_type until now. Unlocks
+# Profitability and Gross Profitability (Novy-Marx) IF/once coverage
+# clears the platform's own breadth floor -- see
+# docs/STAGE3_EXECUTION_2026-08-08.md for the coverage result.
 types = ["revenue", "net_profit",
          "assets", "liabilities", "equity",
          "cfo", "cfi", "cff", "capex", "fcf",
-         "ebitda", "ebit"]
+         "ebitda", "ebit", "cogs", "gross_profit"]

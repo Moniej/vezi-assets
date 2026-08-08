@@ -24,3 +24,15 @@ types = ["board_meeting", "agm", "closed_period", "dealing", "governance"]
 [uncategorized]
 description = "Filings not yet assigned a specific type by the classifier"
 types = ["other"]
+
+[news]
+# Stage 10 (2026-08-08) — additive, NOT yet used by any ingestion this
+# session. Per docs/AI_INTELLIGENCE_LAYER_ARCHITECTURE.md's own §4.1
+# design (NewsDocumentProvider, "not yet built"), news documents are
+# source_type='news' (distinct from source_type='filing') and require a
+# news_outlets.reliability_tier lookup before their evidence can reach
+# EVIDENCE_TRUST_TIERS tier 3 ("secondary_reputable") in vocab.py — that
+# table does not exist yet (Stage 10A finding) and must be owner-populated,
+# never inferred by the AI, before this category is used for real ingestion.
+description = "News articles about NGX-listed companies or the market, from external outlets — NOT a primary filing"
+types = ["news_article"]
