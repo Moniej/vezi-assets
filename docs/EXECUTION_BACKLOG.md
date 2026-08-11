@@ -1,4 +1,196 @@
-# Fund Alpha — Execution Backlog (V1 architecture, frozen)
+# Fund Alpha — Execution Backlog
+
+*Originally 2026-07-22, scoped to the frozen V1 quant architecter only.
+**Revised 2026-08-11: re-ranked under the Investment OS reframe** (see
+`README.md`, `docs/FUND_ALPHA_CHARTER.md`, `docs/INVESTMENT_OS_SPECIFICATION.md`).
+The OS-level priority order below is now the top of this document and
+supersedes the ordering of everything after it. The original "Research
+Tasks" / "Engineering Tasks" / "Six-Month Execution Sequence" sections are
+kept as a historical record of the frozen-V1 quant track — several of
+their items (R1/R2 → H-010 rejected, H-011 confirmed; most of E1-E16) have
+since resolved; the current authoritative research status lives in
+`docs/FACTOR_REGISTRY.md` and `HANDOFF.md`, not in this document's dated
+R/E rows. Do not treat an R/E row below as current without cross-checking
+those two files first.*
+
+---
+
+## Current priority order (2026-08-11 — Investment OS reframe)
+
+This supersedes everything below it. Matches
+`docs/FUND_ALPHA_CHARTER.md`'s "Priority test applied to the current
+queue" and `docs/INVESTMENT_OS_SPECIFICATION.md` §49's recommended build
+order — this section is the execution-level detail behind those two
+summaries.
+
+**P1 — Financial-statement dataset (structured, longitudinal)**
+- Description: canonical income statement / balance sheet / cash flow
+  fields per ticker, historical periods (not single-year snapshots), from
+  which growth, margins, ROE, ROIC, leverage, working-capital trends, and
+  FCF conversion can be computed.
+- Why it matters: the #1 platform-wide `CoverageAssessment` gap
+  (`has_financial_statements = false` for essentially every ticker per the
+  last live validation). Unlocks FRE-7 valuation activation (currently
+  architecturally ready but gated) AND the Alpha Engine's Value/Dividend-
+  Yield hypothesis families simultaneously — a single dataset feeding two
+  consumers at once, the platform's own definition of top priority.
+- Dependencies: none blocking; the DOL EPS/dividend parser retry (old E5,
+  below) is a partial, narrower predecessor attempt worth reviewing before
+  re-scoping this from scratch.
+- Engineering effort: HIGH (structured extraction from NGX filings/DOL
+  archives has twice already proven harder than initial estimates — see
+  E5's history below; plan accordingly, don't underscope).
+- Files/modules: new dataset + provider under `src/ngxrot/providers/` or
+  `src/ngxrot/fre/`, schema extension to `schema/schema.sql`.
+- Completion criteria: a stated, tested pass rate against known primary-
+  source anchors, same discipline as every other parser on this platform;
+  `has_financial_statements` flips true for a meaningful, disclosed subset
+  of the 20-ticker validation universe, not silently claimed platform-wide.
+
+**P2 — Secondary-source (news/analyst) ingestion with strict provenance**
+- Description: financial news, industry news, reputable market commentary,
+  regulatory developments — ingested with the same evidence-tier
+  discipline already built (`primary_filing` > `secondary_reputable` >
+  `ai_derived_or_ungrounded`), not blindly trusted.
+- Why it matters: the #2 platform-wide coverage gap
+  (`has_secondary_sources = false` for most tickers). Raises coverage
+  score for every ticker at once, same "one dataset, many consumers"
+  logic as P1.
+- Dependencies: none blocking.
+- Engineering effort: MODERATE-HIGH (source selection, dedup/
+  independence detection to avoid fake corroboration — see
+  `docs/INVESTMENT_OS_SPECIFICATION.md` §35 — is a real design problem,
+  not just a feed integration).
+- Files/modules: new provider(s), extension of the existing evidence
+  ranking tiers (`src/ngxrot/fre/`).
+- Completion criteria: `has_secondary_sources` flips true for a disclosed
+  subset of tickers, with source-independence detection demonstrably
+  working (not just present).
+
+**P3 — Entity relationship graph**
+- Description: persisted competitor/supplier/customer/subsidiary/parent/
+  sector-peer relationships per company, extending the existing (currently
+  thin, `has_entity_relationships = false` for most tickers)
+  `entity_relationships` table and TD11's `affects_order_N` labeling
+  toward an actual semantic taxonomy.
+- Why it matters: unlocks cross-ticker propagation for FRE (second-order
+  event effects) and pooled/cohort hypothesis design for the Alpha Engine.
+- Dependencies: sequenced after P1/P2 per the charter's priority test —
+  do this once the two highest-leverage data gaps are underway, not
+  before.
+- Engineering effort: MODERATE (extends existing Phase F propagation
+  machinery — see TD11/TD14/TD15 below — rather than building from zero).
+- Files/modules: `src/ngxrot/fre/`, `entities.py`, schema extension.
+- Completion criteria: `has_entity_relationships` flips true for a
+  disclosed subset; propagation direction/magnitude inference remains
+  explicitly out of scope (TD15's standing decision) unless the owner
+  revisits it.
+
+**P4 — Temporal / point-in-time integrity extension to documents & facts**
+- Description: extend the price layer's existing `*_asof` PIT discipline
+  (`ngxrot.db`) to documents, facts, and implications —
+  `event_time`/`publication_time`/`ingestion_time`/`effective_period` on
+  every fact-bearing row.
+- Why it matters: non-negotiable precondition for any future historical
+  evaluation of FRE outputs (§30-31 of the spec); the Alpha Engine already
+  enforces this discipline on prices — FRE currently does not on facts.
+- Dependencies: none blocking, structural work.
+- Engineering effort: MODERATE-HIGH (schema + backfill + query-layer
+  changes across an already-large FRE module tree).
+- Files/modules: `schema/schema.sql`, `src/ngxrot/db.py`,
+  `src/ngxrot/documents/`.
+- Completion criteria: a synthetic rehearsal proves no future-document
+  information can leak into a simulated historical query, matching the
+  bar `phase1_smoke_test.py` already set for prices.
+
+**P5 — Corporate-action normalization**
+- Description: dividends, rights issues, bonus issues, splits, new
+  listings, share cancellations, employee share schemes as structured,
+  machine-readable events (not just document text).
+- Why it matters: these mechanically change market cap, EPS, ownership,
+  dilution, and valuation ratios — currently a P1/P7-blocking gap
+  disclosed since the original E6 item below (corp-actions extraction sits
+  at 397 rows, mostly unpopulated, evidence quality 1/5).
+- Dependencies: overlaps directly with old E6/R4 below — review those
+  before re-scoping from scratch.
+- Engineering effort: MODERATE-HIGH (same difficulty class as P1 — scanned/
+  templated NGX filings).
+- Files/modules: `scripts/build_corp_actions_db.py`, schema extension.
+- Completion criteria: same as old E6 — stated, tested pass rate against
+  primary-source anchors, or an explicit "not evidence-grade" marker.
+
+**P6 — Unified investment knowledge model**
+- Description: bring P1-P5 together behind the existing
+  facts/evidence/events/factors/implications/coverage/confidence
+  architecture, rather than each new dataset growing its own bespoke
+  access pattern (same lesson the quant track already learned once — see
+  E15 below, the unified PIT company/security panel for prices).
+- Why it matters: prevents the OS from fragmenting into N parallel data
+  silos as coverage grows.
+- Dependencies: after P1-P5 have enough real data to unify meaningfully —
+  do not build this ahead of the data it's meant to join.
+- Engineering effort: MODERATE (consolidation, following E15's precedent).
+- Files/modules: likely `src/ngxrot/research_dataset.py` (Research OS
+  layer) as the natural home, given it's already the OS's generic PIT
+  dataset access point.
+- Completion criteria: existing FRE consumers (`CoverageAssessment` etc.)
+  reproduce their current outputs unchanged when switched to the unified
+  interface — a regression check, not a new validation bar.
+
+**P7 — Data quality framework**
+- Description: automated freshness/completeness/duplicate/outlier/schema-
+  violation/mismatch checks across all OS datasets, not just grounding.
+- Why it matters: grounding tests whether a claim is supported; this tests
+  whether the underlying data itself is trustworthy — a distinct,
+  currently unaddressed dimension (spec §33-35).
+- Dependencies: most useful once P1/P2/P5 exist to check.
+- Engineering effort: MODERATE.
+- Files/modules: extends the existing `data_quality_log` table pattern
+  already used by the price/diagnostics layer.
+- Completion criteria: every new dataset type from P1-P5 gets a quality
+  status, not just a presence flag.
+
+**P8 — Product/UI layer**
+- Description: an Investment OS dashboard surfacing per-company coverage/
+  intelligence/valuation/risk, with every conclusion traceable back to
+  evidence (spec §39).
+- Why it matters: the backend is currently far ahead of anything
+  user-facing.
+- Dependencies: sequenced deliberately last among data/infrastructure
+  items — a UI over incomplete data mostly just makes the incompleteness
+  visible faster, which is honest but not yet the highest-leverage use of
+  effort.
+- Engineering effort: not yet scoped.
+- Completion criteria: not yet scoped.
+
+**P9 — Decision engines (beyond the existing Alpha Engine)**
+- Description: screening, ranking, scenario-analysis consumers reading
+  structured OS output.
+- Why it matters: per the charter, explicitly **deprioritized** until the
+  Alpha Engine has ≥2 validated alpha sources (currently 1, capacity-
+  constrained) or a specific, evidenced gap demands a new consumer.
+- Dependencies: blocked by design, not by effort.
+- Completion criteria: N/A — do not build ahead of the trigger condition.
+
+**Notes on sequencing**: P1 and P2 are explicitly tied for top priority
+(both close a platform-wide coverage gap feeding both existing consumers
+at once); P3-P5 follow once those land; P6-P7 are consolidation/quality
+passes that should trail the data they operate on, not lead it; P8-P9 are
+deliberately last. This mirrors the charter's priority table exactly —
+if the two ever disagree, the charter wins (per its own stated authority),
+and this section should be corrected to match.
+
+---
+
+## Historical: frozen-V1 quant-track backlog (2026-07-22)
+
+*Everything below this line predates the Investment OS reframe, Project 1
+(fundamentals/insider-dealing/news-event tracks, all now resolved),
+Stages 16-28, and the FRE Phase 14-19 build. Kept for record and because
+several items (E7-E14, TD1-TD16) remain genuinely open on the quant side.
+Cross-check `docs/FACTOR_REGISTRY.md` and `HANDOFF.md` before treating any
+R-numbered item as current — R1/R2 in particular describe H-010/H-011 as
+not-yet-run; both have since resolved (H-010 rejected, H-011 confirmed).*
 
 *2026-07-22. The platform architecture is frozen as V1
 (`docs/PLATFORM_ARCHITECTURE.md`,
