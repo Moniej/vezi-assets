@@ -15,7 +15,17 @@ Usage:
   PYTHONPATH=src python scripts/ngxrot_research.py universe --index NGXBNK --as-of 2024-06-30
   PYTHONPATH=src python scripts/ngxrot_research.py lookup --symbol GTCO
   PYTHONPATH=src python scripts/ngxrot_research.py metadata --symbol GTCO
+  PYTHONPATH=src python scripts/ngxrot_research.py facts --symbol NASCON --fact-type dividend
+  PYTHONPATH=src python scripts/ngxrot_research.py events --symbol NASCON --as-of 2026-08-01
+  PYTHONPATH=src python scripts/ngxrot_research.py relationships --symbol NASCON
+  PYTHONPATH=src python scripts/ngxrot_research.py context --symbol NASCON --as-of 2026-08-01
   (add --format json|csv to any command; default is a terminal table)
+
+The last four commands (facts/events/relationships/context) are the
+document/FRE-intelligence bridge (added 2026-08-11) -- thin wrappers
+around the existing documents.retrieval / documents.context modules,
+following the exact same QuerySpec/QueryResult/query_log path as every
+command above them.
 """
 from __future__ import annotations
 
@@ -97,6 +107,31 @@ def cmd_metadata(con, reg, args) -> None:
     _print_result(execute(con, spec, reg=reg, log=not args.no_log), args.format)
 
 
+def cmd_facts(con, reg, args) -> None:
+    spec = QuerySpec(query_type="facts", entities=args.symbol.split(","), start=args.from_, end=args.to,
+                     filters={"fact_type": args.fact_type} if args.fact_type else {}, limit=args.limit)
+    _print_result(execute(con, spec, reg=reg, log=not args.no_log), args.format)
+
+
+def cmd_events(con, reg, args) -> None:
+    spec = QuerySpec(query_type="events", entities=args.symbol.split(",") if args.symbol else [],
+                     as_of=args.as_of, min_confidence=args.min_confidence,
+                     filters={"event_type": args.event_type} if args.event_type else {}, limit=args.limit)
+    _print_result(execute(con, spec, reg=reg, log=not args.no_log), args.format)
+
+
+def cmd_relationships(con, reg, args) -> None:
+    spec = QuerySpec(query_type="entity_relationships", entities=args.symbol.split(","),
+                     filters={"relation_type": args.relation_type} if args.relation_type else {},
+                     limit=args.limit)
+    _print_result(execute(con, spec, reg=reg, log=not args.no_log), args.format)
+
+
+def cmd_context(con, reg, args) -> None:
+    spec = QuerySpec(query_type="document_context", entities=[args.symbol], as_of=args.as_of)
+    _print_result(execute(con, spec, reg=reg, log=not args.no_log), args.format)
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -148,6 +183,32 @@ def main() -> int:
     sp.add_argument("--symbol", required=True, help="comma-separated ticker(s)")
     common(sp)
     sp.set_defaults(func=cmd_metadata)
+
+    sp = sub.add_parser("facts", help="extracted facts (deterministic + LLM-sourced) for one or more tickers")
+    sp.add_argument("--symbol", required=True, help="comma-separated ticker(s)")
+    sp.add_argument("--from", dest="from_", default=None, help="filing-date range start")
+    sp.add_argument("--to", default=None, help="filing-date range end")
+    sp.add_argument("--fact-type", dest="fact_type", default=None, help="fact_taxonomy.toml leaf")
+    common(sp)
+    sp.set_defaults(func=cmd_facts)
+
+    sp = sub.add_parser("events", help="PIT-correct company/market events as of a date")
+    sp.add_argument("--symbol", default=None, help="comma-separated ticker(s); omit for all")
+    sp.add_argument("--event-type", dest="event_type", default=None)
+    common(sp)
+    sp.set_defaults(func=cmd_events)
+
+    sp = sub.add_parser("relationships", help="persisted entity relationships for one or more tickers")
+    sp.add_argument("--symbol", required=True, help="comma-separated ticker(s)")
+    sp.add_argument("--relation-type", dest="relation_type", default=None)
+    common(sp)
+    sp.set_defaults(func=cmd_relationships)
+
+    sp = sub.add_parser("context", help="full FRE reasoning-context summary for ONE ticker "
+                                        "(documents/facts/evidence/events/relationships/coverage/confidence)")
+    sp.add_argument("--symbol", required=True)
+    common(sp)
+    sp.set_defaults(func=cmd_context)
 
     args = p.parse_args()
     con = db.connect()

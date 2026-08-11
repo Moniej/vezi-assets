@@ -20,18 +20,20 @@ corrected, code-verified status:
 |---|---|---|
 | Research Query Layer (price/market-data side) | **BUILT** | `src/ngxrot/research_query.py` — 6 query types (prices, cross-section, universe history, compare, metadata, entity lookup), look-ahead rejection, provenance, CLI (`scripts/ngxrot_research.py`), Python API, 29/29 tests (`scripts/test_research_query.py`), benchmarked performance table (`docs/research_query_layer.md`) |
 | Research Workspace (price/market-data side) | **BUILT** | `src/ngxrot/research_workspace.py` (819 lines) — question -> scope -> queries -> evidence -> analysis -> findings -> conclusion -> reproducible snapshot -> export, `research_projects`/`research_findings`/`research_hypotheses` tables, dated 2026-08-10, 109/109 regression baseline before it was built (`docs/fre_runs/research_workspace_report.md`) |
-| Document/Evidence query or workspace layer (FRE side) | **NOT BUILT** — this part of the later draft was correct | No module (`research_query.py`, `research_workspace.py`, or anything else) has any code path into `documents`, `extracted_facts`, `evidence`, or `investment_implications`. FRE's extraction/grounding/coverage primitives exist; nothing lets a user query or work inside them yet. |
+| Document/Evidence query or workspace layer (FRE side) | **BUILT 2026-08-11** — was correctly identified as the real gap, now closed | `research_query.py` gained 4 new query types (`facts`, `events`, `entity_relationships`, `document_context`) wrapping the existing `documents/retrieval.py`/`context.py` primitives unmodified; `research_workspace.add_document_evidence()` records them as evidence (reusing `evidence_type='source_document'`, no schema change). CLI: `scripts/ngxrot_research.py facts\|events\|relationships\|context`. 12 new query-layer tests + 6 new workspace tests, all passing against the real production DB. Full detail: `docs/research_query_layer.md` §18a, `docs/research_workspace.md`. |
 | Monitoring / alerting | **PARTIAL** | No scheduler, file-watcher, or trigger infrastructure exists anywhere on the platform (confirmed absent). But a real deterministic alert pipeline function already exists: `src/ngxrot/fre/continuous_intelligence.py` (Phase 18) — change detection -> materiality assessment -> alert/review-queue entry, structurally refusing to emit an alert below LOW materiality. The logic exists; only the thing that would call it on a schedule doesn't. |
 | Alpha | **Correctly untouched**, as it should be | 18 hypotheses tested (1 confirmed, capacity-constrained), Alpha Engine architecture frozen V1, unaffected by any OS/FRE work |
 
-**The corrected framing**: the real gap is not "a query/workspace layer" in
-general — one exists and is solid, covering price/market/universe data. The
-gap is specifically that the **document/evidence side (FRE) has no query or
-workspace layer**, while the **price/market side does**. Any future work
-item phrased as "build the research query layer" or "build the research
-workspace" is describing something that already exists; the correctly
--scoped next item is "extend query/workspace coverage to documents,
-facts, evidence, and implications" — a narrower, more accurate task.
+**Update 2026-08-11**: the document/evidence query and workspace gap
+identified above has been closed (see the BUILT row above) — both the
+price/market side and the document/FRE side now have query and workspace
+coverage, via the same `QuerySpec`/`QueryResult`/`research_evidence`
+contracts, not two parallel systems. Any future work item phrased as
+"build the research query/workspace layer" is describing something that
+already exists on both sides; the correctly-scoped next items are the
+data-foundation gaps (financial statements, secondary sources, entity
+graph depth) per the charter's priority table, not more query/workspace
+plumbing.
 
 ## 1. Core framing — this is critical
 

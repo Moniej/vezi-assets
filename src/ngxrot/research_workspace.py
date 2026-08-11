@@ -297,6 +297,70 @@ def add_evidence(con: sqlite3.Connection, reg: sqlite3.Connection, research_id: 
     return evidence_id
 
 
+_DOCUMENT_QUERY_TYPES = {"facts", "events", "entity_relationships", "document_context"}
+
+
+def _describe_document_row(query_type: str, row: dict) -> str:
+    if query_type == "facts":
+        return f"{row.get('fact_type', 'fact')}: {row.get('description', '')} (doc_id={row.get('doc_id')})"
+    if query_type == "events":
+        return f"{row.get('event_type', 'event')} on {row.get('announced_date', row.get('trade_date', '?'))}"
+    if query_type == "entity_relationships":
+        return f"{row.get('subject_name')} --{row.get('relation_type')}--> {row.get('object_name')}"
+    if query_type == "document_context":
+        return (f"Reasoning context for {row.get('ticker')} as of {row.get('as_of')}: "
+               f"coverage={row.get('coverage_score')}, confidence_ceiling={row.get('confidence_ceiling')}")
+    return json.dumps(row, default=str)
+
+
+def add_document_evidence(reg: sqlite3.Connection, research_id: str, query_result, *,
+                          row_index: int = 0, claim_class: str | None = None) -> str:
+    """Records one row of a document/FRE-side `research_query.QueryResult`
+    (query_type in `facts`/`events`/`entity_relationships`/
+    `document_context`) as `research_evidence` -- the document-side
+    counterpart to `add_evidence`'s market-data path (added 2026-08-11,
+    Investment OS reframe: bridges the Research Workspace to the
+    already-built document/FRE query types added to research_query.py).
+
+    Reuses `evidence_type='source_document'` (already an allowed value in
+    the existing schema) rather than adding a new evidence_type -- every
+    row here ultimately traces to a `documents.doc_id`, which is exactly
+    what that type means. No schema/registry.sql change, no migration of
+    the live registry.sqlite.
+
+    Provenance is taken directly from `query_result.provenance` (already
+    resolved by `research_query.py` against `documents`/`sources` at query
+    time) -- no second lookup, and no involvement of `lineage.py` (that
+    module traces `equity_prices` rows specifically, not documents)."""
+    _require_project(reg, research_id)
+    if query_result.query_type not in _DOCUMENT_QUERY_TYPES:
+        raise WorkspaceError(
+            f"add_document_evidence expects a QueryResult with query_type in "
+            f"{sorted(_DOCUMENT_QUERY_TYPES)}, got {query_result.query_type!r} -- "
+            f"use add_evidence() for market-data query results")
+    if query_result.observations.empty:
+        raise WorkspaceError("query_result has no observations -- nothing to record as evidence")
+    if row_index >= len(query_result.observations):
+        raise WorkspaceError(
+            f"row_index {row_index} out of range (0..{len(query_result.observations) - 1})")
+    row = query_result.observations.iloc[row_index].to_dict()
+    description = _describe_document_row(query_result.query_type, row)
+    source_reference = {"query_id": query_result.query_id, "query_type": query_result.query_type, **row}
+    provenance = query_result.provenance or None
+
+    evidence_id = _new_id("EV")
+    reg.execute(
+        "INSERT INTO research_evidence (evidence_id, research_id, evidence_type, source_reference_json, "
+        "description, provenance_json, created_at, claim_class) VALUES (?,?,?,?,?,?,?,?)",
+        (evidence_id, research_id, "source_document", json.dumps(source_reference, default=str),
+         description, json.dumps(provenance) if provenance else None, _now(), claim_class))
+    reg.commit()
+    _log_event(reg, research_id, "evidence_added",
+              f"evidence_id={evidence_id} type=source_document query_type={query_result.query_type} "
+              f"provenance={'resolved' if provenance else 'unavailable'}")
+    return evidence_id
+
+
 def list_evidence(reg: sqlite3.Connection, research_id: str) -> list[dict]:
     rows = reg.execute(
         "SELECT evidence_id, evidence_type, source_reference_json, description, provenance_json, "

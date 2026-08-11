@@ -290,6 +290,33 @@ check that the NGX Pulse API key never appears in any logged query.
 `scripts/research_query_integration_test.py`: the Section-22-style
 end-to-end integration test.
 
+## 18a. Document/evidence bridge (added 2026-08-11)
+
+Four new `query_type`s, all thin `QueryResult` wrappers around the
+existing, already-tested FRE retrieval primitives in
+`src/ngxrot/documents/retrieval.py` and `documents/context.py` -- no new
+fact/evidence-reading logic, matching every query type above:
+
+| type | function | wraps |
+|---|---|---|
+| `facts` | `query_facts` | `documents.retrieval.find_facts` -- extracted facts (deterministic + LLM-sourced) for one or more tickers, `filters={"fact_type": ...}` |
+| `events` | `query_events` | `documents.retrieval.find_events` -- PIT-correct events via the existing `db.events_asof`, `filters={"event_type": ...}` |
+| `entity_relationships` | `query_entity_relationships` | `documents.retrieval.find_entity_relationships` |
+| `document_context` | `query_document_context` | `documents.context.build_reasoning_context` -- ONE ticker per call (a full reasoning-context assembly, not a cheap index read); returns a one-row summary with document/fact/evidence/event/relationship counts plus `coverage_score`/`confidence_ceiling` |
+
+Provenance for `facts`/`document_context` is resolved against
+`documents`/`sources` directly (`_document_provenance_summary`), the
+document-side counterpart to the existing `_provenance_summary` used by
+the market-data query types. CLI: `scripts/ngxrot_research.py facts|
+events|relationships|context`. Tests:
+`scripts/test_research_query.py`'s facts/events/entity_relationships/
+document_context section (12 checks, run against the real production DB).
+
+This closes the gap `docs/INVESTMENT_OS_SPECIFICATION.md` flagged: the
+query layer previously only covered price/security/universe data. It now
+also covers the document/FRE side, without any change to the six
+pre-existing query types or the underlying FRE modules.
+
 ## 18. Reproducibility, summarized
 
 1. Run a query -> get a `QueryResult` with a `content_hash`.

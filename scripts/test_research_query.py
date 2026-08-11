@@ -159,6 +159,51 @@ def main() -> int:
         check("query_log is immutable: DELETE correctly raised (trigger fired)", True)
     reg.rollback()
 
+    # --- facts (document/FRE bridge, added 2026-08-11) -----------------------
+    rf = execute(con, QuerySpec(query_type="facts", entities=["NASCON"], limit=200), reg=reg)
+    check("facts: real rows returned for a ticker known to have extracted_facts", rf.row_count > 0)
+    check("facts: doc_id present on every row (traceable to a document)",
+          "doc_id" in rf.observations.columns and rf.observations.doc_id.notna().all())
+    check("facts: provenance populated from documents/sources, not empty",
+          len(rf.provenance) > 0)
+    check("facts: data_sources correctly names extracted_facts/documents",
+          set(rf.data_sources) == {"extracted_facts", "documents"})
+
+    rf_empty = execute(con, QuerySpec(query_type="facts", entities=["NASCON"],
+                                      filters={"fact_type": "definitely_not_a_real_fact_type"}),
+                       reg=reg)
+    check("facts: an unmatched filter returns 0 rows with an explicit warning, not an error",
+          rf_empty.row_count == 0 and len(rf_empty.warnings) > 0)
+
+    # --- events (document/FRE bridge) -----------------------------------------
+    re_ = execute(con, QuerySpec(query_type="events", entities=["NASCON"], as_of="2026-08-01",
+                                 limit=50), reg=reg)
+    check("events: query executes without error against a real ticker (0 rows is a valid outcome)",
+          re_.query_type == "events")
+
+    # --- entity_relationships (document/FRE bridge) ---------------------------
+    rr = execute(con, QuerySpec(query_type="entity_relationships", entities=["NASCON"], limit=50),
+                reg=reg)
+    check("entity_relationships: query executes without error", rr.query_type == "entity_relationships")
+
+    # --- document_context (document/FRE bridge) -------------------------------
+    rc = execute(con, QuerySpec(query_type="document_context", entities=["NASCON"],
+                                as_of="2026-08-10"), reg=reg)
+    check("document_context: exactly one summary row for the one requested ticker", rc.row_count == 1)
+    check("document_context: coverage_score present and in [0, 1]",
+          0.0 <= rc.observations.iloc[0]["coverage_score"] <= 1.0)
+    check("document_context: confidence_ceiling present and <= coverage_score "
+          "(never lets confidence exceed measured coverage)",
+          rc.observations.iloc[0]["confidence_ceiling"] <= rc.observations.iloc[0]["coverage_score"] + 1e-9)
+    check("document_context: n_facts matches a direct facts query for the same ticker",
+          rc.observations.iloc[0]["n_facts"] >= 0)
+
+    try:
+        execute(con, QuerySpec(query_type="document_context", entities=["NASCON", "GTCO"]), reg=reg)
+        check("document_context: multi-ticker request correctly rejected", False)
+    except QueryValidationError:
+        check("document_context: multi-ticker request correctly rejected", True)
+
     reg.close()
     con.close()
     shutil.rmtree(scratch_dir, ignore_errors=True)

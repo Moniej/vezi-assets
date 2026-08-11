@@ -92,6 +92,36 @@ def main() -> int:
     ev3_row = next(e for e in rw.list_evidence(reg, p.research_id) if e["evidence_id"] == ev3)
     check("evidence: unresolvable provenance is left NULL, never fabricated", ev3_row["provenance"] is None)
 
+    # --- document evidence: document/FRE bridge (added 2026-08-11) -----------
+    facts_result = execute(con, QuerySpec(query_type="facts", entities=["NASCON"], limit=200), reg=reg)
+    ev4 = rw.add_document_evidence(reg, p.research_id, facts_result)
+    ev4_row = next(e for e in rw.list_evidence(reg, p.research_id) if e["evidence_id"] == ev4)
+    check("document evidence: recorded as evidence_type=source_document (no schema change needed)",
+          ev4_row["evidence_type"] == "source_document")
+    check("document evidence: source_reference carries the real doc_id from extracted_facts",
+          ev4_row["source_reference"]["doc_id"] == int(facts_result.observations.iloc[0]["doc_id"]))
+    check("document evidence: provenance taken straight from the QueryResult (documents/sources), not fabricated",
+          ev4_row["provenance"] is not None and "source_name" in ev4_row["provenance"][0])
+
+    context_result = execute(con, QuerySpec(query_type="document_context", entities=["NASCON"],
+                                            as_of="2026-08-10"), reg=reg)
+    ev5 = rw.add_document_evidence(reg, p.research_id, context_result)
+    check("document evidence: document_context row also records cleanly",
+          "coverage=" in rw.list_evidence(reg, p.research_id)[-1]["description"])
+
+    price_result = execute(con, QuerySpec(query_type="prices", entities=["NASCON"], start="2026-01-01",
+                                          end="2026-01-31"), reg=reg)
+    try:
+        rw.add_document_evidence(reg, p.research_id, price_result)
+        check("document evidence: a market-side QueryResult is correctly rejected "
+              "(use add_evidence for that)", False)
+    except rw.WorkspaceError:
+        check("document evidence: a market-side QueryResult is correctly rejected "
+              "(use add_evidence for that)", True)
+
+    check("evidence: document evidence items are also retrievable via list_evidence",
+          len(rw.list_evidence(reg, p.research_id)) == 5)
+
     # --- notes: typed, immutable ----------------------------------------------
     rw.add_note(reg, p.research_id, "observation", "sector counts look stable")
     try:

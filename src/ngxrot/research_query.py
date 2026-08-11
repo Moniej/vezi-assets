@@ -45,6 +45,7 @@ from datetime import date, datetime, timezone
 import pandas as pd
 
 from . import db, registry, universe
+from .documents import retrieval as doc_retrieval
 from .instrument_identity import resolve_ticker_history_symbols
 
 # ---------------------------------------------------------------------------
@@ -80,6 +81,7 @@ class QueryValidationError(ValueError):
 @dataclass
 class QuerySpec:
     query_type: str  # 'prices'|'cross_section'|'universe_history'|'compare'|'metadata'|'entity_lookup'
+                      # |'facts'|'events'|'entity_relationships'|'document_context'
     entities: list[str] = field(default_factory=list)
     entity_kind: str = "ticker"  # 'ticker'|'sector'|'index'
     start: str | None = None
@@ -494,10 +496,169 @@ def query_entity_lookup(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult
     )
 
 
+# ---------------------------------------------------------------------------
+# Document / evidence intelligence bridge (added 2026-08-11, per the
+# Investment OS reframe -- docs/INVESTMENT_OS_SPECIFICATION.md's verified
+# gap: the price/market side already had a query layer, the document/FRE
+# side (documents, extracted_facts, evidence, investment_implications,
+# events, entity_relationships) did not. These are thin QueryResult
+# wrappers around the EXISTING, already-tested FRE retrieval primitives
+# (`documents.retrieval`, `documents.context`) -- no new fact/evidence
+# reading logic is added here, matching every other query type in this
+# module (a wrapper, not a reimplementation).
+# ---------------------------------------------------------------------------
+
+def _document_provenance_summary(con: sqlite3.Connection, doc_ids) -> list[dict]:
+    """Same shape/intent as `_provenance_summary`, but for the documents
+    table's own `source_id` (documents.source_id -> sources), since facts/
+    events/entity-relationships trace back to a document, not an
+    equity_prices row."""
+    ids = sorted(set(int(i) for i in doc_ids)) if doc_ids is not None else []
+    if not ids:
+        return []
+    ph = ",".join("?" * len(ids))
+    rows = con.execute(
+        f"SELECT d.doc_id, d.ticker, d.doc_type, d.filing_date, d.source_confidence, "
+        f"s.name, s.kind, s.reliability "
+        f"FROM documents d JOIN sources s ON s.source_id = d.source_id "
+        f"WHERE d.doc_id IN ({ph})", ids).fetchall()
+    cols = ["doc_id", "ticker", "doc_type", "filing_date", "source_confidence",
+           "source_name", "source_kind", "source_reliability"]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def query_facts(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
+    """Extracted facts (deterministic + LLM-sourced) for one or more
+    tickers -- thin wrapper around `documents.retrieval.find_facts`.
+    `filters={'fact_type': ...}` narrows by taxonomy leaf;
+    `start`/`end` map to the underlying filing-date range."""
+    warnings = validate_spec(con, spec)
+    resolved = [resolve_entity(con, e, "ticker") for e in spec.entities]
+    fact_type = spec.filters.get("fact_type")
+    rows = []
+    for e in spec.entities:
+        rows.extend(doc_retrieval.find_facts(
+            con, ticker=e, fact_type=fact_type, date_from=spec.start, date_to=spec.end,
+            limit=spec.limit or 50))
+    df = pd.DataFrame(rows)
+    if df.empty:
+        warnings.append("no extracted_facts found for the requested ticker(s)/filters")
+    df = _apply_limit_sort(df, spec)
+    return QueryResult(
+        query_id=str(uuid.uuid4()), query_type="facts", parameters=_spec_params(spec),
+        entities_requested=spec.entities, entities_resolved=[vars(r) for r in resolved],
+        observations=df, row_count=len(df), date_range=(spec.start, spec.end),
+        data_sources=["extracted_facts", "documents"], warnings=warnings,
+        provenance=_document_provenance_summary(con, df["doc_id"] if "doc_id" in df.columns else None),
+        execution_metadata=_exec_meta(),
+    )
+
+
+def query_events(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
+    """PIT-correct company/market events -- thin wrapper around the
+    existing `db.events_asof` via `documents.retrieval.find_events`
+    (already reused, not duplicated, by that module). `as_of` (or `end`)
+    is the sim_date cutoff; `filters={'event_type': ...}` narrows by type."""
+    warnings = validate_spec(con, spec)
+    resolved = [resolve_entity(con, e, "ticker") for e in spec.entities] if spec.entities else []
+    sim_date = spec.as_of or spec.end
+    event_type = spec.filters.get("event_type")
+    frames = []
+    tickers = spec.entities or [None]
+    for e in tickers:
+        edf = doc_retrieval.find_events(con, ticker=e, event_type=event_type, sim_date=sim_date,
+                                        min_confidence=spec.min_confidence, limit=spec.limit or 50)
+        if edf is not None and len(edf):
+            frames.append(edf)
+    df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    if df.empty:
+        warnings.append("no events found for the requested ticker(s)/filters as of the given date")
+    df = _apply_limit_sort(df, spec)
+    return QueryResult(
+        query_id=str(uuid.uuid4()), query_type="events", parameters=_spec_params(spec),
+        entities_requested=spec.entities, entities_resolved=[vars(r) for r in resolved],
+        observations=df, row_count=len(df), date_range=(spec.start, sim_date),
+        data_sources=["events"], warnings=warnings, provenance=[], execution_metadata=_exec_meta(),
+    )
+
+
+def query_entity_relationships(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
+    """Persisted entity relationships (competitor/supplier/etc. mentions)
+    for one or more tickers -- thin wrapper around
+    `documents.retrieval.find_entity_relationships`."""
+    warnings = validate_spec(con, spec)
+    resolved = [resolve_entity(con, e, "ticker") for e in spec.entities]
+    relation_type = spec.filters.get("relation_type")
+    rows = []
+    for e in spec.entities:
+        rows.extend(doc_retrieval.find_entity_relationships(
+            con, ticker=e, relation_type=relation_type, limit=spec.limit or 50))
+    df = pd.DataFrame(rows)
+    if df.empty:
+        warnings.append("no entity_relationships found for the requested ticker(s)/filters")
+    df = _apply_limit_sort(df, spec)
+    return QueryResult(
+        query_id=str(uuid.uuid4()), query_type="entity_relationships", parameters=_spec_params(spec),
+        entities_requested=spec.entities, entities_resolved=[vars(r) for r in resolved],
+        observations=df, row_count=len(df), date_range=(None, None),
+        data_sources=["entity_relationships"], warnings=warnings, provenance=[],
+        execution_metadata=_exec_meta(),
+    )
+
+
+def query_document_context(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
+    """One-row-per-ticker summary of the full FRE `ReasoningContext`
+    (documents/facts/evidence/events/relationships/coverage/confidence),
+    via `documents.context.build_reasoning_context` -- the SAME assembly
+    function `reasoning_engine.py` uses internally, not a second one.
+    Only ONE entity per call (a reasoning context is comparatively
+    expensive to assemble -- multiple LLM-adjacent DB reads); use `facts`/
+    `events`/`entity_relationships` directly for a lighter, multi-ticker
+    query. This is the closest thing this layer has to "what's the current
+    picture on ticker X" in one call."""
+    from .documents.context import build_reasoning_context
+    warnings = validate_spec(con, spec)
+    if len(spec.entities) != 1:
+        raise QueryValidationError(
+            "document_context accepts exactly one ticker per call (a reasoning context is "
+            "assembled fresh, not read off a cheap index) -- use 'facts'/'events'/"
+            "'entity_relationships' for multi-ticker queries")
+    ticker = spec.entities[0]
+    resolved = [resolve_entity(con, ticker, "ticker")]
+    as_of = spec.as_of or spec.end
+    ctx = build_reasoning_context(con, ticker, as_of=as_of)
+    warnings.extend(ctx.coverage_notes)
+    cov = ctx.coverage_assessment
+    row = {
+        "ticker": ticker, "as_of": ctx.as_of, "name": ctx.name,
+        "n_documents": len(ctx.documents), "n_facts": len(ctx.facts),
+        "n_evidence": len(ctx.evidence), "n_events": len(ctx.events),
+        "n_entity_relationships": len(ctx.entity_relationships),
+        "n_historical_implications": len(ctx.historical_implications),
+        "n_peer_propagations": len(ctx.peer_propagations),
+        "coverage_score": cov.coverage_score if cov else None,
+        "confidence_ceiling": cov.confidence_ceiling if cov else None,
+    }
+    df = pd.DataFrame([row])
+    return QueryResult(
+        query_id=str(uuid.uuid4()), query_type="document_context", parameters=_spec_params(spec),
+        entities_requested=spec.entities, entities_resolved=[vars(r) for r in resolved],
+        observations=df, row_count=len(df), date_range=(as_of, as_of),
+        data_sources=["documents", "extracted_facts", "evidence", "events",
+                      "entity_relationships", "investment_implications"],
+        warnings=warnings,
+        provenance=_document_provenance_summary(con, [d.doc_id for d in ctx.documents]),
+        execution_metadata={**_exec_meta(), "reasoning_context_object_available_via": "documents.context.build_reasoning_context"},
+    )
+
+
 _DISPATCH = {
     "prices": query_prices, "cross_section": query_cross_section,
     "universe_history": query_universe_history, "compare": query_compare,
     "metadata": query_metadata, "entity_lookup": query_entity_lookup,
+    "facts": query_facts, "events": query_events,
+    "entity_relationships": query_entity_relationships,
+    "document_context": query_document_context,
 }
 
 

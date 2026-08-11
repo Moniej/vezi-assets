@@ -5,6 +5,18 @@ ranking, or predictive model has been implemented anywhere in this
 layer. All worked examples in this document and its tests are
 deliberately descriptive.
 
+**Document/evidence bridge (added 2026-08-11)**: `add_document_evidence()`
+records one row of a `facts`/`events`/`entity_relationships`/
+`document_context` `QueryResult` (the new query types documented in
+`docs/research_query_layer.md` §18a) as `research_evidence`, using the
+existing `evidence_type='source_document'` value -- no schema change, no
+migration of the live registry.sqlite. Provenance comes straight from the
+query result (already resolved against `documents`/`sources`), not a
+second lookup. A research project can now cite market data AND
+document/fact evidence side by side in the same evidence list, findings,
+and exported report. See `scripts/test_research_workspace.py`'s
+"document evidence" section for worked examples.
+
 ---
 
 ## 1. Architecture
