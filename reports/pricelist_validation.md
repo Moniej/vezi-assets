@@ -1,18 +1,18 @@
-# Pricelist Extraction Validation — 2026-07-21
+# Pricelist Extraction Validation — 2026-08-09
 
-Parser: v1 (word-position method). Source archive:
-data/archive/pricelist_zips (2769 parsed days).
+Parser: v2 (word-position method). Source archive:
+data/archive/pricelist_zips (2781 parsed days).
 
 ## V1 internal
-- rows parsed: 534; row_conf >= 0.9: 99.8%
-- rows excluded (<0.8 conf): 1
-- OHLC-sanity flags: 0.19%
+- rows parsed: 306,466; row_conf >= 0.9: 99.3%
+- rows excluded (<0.8 conf): 2097
+- OHLC-sanity flags: 0.68%
 
 ## V2 cross-day continuity (40 most-active symbols; adjacency-clean, markdown-aware)
-- adjacency-clean checks (cal_gap 1 or 3): 80; exact match: 98.75%
-- DOWN-gaps (markdown-consistent, ex-div/bonus — expected): 1.25%
-- UP-gaps (suspicious): 0.00% (pass rule: <= 1%)
-- excluded gap-spanning transitions (archive holes/holidays): 40
+- adjacency-clean checks (cal_gap 1 or 3): 100,932; exact match: 98.25%
+- DOWN-gaps (markdown-consistent, ex-div/bonus — expected): 1.06%
+- UP-gaps (suspicious): 0.70% (pass rule: <= 1%)
+- excluded gap-spanning transitions (archive holes/holidays): 9,374
 - Methodology audit trail (both refinements made BEFORE any ingestion):
   (1) raw 97%-match rule mis-scored legitimate ex-dividend markdowns as
   failures — replaced by up/down decomposition; (2) diagnosis showed 28–64%
@@ -22,7 +22,7 @@ data/archive/pricelist_zips (2769 parsed days).
 
 ## V3 independent implementation (PDF vs REST JSON, same day)
 {
- "trade_date": "2026-07-21",
+ "trade_date": "2026-08-07",
  "matched_symbols": 134,
  "close_match": 1.0,
  "volume_match": 1.0,

@@ -81,12 +81,18 @@ def main() -> int:
           len(nascon_cfo_np) == 3 and all(r.status == "computed" for r in nascon_cfo_np))
 
     # --- UCAP: a bank, no ebit/ebitda ever -- ebit_margin/ebitda_margin must
-    # be insufficient_data for all 3 real periods, never guessed from PBT
+    # be insufficient_data for every real period, never guessed from PBT.
+    # 2026-08-09 (FRE-7B.1): UCAP grew from 3 to 5 real periods (targeted
+    # extraction added genuine FY2021/FY2020 net_profit+revenue,
+    # docs/fre_runs/fre7b1_targeted_accounting_extraction_report.md) --
+    # count updated, not left stale, same discipline this file's own
+    # comment history already documents (the "5 original + 5 Phase 13"
+    # ticker-count note two blocks up).
     ucap_results = compute_ratios_for_ticker(con, "UCAP")
     ucap_ebit_margin = [r for r in ucap_results if r.metric == "ebit_margin"]
-    check("UCAP ebit_margin is insufficient_data for all 3 periods (a bank -- PBT is never "
+    check("UCAP ebit_margin is insufficient_data for all 5 periods (a bank -- PBT is never "
           "treated as EBIT-equivalent)",
-          len(ucap_ebit_margin) == 3 and all(r.status == "insufficient_data" for r in ucap_ebit_margin))
+          len(ucap_ebit_margin) == 5 and all(r.status == "insufficient_data" for r in ucap_ebit_margin))
 
     # --- debt_to_equity: liabilities+equity are both direct_reported (Stage 2)
     # for every ticker/period where both exist -- confidence_tier should be

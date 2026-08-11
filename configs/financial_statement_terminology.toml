@@ -26,8 +26,9 @@ sector_note = "Gross Earnings/Gross Revenue used by financial-services/registrar
 synonyms = ["Profit for the period", "Profit for the year", "Profit After Tax",
             "PROFIT FOR THE PERIOD", "Profit after tax", "PAT",
             "Net profit", "Profit/(Loss)-After-Tax", "Profit-After-Tax",
-            "(Loss)/profit for the period", "Loss for the period"]
-note = "Five synonyms added in FSI Phase 13 (coverage expansion), each a real, distinct label observed verbatim in a new ticker's own filing: 'Net profit' (DANGCEM), 'Profit/(Loss)-After-Tax' and 'Profit-After-Tax' (OANDO, two different real hyphenation variants across its own FYE2021 and FY2024 filings), '(Loss)/profit for the period' and 'Loss for the period' (NESTLE, two different real variants across its own FY2023 and FY2024 filings -- the SIGN of numeric_value carries loss vs. profit, the fact_type mapping does not encode it, same convention as the existing cfo synonym note)."
+            "(Loss)/profit for the period", "Loss for the period",
+            "Group net profit"]
+note = "Five synonyms added in FSI Phase 13 (coverage expansion), each a real, distinct label observed verbatim in a new ticker's own filing: 'Net profit' (DANGCEM), 'Profit/(Loss)-After-Tax' and 'Profit-After-Tax' (OANDO, two different real hyphenation variants across its own FYE2021 and FY2024 filings), '(Loss)/profit for the period' and 'Loss for the period' (NESTLE, two different real variants across its own FY2023 and FY2024 filings -- the SIGN of numeric_value carries loss vs. profit, the fact_type mapping does not encode it, same convention as the existing cfo synonym note). 'Group net profit' added FRE-7B.1 (2026-08-09): DANGCEM's own FY2025 results release (doc 10758) uses this exact label in its summary table, a real, distinct variant from the 'Net profit' label the same ticker used previously -- confirmed verbatim in the source document, not guessed."
 
 [assets]
 synonyms = ["Total Assets", "TOTAL ASSETS", "TOTAL ASSESTS"]

@@ -52,14 +52,20 @@ def main() -> int:
           "identically to a Step-1 ratio metric, not just a raw fact_type)",
           len(debt_to_equity_trends) == 1)
 
-    # --- UCAP: 3 real, non-overlapping periods (2020, 2022, 2025) -- exactly
-    # 2 valid trend pairs per metric, never comparing a stale UCAP figure to
-    # a wrong period
+    # --- UCAP: 2026-08-09 (FRE-7B.1) targeted extraction added genuine
+    # FY2021/FY2020 net_profit+revenue facts (docs/fre_runs/
+    # fre7b1_targeted_accounting_extraction_report.md), growing UCAP's
+    # real, non-overlapping revenue periods from 3 (2020, 2022, 2025) to 4
+    # FY periods (2020, 2021, 2022, 2025) plus one overlapping 9M-2020
+    # period correctly skipped -- 3 valid sequential pairs now, not 2.
+    # Updated, not left stale, same discipline this file's own history
+    # already documents.
     ucap_results = classify_trends_for_ticker(con, "UCAP")
     ucap_revenue_trends = [r for r in ucap_results if r.metric == "revenue"]
-    check("UCAP revenue trend has exactly TWO pairs (2020->2022, 2022->2025 -- none of its "
-          "3 real periods overlap)",
-          len(ucap_revenue_trends) == 2)
+    check("UCAP revenue trend has exactly THREE pairs (2020->2021, 2021->2022, "
+          "2022->2025 -- none of its 4 real FY periods overlap; the 9M-2020 period "
+          "is correctly excluded from pairing with FY2020 as an overlapping period)",
+          len(ucap_revenue_trends) == 3)
 
     # --- direction correctness, hand-verified against the real facts: NASCON
     # FY2024->FY2025 revenue grew from 78,502mn to 99,562mn... actually verify

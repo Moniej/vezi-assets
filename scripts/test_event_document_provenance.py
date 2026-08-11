@@ -43,6 +43,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Same allow-list as STAGE14_NEWS_FACTOR_SPECIFICATION_2026-08-08.md Sec. 14D.
 _APPROVED_OUTLET_SUFFIXES = ("nairametrics.com", "dmarketforces.com")
+# First-party regulator domains, added Stage 18 (2026-08-08) alongside the
+# ngx_xcompliance_regco source (source_id=17, sources.kind='regulator') --
+# same detection principle as the news-outlet allow-list above, not a second
+# parallel mechanism.
+_APPROVED_REGULATOR_SUFFIXES = ("ngxgroup.com",)
 
 passed = 0
 failed = 0
@@ -58,7 +63,7 @@ def check(name: str, condition: bool, detail: str = "") -> None:
         failed += 1
 
 
-def is_approved_news_domain(source_url: str | None) -> bool:
+def _domain_in(source_url: str | None, suffixes: tuple[str, ...]) -> bool:
     if not source_url:
         return False
     host = urlparse(source_url).hostname
@@ -67,7 +72,15 @@ def is_approved_news_domain(source_url: str | None) -> bool:
     host = host.lower()
     if host.startswith("www."):
         host = host[4:]
-    return any(host == suf or host.endswith("." + suf) for suf in _APPROVED_OUTLET_SUFFIXES)
+    return any(host == suf or host.endswith("." + suf) for suf in suffixes)
+
+
+def is_approved_news_domain(source_url: str | None) -> bool:
+    return _domain_in(source_url, _APPROVED_OUTLET_SUFFIXES)
+
+
+def is_approved_regulator_domain(source_url: str | None) -> bool:
+    return _domain_in(source_url, _APPROVED_REGULATOR_SUFFIXES)
 
 
 def main() -> int:
@@ -82,6 +95,11 @@ def main() -> int:
           "test itself isn't vacuously trivial)", len(web_archive_source_ids) > 0,
           f"found source_ids={web_archive_source_ids}")
 
+    regulator_source_ids = [
+        r[0] for r in con.execute(
+            "SELECT source_id FROM sources WHERE kind='regulator'").fetchall()
+    ]
+
     all_ticker_events = con.execute(
         "SELECT event_id, ticker, event_type, source_id, source_url FROM events "
         "WHERE scope='ticker' AND source_url IS NOT NULL").fetchall()
@@ -89,10 +107,11 @@ def main() -> int:
     news_rows = [
         (event_id, ticker, event_type, source_url)
         for event_id, ticker, event_type, source_id, source_url in all_ticker_events
-        if source_id in web_archive_source_ids or is_approved_news_domain(source_url)
+        if source_id in web_archive_source_ids or source_id in regulator_source_ids
+        or is_approved_news_domain(source_url) or is_approved_regulator_domain(source_url)
     ]
 
-    check("at least one ticker-scoped news-outlet event exists to check",
+    check("at least one ticker-scoped news-outlet/regulator event exists to check",
           len(news_rows) > 0, f"found {len(news_rows)} rows")
 
     orphans = []
@@ -104,9 +123,9 @@ def main() -> int:
             orphans.append((event_id, ticker, event_type, source_url))
 
     check(
-        f"every ticker-scoped news-outlet event ({len(news_rows)} checked, via "
-        f"kind='web_archive' OR approved-domain match) has a matching documents "
-        f"row by exact source_url",
+        f"every ticker-scoped news-outlet/regulator event ({len(news_rows)} checked, "
+        f"via kind='web_archive'/'regulator' OR approved-domain match) has a matching "
+        f"documents row by exact source_url",
         len(orphans) == 0,
         f"{len(orphans)} orphaned event(s): {orphans}",
     )

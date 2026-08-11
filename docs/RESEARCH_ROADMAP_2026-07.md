@@ -118,6 +118,85 @@ OCR + financial-statement parsing (user-gated tesseract decision; scanned
 majors). Event-driven corp-actions detail: needs the same OCR. Revisit
 after wave 2.
 
+## 2a. Post-2026-07-21 hypothesis/mechanism history — Stages 16–21C (CLOSED)
+
+This roadmap's §1–§2 predate H-011's confirmation and everything below; kept as-written for the
+historical record rather than rewritten. Per §4 rule 4 ("every rejection updates this roadmap's family
+table before the next prereg is drafted"), this section records the full arc since: H-011 (size/rotation)
+reached CONFIRMED status but with a losing live-forward read; H-019 (news-event factor, GMC/CIR families)
+completed n=2 executable backtest, net negative; both left "what's actually driving NGX mispricing, if
+anything" open. Stages 16–21C were a dedicated, sequential mechanism-discovery program to answer that
+question directly (mechanism-first, factor-second), run 2026-08-08 to 2026-08-09. **All of it is now
+closed** — no hypothesis was registered, no factor was built, no backtest was run at any point in this
+program; every stage was diagnostic-only per its own gate.
+
+| Stage | Track | Verdict | Reason |
+|---|---|---|---|
+| 16–17 | Broad alpha-discovery sweep (regulatory, structural, ownership, microstructure candidates) | Scoping only | Produced the candidate list Stages 18–21C then tested |
+| 18 | Delisting-Watchlist distress mispricing | Disproven (as evidenced) | DEAPCAP — the lead case — ran ~400% on an earlier, unrelated MoU and was already 34% off-peak by the H-019 event date; not a fresh reaction |
+| 19 | Regulatory state-transitions (suspension-imposed, suspension-lifted, final-delisting) | Suspension-imposed & final-delisting: **NO-GO**. Suspension-lift: CONDITIONAL GO pending 19B | Suspension-imposed has no long-side entry mechanism; final-delisting (e.g. DN Tyre, 12-year process) is fully telegraphed years in advance, no post-transition price series exists |
+| 19B | Suspension-lift persistence/liquidity | **NO-GO — killed** | Post-lift returns don't survive excluding the first 2 sessions (one event outright reverses sign by T+22); 2 of 4 events show *below*-baseline post-lift liquidity; the largest apparent mover (ASOSAVINGS) was forcibly re-suspended before a full window could be observed |
+| 20 | Structural mispricing mechanism scan (8 families: info diffusion, liquidity segmentation, institutional constraints, ownership/control, corporate-action mechanics, accounting frictions, microstructure, index mechanics) | Scoping/classification only | Classified every candidate A–E; `index_membership`/`constituent_weights` found to be **synthetic placeholder data**, not real — a standing data gap for any future index-mechanics work. Illiquidity/staleness and insider-dealing disclosures rated the two strongest (A) candidates |
+| 21 | Illiquidity/staleness — calendar-time forward-return diagnostic | CONDITIONAL GO → superseded by 21B | Mechanism (persistent per-ticker staleness, r≈0.76 stable; 3× larger \|return\| after inactivity) real; but the calendar-time forward-return sort was confounded — stale names mechanically stay stale in the forward window too, compressing measured returns toward zero |
+| 21B | Illiquidity/staleness — trade-conditional redesign | CONDITIONAL GO → superseded by 21C | Confound resolved (returns measured only on genuinely traded sessions); effect survives but splits into an unexecutable T0 reopening jump (ambiguous between information and mechanical liquidity-impact) plus a small, weak post-T0 drift |
+| 21C | Illiquidity/staleness — drift-only, market-relative, cost-gated | **NO-GO — killed** | T0 jump discarded per hard decision. Market-relative excess drift fails to clear a single round-trip transaction cost (3.79%, from the live `cost_schedule`) at *every* horizon tested (3/5/10/20 traded sessions); median excess drift ≈0; fewer than half of episodes even move in the "expected" direction — mean was carried by a skewed few, not a typical, repeatable effect |
+
+**Net result of Stages 16–21C: no surviving mechanism.** Every structural candidate examined — regulatory
+distress, suspension lifecycle, and illiquidity/price-staleness — was killed on the evidence, not
+assumed away. The one substantive open thread this program surfaced but did not pursue at the time:
+insider/substantial-shareholder "dealing" notice disclosures (Stage 20 §4, rated A — 163 real first-party
+NGX filings, 29 tickers, 2020–2026, structurally independent of H-011/H-019/H-006). Stages 22–23 (below)
+picked this thread up.
+
+## 2b. Insider-dealing-notice track — Stages 22–23 (PILOT COMPLETE, CONDITIONAL GO)
+
+| Stage | Scope | Verdict | Key finding |
+|---|---|---|---|
+| 22 | Feasibility scoping (no extraction run) | Feasible, as a bounded pilot only | Corpus isn't uniform — 12/163 filenames are vesting notices (not trades, must be excluded); extraction of the open-market subset is deterministic and tractable; 40/163 filings had no text yet, 15/163 had no ticker, format variety unverified beyond 2 sampled documents |
+| 23 | Bounded pilot — full extraction, classification, dedup, format audit, concentration/PIT/survivorship/H-011-independence checks | **CONDITIONAL GO** | 109 genuine transactions (83 purchase / 26 sale) after excluding vesting notices; the 40 missing-text filings are confirmed **scanned images** (0 native characters), blocked on the same pending OCR/tesseract decision already flagged in §2 above, not resolved here; null-ticker resolution is structurally impossible via existing tables (`securities.name` == `securities.ticker` for all 320 rows, `isin` 0% populated platform-wide — no company-name-to-ticker mapping exists anywhere on the platform); an initial 27-filing "duplicate" signal was a parser artifact (true duplicate count: 1, confirmed by exact source URL); severe concentration (top 3 tickers = 59% of observations, 64% of all transactions from a single year, 2020); real common-cause risk with H-011 — no mechanical overlap, but 16/18 corpus tickers (89%) sit above the platform median market cap, a likely governance/compliance-culture confound, not a trading signal |
+
+**Named conditions before any return diagnostic** (from Stage 23's own gate): the OCR/scanned-PDF
+decision; formal resolution or permanent exclusion of the 15 quarantined null-ticker filings; mandatory
+size-orthogonalization in any future test given the 89% large-cap skew; explicit treatment of the cleaned
+corpus as a small, clustered ~5–6-name sample, not 109 independent observations. Stage 24 (below) is the
+return diagnostic these conditions gated — the null-ticker item is now resolved; the rest carry forward.
+
+## 2c. Insider-dealing-notice track — Stage 24 (RETURN DIAGNOSTIC, CONDITIONAL GO)
+
+The first return-bearing diagnostic in this track, run against Stage 23's cleaned corpus plus a
+self-referential null-ticker resolution (all 15 resolved deterministically — 14 filings' stated issuer
+"Nigerian Breweries Plc" and 1 "Airtel Africa Plc" exact-matched against already-ticked rows in the same
+corpus; no external knowledge used). 109 raw genuine filings collapsed to **67 independent events**
+(insider × ticker × direction × month) — 53 PURCHASE / 14 SALE — confirming Stage 23's concentration
+finding was real, not a parsing artifact.
+
+| Direction | k=20 (≈1 month) result | Verdict |
+|---|---|---|
+| PURCHASE | Mean excess return (vs. NGXASI) +5.74%, median +5.15%, 77% positive — clears the 3.79% round-trip cost | Only PURCHASE is tradable (platform is long-only) |
+| SALE | Consistently negative (mean -13.09%) but magnitude highly unstable between raw and aggregated filings (2-4x swing) — corroborates the mechanism but not usable as an estimate, and untradeable regardless (no shorting) | Diagnostic support only |
+
+**H-011 independence**: no mechanical overlap (`size_scores()` reconfirmed to use only `panel["mcap"]`);
+correlationally, excess return vs. market cap is weakly *positive* (Spearman +0.13) — not a disguised
+small-cap effect.
+
+**Adversarial testing (the core of this stage)**: PURCHASE survives winsorization (mean +5.74%→+5.28%,
+not outlier-driven) and survives the raw-vs-aggregated sensitivity check (~unchanged, unlike SALE). It
+weakens under leave-top-3-out (UCAP/UBA/SEPLAT: k=20 mean +5.74%→+3.60%, dropping just under the cost
+floor) — a real, disclosed concentration caveat. Only 1 of 5 pre-specified horizons (5/10/20/40/60
+sessions) clears costs.
+
+**Follow-up check, same day**: excluding SEPLAT and AIRTELAFRI — the two corpus tickers independently
+flagged as high-staleness by Stage 21's own metric, raising a contamination risk with the already-killed
+illiquidity mechanism — the effect **survived and strengthened** (n=44: mean +6.24%, median +5.59%, 91%
+positive, winsorization-stable, naive t=4.18). This rules out the staleness mechanism as the explanation
+and **makes insider-PURCHASE-at-k≈20 the strongest candidate the Stages 16–24 mechanism-discovery program
+has produced.**
+
+**Still open, not resolved**: UCAP alone is 45% of the ex-staleness subsample (n=20/44); only k=20 of 5
+horizons clears costs; t-stats are naive/uncorrected for clustering; the 40-filing OCR gap (Stage 23)
+still caps corpus size. **No hypothesis registered, no factor built, no backtest run** — this remains
+diagnostic work. Full detail: `docs/STAGE24_INSIDER_DEALING_ADVERSARIAL_DIAGNOSTIC_2026-08-09.md`.
+
 ## 3. Roadmap to the first validated strategy
 
 - **R0 (now, zero engineering)**: draft H-006 + H-007 preregs (pattern

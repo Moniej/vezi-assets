@@ -62,8 +62,12 @@ def main() -> int:
 
     # --- tickers untouched by FSI Phase 1: every eligible method still
     # reports NOT_READY, verified against real data, not assumed ------------
+    # 2026-08-09: CILEASING moved from here to the "has real data" group
+    # below -- FSI extraction was run for it in a later phase than this
+    # test originally covered (now 5 fact types / 11 facts, confirmed by
+    # direct query). GTCO/TOTAL/NOTAREALTICKER remain correctly untouched.
     con = ro()
-    for ticker in ["GTCO", "TOTAL", "CILEASING", "NOTAREALTICKER"]:
+    for ticker in ["GTCO", "TOTAL", "NOTAREALTICKER"]:
         tv = ve.value_company(con, ticker, "2026-08-01")
         check(f"{ticker}: every eligible method reports NOT_READY",
               all(not r.ready for r in tv.readiness_by_method.values()))
@@ -73,29 +77,161 @@ def main() -> int:
               all(len(r.reason) > 10 for r in tv.readiness_by_method.values()))
     con.close()
 
-    # --- tickers FSI Phase 1 added real revenue/net_profit facts for: the
-    # readiness gate now correctly reports READY for dcf/ev_ebitda/pe (real
-    # financial-statement-shaped data exists for the first time on this
-    # platform) -- but compute() has no implemented formula, so it MUST
-    # still produce ZERO numeric results. This is the exact "no valuation
-    # activation" invariant this test exists to enforce: readiness may
-    # change as real data grows, a computed number never appears without a
-    # real formula and an explicit, separate implementation decision. -----
+    # --- FRE-7 (2026-08-09, owner-authorized activation): pe/dcf now have
+    # real compute() formulas; ev_ebitda stays a PERMANENT DATA_GAP for
+    # every ticker (no debt/cash fact_type has ever been extracted). Each
+    # of these 6 real tickers' outcome below was independently re-verified
+    # against the live database, not assumed -- some produce a real
+    # numeric pe result, some correctly report an explicit DATA_GAP
+    # (insufficient peers / no currency-clean input), matching this
+    # platform's "unknown stays unknown" rule exactly. --------------------
     con = ro()
-    for ticker in ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"]:
+    for ticker in ["UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON", "CILEASING"]:
         tv = ve.value_company(con, ticker, "2026-08-01")
-        check(f"{ticker}: dcf/ev_ebitda/pe now report READY (real FSI Phase 1 "
-              f"revenue/net_profit data exists for this ticker)",
-              all(tv.readiness_by_method[m].ready for m in ("dcf", "ev_ebitda", "pe")))
-        check(f"{ticker}: STILL zero numeric results produced -- READY per "
-              f"data presence is not the same as a computed valuation "
-              f"(no formula is implemented; no valuation activation occurred)",
-              len(tv.results) == 0)
-        check(f"{ticker}: the readiness reason explicitly discloses that "
-              f"compute() is not yet implemented despite being ready",
-              all("not yet implemented" in tv.readiness_by_method[m].reason
-                  for m in ("dcf", "ev_ebitda", "pe")))
+        check(f"{ticker}: pe reports READY", tv.readiness_by_method["pe"].ready)
+        check(f"{ticker}: ev_ebitda reports NOT_READY with the specific, permanent "
+              f"debt/cash DATA_GAP reason (never 'not yet implemented')",
+              not tv.readiness_by_method["ev_ebitda"].ready
+              and "total_debt" in tv.readiness_by_method["ev_ebitda"].reason
+              and "cash_and_equivalents" in tv.readiness_by_method["ev_ebitda"].reason)
+        pe_result = next((r for r in tv.results if r.method_name == "pe"), None)
+        check(f"{ticker}: pe adapter ran and produced a ValuationResult (numeric or "
+              f"explicit DATA_GAP, never a crash)", pe_result is not None)
     con.close()
+
+    # --- real numeric pe outcomes, re-verified directly -- UCAP/BUAFOODS/
+    # NASCON/CAP/AFRIPRUD have >=2 real comparable peers with positive P/E;
+    # CILEASING correctly reports a DATA_GAP (no currency-clean net_profit/
+    # shares match as of this date). AFRIPRUD moved from DATA_GAP to a real
+    # numeric result on 2026-08-09 (FRE-7B.1's targeted extraction gave it
+    # a real, audited, currency-clean FY2022 net_profit/equity/revenue --
+    # docs/fre_runs/fre7b1_targeted_accounting_extraction_report.md) --
+    # updated here, not left stale, same discipline this file's own history
+    # already documents at every prior step. -------------------------------
+    con = ro()
+    for ticker in ["UCAP", "BUAFOODS", "NASCON", "CAP", "AFRIPRUD"]:
+        tv = ve.value_company(con, ticker, "2026-08-01")
+        pe_result = next(r for r in tv.results if r.method_name == "pe")
+        check(f"{ticker}: pe produced a real positive numeric point_estimate "
+              f"(peer-triangulated, real comparable set)",
+              pe_result.point_estimate is not None and pe_result.point_estimate > 0)
+        check(f"{ticker}: pe result carries a mandatory range (never a bare point estimate)",
+              pe_result.range_low is not None and pe_result.range_high is not None
+              and pe_result.range_low <= pe_result.point_estimate <= pe_result.range_high)
+        check(f"{ticker}: pe result discloses real source fact_id provenance",
+              len(pe_result.input_fact_ids) == 1 and isinstance(pe_result.input_fact_ids[0][0], int))
+        check(f"{ticker}: pe result discloses at least 2 real peer tickers used",
+              len(pe_result.peers_used) >= 2)
+    for ticker in ["CILEASING"]:
+        tv = ve.value_company(con, ticker, "2026-08-01")
+        pe_result = next(r for r in tv.results if r.method_name == "pe")
+        check(f"{ticker}: pe correctly reports an explicit DATA_GAP (point_estimate is "
+              f"None), not a fabricated number", pe_result.point_estimate is None
+              and pe_result.confidence_note.startswith("DATA_GAP"))
+    con.close()
+
+    # --- CAP is the one ticker with a clean, currency-matched, complete-
+    # period direct 'fcf' fact -- dcf reports READY for it, and compute()
+    # refuses (explicit DATA_GAP) unless the caller supplies wacc/
+    # terminal_growth explicitly; supplying them produces a real
+    # single-period Gordon Growth perpetuity result with a scenario band. -
+    con = ro()
+    tv_cap = ve.value_company(con, "CAP", "2026-08-01")
+    check("CAP: dcf reports READY (its one direct 'fcf' fact is NGN, complete-period, "
+          "direct_reported)", tv_cap.readiness_by_method["dcf"].ready)
+    dcf_result = next(r for r in tv_cap.results if r.method_name == "dcf")
+    check("CAP: dcf refuses with an explicit DATA_GAP when called with NO assumptions "
+          "(value_company() never supplies wacc/terminal_growth on the caller's behalf)",
+          dcf_result.point_estimate is None and "wacc" in dcf_result.confidence_note)
+    dcf_with_assumptions = ve.DCFAdapter().compute(
+        con, "CAP", "2026-08-01", {"wacc": 0.22, "terminal_growth": 0.06})
+    check("CAP: dcf produces a real positive point_estimate once the caller explicitly "
+          "supplies wacc/terminal_growth",
+          dcf_with_assumptions.point_estimate is not None and dcf_with_assumptions.point_estimate > 0)
+    check("CAP: dcf's mandatory range is populated from a disclosed, fixed bear/bull "
+          "sensitivity band (never a bare point estimate)",
+          dcf_with_assumptions.range_low is not None and dcf_with_assumptions.range_high is not None
+          and dcf_with_assumptions.range_low < dcf_with_assumptions.point_estimate < dcf_with_assumptions.range_high)
+    check("CAP: dcf's scenario_estimates disclose bear/base/bull explicitly",
+          set(dcf_with_assumptions.scenario_estimates.keys()) == {"bear", "base", "bull"})
+    dcf_bad_wacc = ve.DCFAdapter().compute(con, "CAP", "2026-08-01",
+                                            {"wacc": 0.05, "terminal_growth": 0.06})
+    check("CAP: dcf refuses (explicit DATA_GAP, not a negative/nonsensical number) when "
+          "wacc <= terminal_growth", dcf_bad_wacc.point_estimate is None)
+    con.close()
+
+    # --- AIRTELAFRI: the platform's one confirmed foreign-currency (USD)
+    # reporter -- its only 'fcf' fact must be excluded from dcf by the
+    # currency guard (fx_rates has 0 rows; no conversion is fabricated). --
+    con = ro()
+    airtel_dcf = ve.DCFAdapter().compute(con, "AIRTELAFRI", "2026-08-09",
+                                          {"wacc": 0.2, "terminal_growth": 0.05})
+    check("AIRTELAFRI: dcf correctly refuses to use its USD-denominated fcf fact -- "
+          "explicit DATA_GAP, no currency conversion fabricated",
+          airtel_dcf.point_estimate is None)
+    con.close()
+
+    # --- get_normalized_statement(): FRE-7's normalized-financial-
+    # statements deliverable -- every line item is either 'known' with a
+    # real fact_id, or an explicit 'DATA_GAP', never inferred. -----------
+    con = ro()
+    stmt = ve.get_normalized_statement(con, "CAP", "2026-08-01")
+    check("CAP: normalized statement resolves a real FY period",
+          stmt.fy_period_end is not None)
+    check("CAP: normalized statement's known line items carry real fact_id provenance",
+          all(li.fact_id is not None for li in stmt.line_items.values() if li.status == "known"))
+    check("CAP: normalized statement has no silently-fabricated line items -- every "
+          "entry is 'known' or 'DATA_GAP', nothing else",
+          all(li.status in ("known", "DATA_GAP") for li in stmt.line_items.values()))
+    stmt_gap = ve.get_normalized_statement(con, "TOTAL", "2026-08-01")
+    check("TOTAL (zero real facts): every normalized-statement line item is an "
+          "explicit DATA_GAP", all(li.status == "DATA_GAP" for li in stmt_gap.line_items.values()))
+    con.close()
+
+    # --- pb: only eligible for bank/insurance company types (per
+    # configs/valuation_method_eligibility.toml) -- LASACO is the one real
+    # insurance ticker with usable book equity, but has zero comparable
+    # insurance peers with their own usable book equity, so pb correctly
+    # reports an explicit DATA_GAP, not a single-peer-of-one number. ------
+    con = ro()
+    tv_lasaco = ve.value_company(con, "LASACO", "2026-08-09")
+    check("LASACO: pb is eligible for company_type='insurance'", "pb" in tv_lasaco.eligible_methods)
+    pb_result = next((r for r in tv_lasaco.results if r.method_name == "pb"), None)
+    check("LASACO: pb ran and correctly reports an explicit DATA_GAP (fewer than 2 "
+          "comparable insurance peers have usable book equity)",
+          pb_result is not None and pb_result.point_estimate is None)
+    con.close()
+
+    # --- TriangulatedValuation's new intrinsic_value_range/valuation_
+    # confidence fields track the numeric results, not the raw results list
+    # (a DATA_GAP ValuationResult must never count toward "high confidence"). -
+    con = ro()
+    tv_nascon = ve.value_company(con, "NASCON", "2026-08-01")
+    check("NASCON: valuation_confidence is 'single_method' (only pe produced a real number)",
+          tv_nascon.valuation_confidence == "single_method")
+    check("NASCON: intrinsic_value_range matches the sole numeric method's own range",
+          tv_nascon.intrinsic_value_range is not None)
+    # 2026-08-09 (FRE-7B.1): this 'no_data' example moved from AFRIPRUD to
+    # CILEASING -- AFRIPRUD now produces a real numeric pe result (see
+    # above), so it no longer illustrates the no_data case; CILEASING
+    # still genuinely does. Same "update, don't leave stale" discipline.
+    tv_cileasing = ve.value_company(con, "CILEASING", "2026-08-01")
+    check("CILEASING: valuation_confidence is 'no_data' (its only ready method reported "
+          "a DATA_GAP, not a number)", tv_cileasing.valuation_confidence == "no_data")
+    check("CILEASING: intrinsic_value_range is None (no numeric result to range over)",
+          tv_cileasing.intrinsic_value_range is None)
+    con.close()
+
+    # --- architectural isolation, restated for FRE-7's new imports: only
+    # financial_ratios.list_tickers (a public function) and
+    # period_normalization.classify_period_type (also public) were
+    # imported -- no accounting-core file's internals were reached into,
+    # and none of the four forbidden thesis/reasoning modules were touched. -
+    check("valuation_engine.py's new FRE-7 imports are limited to public "
+          "financial_ratios.list_tickers / period_normalization.classify_period_type "
+          "(no accounting-core internals imported)",
+          "from ngxrot.fre.financial_ratios import list_tickers" in import_lines
+          and "from ngxrot.fre.period_normalization import classify_period_type" in import_lines)
 
     # --- company-type classification: FSI Phase 26 wired sector_ngx into
     # classify_company_type() as a new middle precedence tier -- GTCO has
@@ -167,10 +303,19 @@ def main() -> int:
         "SELECT COUNT(*) FROM extracted_facts WHERE fact_type NOT IN "
         "('dividend','rights_issue','bonus_issue')"
     ).fetchone()[0]
-    check("exactly 137 financial-statement line items exist (106 after FSI "
-          "Phase 1-2 Stage 4, plus 31 new facts from Phase 13's 5 new "
-          "tickers: +10 revenue, +10 net_profit, +6 ebit, +5 ebitda)",
-          non_corp_action_facts == 137)
+    # 2026-08-09: re-verified by direct query -- grew from 137 to 292 across
+    # further FSI depth-campaign stages run since this test was last updated
+    # (stage3a/3b/3c, stage4a, stage5a in scripts/fre/) -- count updated to
+    # match current real state, same "update, don't leave stale" discipline
+    # this test's own comment history already documents at every prior step.
+    # 2026-08-09 (same day, FRE-7B.1 targeted extraction): grew again, 292
+    # -> 321, from scripts/fre/fre7b1_targeted_extraction.py's 29 real,
+    # hand-verified, grounding-checked facts (AFRIPRUD doc 6921, UCAP doc
+    # 5740, DANGCEM doc 10758) -- see
+    # docs/fre_runs/fre7b1_targeted_accounting_extraction_report.md.
+    check("exactly 321 financial-statement line items exist (grew from 292 "
+          "via FRE-7B.1's targeted, hand-verified extraction)",
+          non_corp_action_facts == 321)
     sector_populated = con.execute(
         "SELECT COUNT(*) FROM securities WHERE sector_ngx IS NOT NULL"
     ).fetchone()[0]

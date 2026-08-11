@@ -66,3 +66,19 @@ Thumbs.db
 # SQLite backup files
 data/*.sqlite*
 data/ngx.sqlite.pre_*
+
+# ============================================================
+# SECRETS
+# ============================================================
+
+.env
+*.key
+secrets/
+
+# ============================================================
+# RAW VENDOR API DUMPS — reproducible from a re-fetch, not
+# versioned (same "git tracks code, not raw archives" policy
+# as data/staging/ above)
+# ============================================================
+
+data/raw/

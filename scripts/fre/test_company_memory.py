@@ -98,10 +98,18 @@ def main() -> int:
     total_events_with_ticker = con.execute(
         "SELECT COUNT(*) FROM events WHERE ticker IS NOT NULL"
     ).fetchone()[0]
-    check("events.ticker is confirmed 100% NULL across the real database "
-          "(major_event_history's emptiness is a real, systemic, disclosed "
-          "gap, not a bug in this module)", total_events_with_ticker == 0)
-    check("major_event_history is empty for UCAP, consistent with the above",
+    # 2026-08-09: ticker-scoped events now real and populated (26 rows, from
+    # the regulatory-transition mechanism-discovery work) -- this assertion
+    # previously expected 0 and is updated to reflect that growth rather
+    # than the module needing any change (build_company_memory's query was
+    # always correct; only this ground-truth expectation was stale).
+    check("events.ticker is now populated (26 real ticker-scoped rows, "
+          "confirmed 2026-08-09) -- major_event_history is no longer "
+          "universally empty, and this module correctly surfaces them "
+          "with no code change required",
+          total_events_with_ticker == 26)
+    check("major_event_history is empty for UCAP specifically (UCAP has no "
+          "ticker-scoped event on record, unlike e.g. DEAPCAP/TANTALIZER)",
           mem.major_event_history == [])
     check("management_history is empty for UCAP (no management_change "
           "extraction has been run at any volume yet)", mem.management_history == [])

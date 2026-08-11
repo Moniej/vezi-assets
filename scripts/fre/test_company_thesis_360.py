@@ -56,6 +56,15 @@ EXPECTED_FIRED_CONCERNS = {
     "UBN": set(),
     "OANDO": {"margin_compression"},
     "NESTLE": {"margin_compression"},
+    # FSI Phase 27 (2026-08-02) further extended list_tickers() coverage to
+    # 26 real tickers total. Ground truth for these 16 confirmed 2026-08-09
+    # via direct query of financial_reasoning_conclusions (conclusion_type=
+    # 'flag'): all 16 currently have zero fired concern flags.
+    "CUTIX": set(), "DEAPCAP": set(), "GEREGU": set(), "LASACO": set(),
+    "REDSTAREX": set(), "PRESTIGE": set(), "NEM": set(), "CILEASING": set(),
+    "CAVERTON": set(), "VERITASKAP": set(), "TRANSCORP": set(),
+    "AIRTELAFRI": set(), "NCR": set(), "UNIVINSURE": set(),
+    "MCNICHOLS": set(), "UACN": set(),
 }
 
 

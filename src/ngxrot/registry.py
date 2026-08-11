@@ -39,7 +39,31 @@ def connect_registry(db_path: str | Path = REGISTRY_DB) -> sqlite3.Connection:
             ("experiments", "rng_algorithm", "TEXT"),
             ("experiments", "rng_seed", "INTEGER"),
             ("experiments", "rng_iterations", "INTEGER"),
-            ("hypotheses", "frozen", "INTEGER NOT NULL DEFAULT 0")]:
+            ("hypotheses", "frozen", "INTEGER NOT NULL DEFAULT 0"),
+            # Phase 3 (research_workspace.py), 2026-08-10: query_log's own
+            # parameters_json only carries the QuerySpec's REQUESTED
+            # entities, which is empty for a cross_section query (its
+            # tickers are RESOLVED from a sector filter, not passed in) --
+            # project_quality_summary() needs the resolved set too, so
+            # QueryResult.entities_requested is logged separately here
+            # rather than conflated into parameters_json.
+            ("query_log", "entities_requested_json", "TEXT"),
+            # Phase 4 (research_applications.py), 2026-08-10: evidence
+            # classification (FACT/OBSERVATION/MEASUREMENT/DOCUMENT/
+            # CONTEXT/ASSUMPTION/INTERPRETATION -- validated in Python,
+            # not a DB CHECK, to avoid a table-rebuild migration) and
+            # hypothesis confidence/reasoning fields. Deliberately NOT
+            # widening research_hypotheses' status CHECK constraint to
+            # match this phase's status vocabulary (UNTESTED/WEAKLY_
+            # SUPPORTED/INCONCLUSIVE/CONTRADICTED) -- that would require a
+            # risky table rebuild for marginal semantic gain; Phase 3's
+            # existing OPEN/SUPPORTED/WEAKENED/REJECTED/UNRESOLVED
+            # vocabulary remains authoritative (see docs/
+            # research_applications.md for the documented mapping).
+            ("research_evidence", "claim_class", "TEXT"),
+            ("research_hypotheses", "confidence", "REAL"),
+            ("research_hypotheses", "reason_for_investigation", "TEXT"),
+            ("research_hypotheses", "researcher_notes", "TEXT")]:
         try:
             con.execute(f"ALTER TABLE {table} ADD COLUMN {col} {decl}")
         except sqlite3.OperationalError:

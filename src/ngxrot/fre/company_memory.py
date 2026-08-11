@@ -28,13 +28,8 @@ mirroring exactly how every other consumer on this platform already
 treats a blocked row -- and reports the exclusion count in `coverage_note`
 rather than silently narrowing the history with no trace.
 
-Two components are honestly near-empty on today's real data, disclosed
+One component is honestly near-empty on today's real data, disclosed
 rather than hidden:
-  - `major_event_history`: `events.ticker` is 100% NULL across all 157 real
-    rows (146 'market'-scope, 11 'sector'-scope, 0 company-scope) --
-    verified by direct query, not assumed. Every ticker's major-event
-    history is correctly empty today; this is a real, systemic gap, not a
-    bug in this module.
   - `management_history`: depends on Part 2's `executive_of` lineage edges,
     which depend on `management_change` fact extraction not yet run at any
     real volume -- also correctly empty today.

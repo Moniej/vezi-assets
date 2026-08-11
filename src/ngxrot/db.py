@@ -366,6 +366,101 @@ def equity_prices_asof(
     return pd.read_sql(q, con, params=params)
 
 
+def equity_prices_range(
+    con: sqlite3.Connection,
+    start: str,
+    end: str,
+    tickers: list[str] | None = None,
+    min_confidence: float = 0.0,
+    vintage: str | None = None,
+    sources: list[str] | None = None,
+) -> pd.DataFrame:
+    """Equity bars with trade_date BETWEEN start AND end (inclusive), same
+    latest-capture-wins/vintage semantics as equity_prices_asof. This is the
+    research-facing counterpart to equity_prices_asof: a backtest walks
+    sim_date forward one day at a time (lookahead guard), but a research
+    query over a fixed historical window just needs "what does the record
+    show for this whole span, as captured by vintage X" -- there is no
+    day-by-day lookahead concern once the window itself is already fully in
+    the past relative to vintage. Do not use this inside a backtest loop."""
+    src_clause = ""
+    params: dict = {"start": start, "end": end, "vin": vintage or "9999-12-31",
+                    "mc": min_confidence}
+    if sources:
+        ph = ",".join(f":s{i}" for i in range(len(sources)))
+        src_clause = (f" AND source_id IN (SELECT source_id FROM sources "
+                      f"WHERE name IN ({ph}))")
+        params |= {f"s{i}": s for i, s in enumerate(sources)}
+    q = f"""
+    SELECT ep.ticker, ep.trade_date, ep.open, ep.high, ep.low, ep.close,
+           ep.volume, ep.value_traded, ep.deals, ep.source_id, ep.confidence,
+           ep.as_of_date
+    FROM equity_prices ep
+    JOIN (
+        SELECT ticker, trade_date, MAX(as_of_date) AS max_asof
+        FROM equity_prices
+        WHERE trade_date BETWEEN :start AND :end
+          AND as_of_date <= :vin AND confidence >= :mc
+          {src_clause}
+        GROUP BY ticker, trade_date
+    ) m ON ep.ticker = m.ticker AND ep.trade_date = m.trade_date
+       AND ep.as_of_date = m.max_asof
+    WHERE ep.confidence >= :mc
+    """
+    if tickers:
+        ph = ",".join(f":t{i}" for i in range(len(tickers)))
+        q += f" AND ep.ticker IN ({ph})"
+        params |= {f"t{i}": t for i, t in enumerate(tickers)}
+    q += " ORDER BY ep.ticker, ep.trade_date"
+    return pd.read_sql(q, con, params=params)
+
+
+def index_levels_range(
+    con: sqlite3.Connection,
+    start: str,
+    end: str,
+    index_codes: list[str] | None = None,
+    min_confidence: float = 0.0,
+    vintage: str | None = None,
+    sources: list[str] | None = None,
+) -> pd.DataFrame:
+    """Index closes with trade_date BETWEEN start AND end (inclusive) --
+    research-facing counterpart to index_levels_asof. See
+    equity_prices_range's docstring for why a range query is safe outside
+    a backtest loop but index_levels_asof remains the one to use inside
+    one."""
+    src_clause = ""
+    params: dict = {"start": start, "end": end, "vin": vintage or "9999-12-31",
+                    "mc": min_confidence}
+    if sources:
+        ph = ",".join(f":s{i}" for i in range(len(sources)))
+        src_clause = (f" AND source_id IN (SELECT source_id FROM sources "
+                      f"WHERE name IN ({ph}))")
+        params |= {f"s{i}": s for i, s in enumerate(sources)}
+    q = f"""
+    SELECT il.index_code, il.trade_date, il.close_value, il.confidence,
+           il.source_id, il.as_of_date
+    FROM index_levels il
+    JOIN (
+        SELECT index_code, trade_date, MAX(as_of_date) AS max_asof
+        FROM index_levels
+        WHERE trade_date BETWEEN :start AND :end
+          AND as_of_date <= :vin AND confidence >= :mc
+              {src_clause}
+        GROUP BY index_code, trade_date
+    ) m ON il.index_code = m.index_code
+       AND il.trade_date = m.trade_date
+       AND il.as_of_date = m.max_asof
+    WHERE il.confidence >= :mc
+    """
+    if index_codes:
+        placeholders = ",".join(f":c{i}" for i in range(len(index_codes)))
+        q += f" AND il.index_code IN ({placeholders})"
+        params |= {f"c{i}": c for i, c in enumerate(index_codes)}
+    q += " ORDER BY il.index_code, il.trade_date"
+    return pd.read_sql(q, con, params=params)
+
+
 def macro_series_asof(
     con: sqlite3.Connection,
     series_code: str,
