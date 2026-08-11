@@ -1,4 +1,17 @@
-# Factor Registry — permanent knowledge base
+# Factor Registry — permanent knowledge base (Alpha Engine consumer)
+
+*Scope note, added 2026-08-11 (Investment OS reframe — see `README.md`,
+`docs/FUND_ALPHA_CHARTER.md`, `docs/INVESTMENT_OS_SPECIFICATION.md`): this
+registry is the evidence trail for the **Alpha Engine**, one consumer of
+the Investment OS, not the OS's own evidence base. Discovery/diagnostic
+work that never registered a hypothesis ID — "Project 1"'s
+fundamentals/insider-dealing closure, the Stage 16-28 mechanism-discovery
+sweep (both NO-GO by design, correctly excluded here per the rule below —
+see `HANDOFF.md`'s 2026-08-11 entry and the `docs/STAGE16`-`STAGE28E`
+files for that narrative) — and FRE's separate, document-evidence-based
+company intelligence (`docs/fre_runs/*.md`) are deliberately not tracked
+in this file. This registry only ever contains hypotheses that cleared
+pre-registration.*
 
 Updated after EVERY completed experiment (program rule, 2026-07-22).
 Status ∈ {Validated, Rejected, Under Research}. The hypothesis ledger and
@@ -177,8 +190,37 @@ rebalance, vs the equal-weighted-IRU benchmark, net of retail costs.
 
 ## Under Research
 
-*(none — H-010 moved to Rejected and H-011 moved to Validated, 2026-07-22;
-H-012 moved to Rejected, 2026-08-02)*
+### H-019 — News-Event First Backtest (family: Event, news-driven) — TESTING, first look negative (as of 2026-08-08, per HANDOFF.md; not yet a mechanical verdict in this registry)
+- **Status: `testing` in the ledger — this is a first-look result, not a
+  completed, mechanically-verdicted entry.** Recorded here per this
+  document's own "update after every completed experiment" rule so the
+  registry doesn't silently omit an open, negative-leaning thread; do not
+  treat this as a placebo/Holm-BH-corrected verdict until a full write-up
+  supersedes this entry.
+- What ran: an initial backtest against 11 qualifying news-driven events;
+  only 2 were executable after liquidity screening. Net excess return
+  **-10.0%**; both executed trades lost. **100% of trade legs failed the
+  ₦1bn AUM liquidity cap** — a capacity signal as much as a signal-quality
+  one, similar in kind (though earlier in the process) to H-011's own
+  capacity caveat.
+- Interpretation, held loosely pending more data: 2 executable trades is
+  far below the sample size this platform requires for a credible placebo
+  test (compare H-009's 9-decision near-miss, itself flagged as
+  power-limited) — the honest read is "not enough executable events yet
+  to conclude anything," not "rejected." Needs either a materially larger
+  qualifying-event set or a redesigned executability screen before a real
+  verdict is possible.
+- Full detail: `HANDOFF.md`'s 2026-08-11 entry (references the underlying
+  Project 1 work); a dedicated report may not yet exist — check
+  `reports/` and `docs/` for an H-019-specific writeup before assuming
+  none exists.
+- Interaction: n/a pending verdict.
+
+*(H-010 moved to Rejected and H-011 moved to Validated, 2026-07-22;
+H-012 moved to Rejected, 2026-08-02. H-002 remains permanently `untested`
+in the ledger since 2026-07-15, not "under research" — it was never
+picked up; see `docs/EXECUTION_BACKLOG.md` R7 for the pending housekeeping
+decision to formally withdraw or re-scope it.)*
 
 ---
 

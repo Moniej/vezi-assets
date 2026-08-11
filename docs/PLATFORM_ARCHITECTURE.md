@@ -1,13 +1,23 @@
-# Fund Alpha — Investment Intelligence Platform Architecture
+# Fund Alpha — Alpha Engine Module Architecture
 
 *2026-07-21, expanded 2026-07-22 per owner's 9-module target architecture.
-Nothing is rebuilt; every existing system maps into a module and is
-extended, never replaced. Modules are marked LIVE, PARTIAL, or GATED —
-GATED modules are not scaffolded speculatively; each waits for the
-evidence precondition stated against it. Building a gated module before
-its precondition holds would itself violate the platform's core rule
-(never invent alpha; nothing downstream of a factor may exist before the
-factor is validated).*
+**Revised 2026-08-11 (Investment OS reframe, see `README.md`,
+`docs/FUND_ALPHA_CHARTER.md`, `docs/INVESTMENT_OS_SPECIFICATION.md`): this
+document's title changed from "Investment Intelligence Platform
+Architecture" to "Alpha Engine Module Architecture" because that is what
+it actually describes — the module structure of the quant hypothesis-
+testing consumer, not the OS itself.** The OS's own architecture (data
+acquisition → document store → extraction → evidence/grounding →
+self-critique → coverage/confidence) is documented in
+`docs/INVESTMENT_OS_SPECIFICATION.md`; this document remains the correct,
+authoritative reference for how the Alpha Engine specifically is
+structured and gated. Nothing is rebuilt; every existing system maps into
+a module and is extended, never replaced. Modules are marked LIVE,
+PARTIAL, or GATED — GATED modules are not scaffolded speculatively; each
+waits for the evidence precondition stated against it. Building a gated
+module before its precondition holds would itself violate the platform's
+core rule (never invent alpha; nothing downstream of a factor may exist
+before the factor is validated).*
 
 ## 1. Data Layer — LIVE
 
@@ -120,12 +130,25 @@ rejections carrying specific successor guidance (this is the intended
 mode of progress, not a shortfall — see charter: a rejection that
 increases future discovery efficiency is a successful outcome).
 
-## 4. Company Intelligence Engine — GATED
+## 4. Company Intelligence Engine — GATED (this Alpha-Engine module
+specifically; see naming note below)
 
 Precondition: at least one validated factor to compute an exposure from.
 A per-company profile with zero validated factors would be either empty
 or fabricated — neither is acceptable. Scaffolding (schema, refresh
 cadence) can be designed once the first factor validates; not before.
+
+**Naming note (added 2026-08-11)**: a separate, differently-scoped
+"company intelligence" capability has since been built as part of FRE
+(`src/ngxrot/fre/company_intelligence_bundle.py`,
+`company_economic_profile.py`, etc.) — it does NOT fulfill this module's
+gate and is not the same thing. FRE's company intelligence is built from
+document evidence and coverage-capped confidence (grounded facts about a
+company), not from validated factor exposures (this module's actual
+precondition). The two can coexist and eventually compose, but this
+module's GATED status is unaffected by FRE's existence — factor exposure
+still requires ≥1 validated, independent factor per the charter, and
+still has only H-011.
 
 ## 5. Ranking Engine — GATED
 
@@ -179,14 +202,30 @@ weights; generates research proposals only, per instruction.
    begins. Never optimize for positive results — optimize for truthful
    ones; false positives are treated as more costly than false negatives.
 
-## Status (2026-07-22)
+## Status (revised 2026-08-11 — was stale at "0 validated" despite this
+document's own §3 already describing H-011 as confirmed the same day it
+was written)
 
-9 hypotheses tested, 0 validated, 9 rejected (2 near-misses: H-004
-p=0.079, H-009 p=0.069). Program retrospective, module-by-module maturity
-scoring, dependency map, and 3-year roadmap:
-`docs/PLATFORM_MATURITY_AND_3YEAR_ROADMAP.md` (supersedes this document's
-layer map for anything more detailed than the module list above — this
-file remains the short-form summary). Per-hypothesis evidence:
-`docs/FACTOR_REGISTRY.md`. Program lessons:
-`docs/LESSONS_LEARNED_FROM_WAVES_1_AND_2.md`. Candidate next hypotheses
-(not yet pre-registered): `docs/WAVE_3_RESEARCH_DIRECTIONS.md`.
+**18 hypotheses tested: 1 confirmed (H-011, Size — severely
+capacity-constrained), 15 rejected, 1 abandoned untested (H-002, pending
+formal retirement per `docs/EXECUTION_BACKLOG.md` R7), 1 in first-look
+testing (H-019, news-events, currently negative — not yet
+confirmation-eligible).** Per-hypothesis evidence: `docs/FACTOR_REGISTRY.md`
+(current through H-017; H-019's status is tracked in the ledger and
+`HANDOFF.md`, not yet written up as a full Factor Registry entry pending
+its verdict). Program retrospective, module-by-module maturity scoring,
+dependency map, and 3-year roadmap (dated 2026-07-22, itself now stale on
+the hypothesis count above but still the right reference for maturity
+scoring methodology): `docs/PLATFORM_MATURITY_AND_3YEAR_ROADMAP.md`.
+Program lessons: `docs/LESSONS_LEARNED_FROM_WAVES_1_AND_2.md`.
+
+Since this document's original 2026-07-22 status line, a large parallel
+research push ("Project 1," Stages 16-28, see `HANDOFF.md`'s 2026-08-11
+entry) tested and closed the fundamentals and insider-dealing tracks
+(both NO-GO) without registering new hypothesis IDs — that work is
+Alpha-Engine-adjacent discovery/diagnostic work, correctly excluded from
+this module architecture and the Factor Registry by the same "no
+hypothesis ID, no evidence-grade claim" discipline this document already
+enforces. The FRE and Research OS builds described in
+`docs/INVESTMENT_OS_SPECIFICATION.md` are a different consumer entirely,
+not part of this Alpha Engine module count.
