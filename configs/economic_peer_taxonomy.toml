@@ -1,0 +1,451 @@
+# FRE-7A: Economic Peer Taxonomy (docs/fre_runs/fre7a_peer_taxonomy_report.md)
+#
+# Deterministic (sector_ngx, sub_industry) -> (level1, level2, business_model)
+# lookup table. Built from NGX's own official Daily Official List sector/
+# sub-industry classification (securities.sector_ngx +
+# sector_ngx_provenance.sub_industry, FSI Phase 23/26, single snapshot
+# retrieval_date=2026-08-02 for all 136 classified tickers) -- the only
+# first-party structural reference data this platform holds. No business
+# description, revenue mix, or filing-text data exists on this platform to
+# refine these buckets further; where NGX's own sub_industry is genuinely
+# ambiguous or a catch-all, this is disclosed via `confidence` and `notes`
+# rather than guessed away.
+#
+# GOVERNANCE (FRE-7A hard rule 6): this table was built by reading ONLY the
+# 44 real (sector_ngx, sub_industry) pairs actually present in the database
+# and general knowledge of what each NGX-published label economically means
+# -- NOT by cross-referencing which tickers did or didn't bracket their
+# market price in the original FRE-7 pilot. No ticker-specific carve-out
+# exists anywhere in this file; every row is a (sector, sub_industry) ->
+# taxonomy mapping that applies uniformly to every ticker sharing that pair.
+#
+# level1 choices used below: Financials, Consumer, Industrials, Energy,
+# ICT/Telecom, Healthcare, Real Estate, Utilities, Agriculture,
+# Natural Resources, Other -- extended beyond the illustrative 9-category
+# list in the FRE-7A brief because the real NGX universe contains
+# AGRICULTURE and NATURAL RESOURCES sectors whose economics (commodity
+# production/extraction, weather/yield or resource-price risk) are not a
+# good fit for "Consumer" or "Industrials".
+
+[[mapping]]
+sector_ngx = "FINANCIAL SERVICES"
+sub_industry = "Banking"
+level1 = "Financials"
+level2 = "Commercial Banking"
+business_model = "financial_intermediation"
+confidence = "high"
+notes = "Unambiguous NGX label; conventional deposit-taking commercial bank."
+
+[[mapping]]
+sector_ngx = "FINANCIAL SERVICES"
+sub_industry = "Insurance Carriers, Brokers and Services"
+level1 = "Financials"
+level2 = "Insurance"
+business_model = "insurance_underwriting"
+confidence = "high"
+notes = "Unambiguous NGX label; underwriting/insurance-intermediation economics."
+
+[[mapping]]
+sector_ngx = "FINANCIAL SERVICES"
+sub_industry = "Micro-Finance Banks"
+level1 = "Financials"
+level2 = "Micro-Finance Banking"
+business_model = "financial_intermediation"
+confidence = "high"
+notes = "Distinct loan-book/regulatory profile from full commercial banks; kept as its own subsector rather than merged into 'Commercial Banking'."
+
+[[mapping]]
+sector_ngx = "FINANCIAL SERVICES"
+sub_industry = "Mortgage Carriers, Brokers and Services"
+level1 = "Financials"
+level2 = "Mortgage Finance"
+business_model = "financial_intermediation"
+confidence = "high"
+notes = "Distinct asset class (mortgage lending) from general commercial banking."
+
+[[mapping]]
+sector_ngx = "FINANCIAL SERVICES"
+sub_industry = "Other Financial Institutions"
+level1 = "Financials"
+level2 = "Other Financial Services"
+business_model = "financial_intermediation"
+confidence = "low"
+notes = "NGX's own catch-all bucket -- known real constituents span share registrars, asset managers, and investment banks (materially different economics). No first-party business-description data exists on this platform to split it further; kept as one low-confidence bucket rather than guessing a split."
+
+[[mapping]]
+sector_ngx = "INVESTMENT"
+sub_industry = "Diversified Industries"
+level1 = "Financials"
+level2 = "Investment Holding"
+business_model = "financial_intermediation"
+confidence = "medium"
+notes = "NGX's separate 'INVESTMENT' sector_ngx (distinct from FINANCIAL SERVICES) with a generic 'Diversified Industries' sub_industry label -- economically an investment/holding vehicle, mapped to Financials rather than Other."
+
+[[mapping]]
+sector_ngx = "ICT"
+sub_industry = "Telecommunications Services"
+level1 = "ICT/Telecom"
+level2 = "Telecom Services"
+business_model = "telecom_network_services"
+confidence = "high"
+notes = "Unambiguous; licensed network operator economics."
+
+[[mapping]]
+sector_ngx = "ICT"
+sub_industry = "IT Services"
+level1 = "ICT/Telecom"
+level2 = "IT Services"
+business_model = "it_services"
+confidence = "high"
+notes = "Unambiguous; services/systems-integration economics, distinct from network operators."
+
+[[mapping]]
+sector_ngx = "ICT"
+sub_industry = "Computers and Peripherals"
+level1 = "ICT/Telecom"
+level2 = "Computer Hardware"
+business_model = "hardware_manufacturing_distribution"
+confidence = "high"
+notes = "Hardware/distribution economics, distinct from IT services."
+
+[[mapping]]
+sector_ngx = "ICT"
+sub_industry = "Processing Systems"
+level1 = "ICT/Telecom"
+level2 = "Payments & Processing Systems"
+business_model = "it_services"
+confidence = "medium"
+notes = "Transaction-processing/fintech-infrastructure economics; grouped with IT Services business model as the closest available tag."
+
+[[mapping]]
+sector_ngx = "CONSUMER GOODS"
+sub_industry = "Food Products"
+level1 = "Consumer"
+level2 = "Food Products"
+business_model = "consumer_staples_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "CONSUMER GOODS"
+sub_industry = "Food Products--Diversified"
+level1 = "Consumer"
+level2 = "Food Products - Diversified"
+business_model = "consumer_staples_manufacturing"
+confidence = "high"
+notes = "Kept distinct from plain 'Food Products' -- NGX itself distinguishes diversified multi-category FMCG players from single-category commodity processors; forcing a merge would blur a real margin/business-mix difference this platform cannot independently verify either way."
+
+[[mapping]]
+sector_ngx = "CONSUMER GOODS"
+sub_industry = "Beverages--Brewers/Distillers"
+level1 = "Consumer"
+level2 = "Beverages"
+business_model = "consumer_staples_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "CONSUMER GOODS"
+sub_industry = "Household Durables"
+level1 = "Consumer"
+level2 = "Household Durables"
+business_model = "consumer_durables_manufacturing"
+confidence = "high"
+notes = "Durable-goods manufacturing economics, distinct from consumables."
+
+[[mapping]]
+sector_ngx = "CONSUMER GOODS"
+sub_industry = "Personal/Household Products"
+level1 = "Consumer"
+level2 = "Personal & Household Products"
+business_model = "consumer_staples_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "INDUSTRIAL GOODS"
+sub_industry = "Building Materials"
+level1 = "Industrials"
+level2 = "Building Materials"
+business_model = "industrial_manufacturing"
+confidence = "high"
+notes = "Per NGX's own sub_industry label, used as the primary evidence source rather than an independently-asserted judgment about any single constituent's actual product line."
+
+[[mapping]]
+sector_ngx = "INDUSTRIAL GOODS"
+sub_industry = "Electronic and Electrical Products"
+level1 = "Industrials"
+level2 = "Electrical & Electronic Products"
+business_model = "industrial_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "INDUSTRIAL GOODS"
+sub_industry = "Packaging/Containers"
+level1 = "Industrials"
+level2 = "Packaging & Containers"
+business_model = "industrial_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "OIL AND GAS"
+sub_industry = "Integrated Oil and Gas Services"
+level1 = "Energy"
+level2 = "Integrated Oil & Gas"
+business_model = "integrated_energy"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "OIL AND GAS"
+sub_industry = "Exploration and Production"
+level1 = "Energy"
+level2 = "Upstream (E&P)"
+business_model = "upstream_energy"
+confidence = "high"
+notes = "Materially different risk/capex profile from integrated or downstream players; kept as its own subsector."
+
+[[mapping]]
+sector_ngx = "OIL AND GAS"
+sub_industry = "Petroleum and Petroleum Products Distributors"
+level1 = "Energy"
+level2 = "Downstream Distribution"
+business_model = "downstream_energy"
+confidence = "high"
+notes = "Distribution/marketing economics, distinct from upstream extraction or integrated majors."
+
+[[mapping]]
+sector_ngx = "OIL AND GAS"
+sub_industry = "Energy Equipment and Services"
+level1 = "Energy"
+level2 = "Oilfield Services"
+business_model = "energy_services"
+confidence = "high"
+notes = "Services/equipment-provider economics, distinct from operators."
+
+[[mapping]]
+sector_ngx = "UTILITIES"
+sub_industry = "Electric Power Generation"
+level1 = "Utilities"
+level2 = "Power Generation"
+business_model = "regulated_utility"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "HEALTHCARE"
+sub_industry = "Pharmaceuticals"
+level1 = "Healthcare"
+level2 = "Pharmaceuticals"
+business_model = "healthcare_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "HEALTHCARE"
+sub_industry = "Healthcare Providers"
+level1 = "Healthcare"
+level2 = "Healthcare Providers"
+business_model = "healthcare_services"
+confidence = "high"
+notes = "Service-delivery economics, distinct from manufacturers."
+
+[[mapping]]
+sector_ngx = "HEALTHCARE"
+sub_industry = "Medical Supplies"
+level1 = "Healthcare"
+level2 = "Medical Supplies"
+business_model = "healthcare_manufacturing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "CONSTRUCTION/REAL ESTATE"
+sub_industry = "Real Estate Investment Trusts (REITs)"
+level1 = "Real Estate"
+level2 = "REITs"
+business_model = "real_estate_income"
+confidence = "high"
+notes = "REIT income/distribution economics are materially different from an operating developer; kept as its own subsector."
+
+[[mapping]]
+sector_ngx = "CONSTRUCTION/REAL ESTATE"
+sub_industry = "Real Estate Development"
+level1 = "Real Estate"
+level2 = "Real Estate Development"
+business_model = "real_estate_development"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "CONSTRUCTION/REAL ESTATE"
+sub_industry = "Infrastructure/Heavy Construction"
+level1 = "Industrials"
+level2 = "Heavy Construction"
+business_model = "industrial_construction"
+confidence = "high"
+notes = "Construction-contractor economics (project-based, capital-equipment-heavy) are closer to industrial services than to real estate ownership/development; mapped to Industrials rather than Real Estate."
+
+[[mapping]]
+sector_ngx = "AGRICULTURE"
+sub_industry = "Crop Production"
+level1 = "Agriculture"
+level2 = "Crop Production"
+business_model = "agricultural_production"
+confidence = "high"
+notes = "Commodity/yield/weather-risk economics are not comparable to processed consumer-goods manufacturing; kept as its own level1 rather than folded into Consumer."
+
+[[mapping]]
+sector_ngx = "AGRICULTURE"
+sub_industry = "Livestock/Animal Specialties"
+level1 = "Agriculture"
+level2 = "Livestock"
+business_model = "agricultural_production"
+confidence = "high"
+notes = "Same reasoning as Crop Production."
+
+[[mapping]]
+sector_ngx = "NATURAL RESOURCES"
+sub_industry = "Chemicals"
+level1 = "Natural Resources"
+level2 = "Chemicals"
+business_model = "commodity_processing"
+confidence = "high"
+notes = "Feedstock-price-exposed commodity processing; distinct from branded consumer manufacturing."
+
+[[mapping]]
+sector_ngx = "NATURAL RESOURCES"
+sub_industry = "Metals"
+level1 = "Natural Resources"
+level2 = "Metals"
+business_model = "commodity_extraction_processing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "NATURAL RESOURCES"
+sub_industry = "Mining Services"
+level1 = "Natural Resources"
+level2 = "Mining Services"
+business_model = "commodity_services"
+confidence = "high"
+notes = "Services-provider economics, distinct from extraction/processing operators."
+
+[[mapping]]
+sector_ngx = "NATURAL RESOURCES"
+sub_industry = "Paper/Forest Products"
+level1 = "Natural Resources"
+level2 = "Paper & Forest Products"
+business_model = "commodity_processing"
+confidence = "high"
+notes = "Unambiguous."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Support and Logistics"
+level1 = "Industrials"
+level2 = "Transportation & Logistics Services"
+business_model = "industrial_services"
+confidence = "medium"
+notes = "NGX's 'SERVICES' sector is a broad catch-all; logistics/support-services economics (asset-light, contract-based) are closer to Industrials than to Consumer or Other. Consolidated with the 3 other transport-flavoured sub_industries below under one Level 2 label -- the alternative (4 separate 1-2-constituent subsectors) would make same-subsector peer sets trivially too small to be useful, without a genuine economic distinction to justify keeping them apart."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Courier/Freight/Delivery"
+level1 = "Industrials"
+level2 = "Transportation & Logistics Services"
+business_model = "industrial_services"
+confidence = "medium"
+notes = "See 'Support and Logistics' note -- same consolidated Level 2 bucket."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Road Transportation"
+level1 = "Industrials"
+level2 = "Transportation & Logistics Services"
+business_model = "industrial_services"
+confidence = "medium"
+notes = "See 'Support and Logistics' note -- same consolidated Level 2 bucket."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Transport-Related Services"
+level1 = "Industrials"
+level2 = "Transportation & Logistics Services"
+business_model = "industrial_services"
+confidence = "medium"
+notes = "See 'Support and Logistics' note -- same consolidated Level 2 bucket."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Printing/Publishing"
+level1 = "Industrials"
+level2 = "Printing & Publishing"
+business_model = "industrial_manufacturing"
+confidence = "medium"
+notes = "Production/manufacturing economics (presses, plant capacity) rather than a pure media/content business; mapped to Industrials, disclosed as a judgment call given no revenue-mix data exists to confirm this platform-wide."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Hospitality"
+level1 = "Consumer"
+level2 = "Hospitality & Leisure"
+business_model = "consumer_discretionary_services"
+confidence = "high"
+notes = "Consumer-discretionary leisure spend economics."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Hotels/Lodging"
+level1 = "Consumer"
+level2 = "Hospitality & Leisure"
+business_model = "consumer_discretionary_services"
+confidence = "high"
+notes = "Same subsector as Hospitality -- functionally identical lodging economics."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Media/Entertainment"
+level1 = "Consumer"
+level2 = "Media & Advertising"
+business_model = "consumer_discretionary_services"
+confidence = "high"
+notes = "Consumer-discretionary/advertising-revenue economics."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Advertising"
+level1 = "Consumer"
+level2 = "Media & Advertising"
+business_model = "consumer_discretionary_services"
+confidence = "high"
+notes = "Same subsector as Media/Entertainment."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Automobile/Auto Part Retailers"
+level1 = "Consumer"
+level2 = "Auto Retail"
+business_model = "consumer_discretionary_retail"
+confidence = "high"
+notes = "Retail/distribution economics."
+
+[[mapping]]
+sector_ngx = "SERVICES"
+sub_industry = "Specialty"
+level1 = "Other"
+level2 = "Specialty (Unclassified)"
+business_model = "unknown"
+confidence = "low"
+notes = "NGX's own label gives no economic content beyond 'not one of the other Services categories' -- left as a low-confidence catch-all rather than guessed into a specific bucket. Not eligible as a peer-selection subsector match for any other bucket."
+
+[[mapping]]
+sector_ngx = "CONGLOMERATES"
+sub_industry = "Diversified Industries"
+level1 = "Other"
+level2 = "Diversified Conglomerate"
+business_model = "diversified_holding"
+confidence = "high"
+notes = "By construction, a multi-segment conglomerate has no single-business-model peer group; kept in 'Other' rather than forced into any operating sector. (Not eligible for pe/pb under the existing eligibility config regardless -- sum_of_the_parts is its only eligible method.)"
