@@ -183,6 +183,16 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
                     "CHECK (reporting_currency IS NULL OR reporting_currency GLOB '[A-Z][A-Z][A-Z]')")
     except sqlite3.OperationalError:
         pass
+    # additive migration, 2026-08-11 (loading real dividend data into
+    # corporate_actions, HANDOFF.md). Nullable, no existing row is affected
+    # -- schema.sql's CREATE TABLE IF NOT EXISTS already carries this for a
+    # fresh database; this covers a database that already has
+    # corporate_actions from before this change.
+    try:
+        con.execute("ALTER TABLE corporate_actions ADD COLUMN source_fact_id INTEGER "
+                    "REFERENCES extracted_facts(fact_id)")
+    except sqlite3.OperationalError:
+        pass
     con.executescript((SCHEMA_DIR / "schema.sql").read_text(encoding="utf-8"))
     if seed:
         con.executescript((SCHEMA_DIR / "seed_reference.sql").read_text(encoding="utf-8"))

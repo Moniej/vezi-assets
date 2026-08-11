@@ -193,7 +193,13 @@ CREATE TABLE IF NOT EXISTS corporate_actions (
     details        TEXT,
     source_id      INTEGER NOT NULL REFERENCES sources(source_id),
     confidence     REAL NOT NULL DEFAULT 0.4 CHECK (confidence >= 0.0 AND confidence <= 1.0),
-    as_of_date     TEXT NOT NULL
+    as_of_date     TEXT NOT NULL,
+    -- Added 2026-08-11 (loading real dividend data, HANDOFF.md): links a row
+    -- back to the extracted_facts row it was derived from, when applicable --
+    -- NULL for the pre-existing synthetic dev fixtures (source_id=4,
+    -- 'synthetic_dev'), which predate the FRE fact/evidence system and have
+    -- no fact to link to. Nullable, additive -- no existing row is affected.
+    source_fact_id INTEGER REFERENCES extracted_facts(fact_id)
 );
 CREATE INDEX IF NOT EXISTS ix_corp_actions_ticker
     ON corporate_actions (ticker, markdown_date);
