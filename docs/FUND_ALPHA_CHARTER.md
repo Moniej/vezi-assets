@@ -1,181 +1,253 @@
 # Fund Alpha — Charter
 
-*Adopted 2026-07-15. This document sits above every other document in the
-project. When any plan conflicts with it, this wins.*
+*Adopted 2026-07-15. Revised 2026-08-11: repositions Fund Alpha as an
+Investment Operating System — the previous version defined the product as
+the Alpha Engine and everything else as its supporting infrastructure; this
+version inverts that. The intelligence infrastructure is the product; the
+Alpha Engine, FRE, and any future decision engine are consumers of it. This
+document sits above every other document in the project. When any plan
+conflicts with it, this wins.*
 
 ## The objective
 
-Build **Fund Alpha**: an institutional-quality alpha engine that
-consistently identifies profitable investment opportunities and can answer,
-at any time, with provenance:
+Build the **Investment OS**: a continuously updated, evidence-grounded,
+provenance-tracked representation of the Nigerian equity investment universe
+— documents, facts, events, factors, relationships, prices, corporate
+actions — organized so that *any* investment decision process can be run on
+top of it, without that process needing to be known in advance.
 
-- What should I buy? What should I sell?
-- When should I enter? When should I exit?
-- How much capital should I allocate?
-- What is the expected return versus risk?
-- What is the confidence level of the signal?
-- Which opportunities should be ignored?
+The OS itself never decides what to buy. It answers a narrower, harder
+question honestly at any time, with provenance:
 
-Everything else — database, providers, backtester, governance — is
-supporting infrastructure, valuable exactly insofar as it improves those
-answers.
+- What is actually known about this company or market, and from what source?
+- How complete is what's known — and how much should that limit confidence?
+- What contradicts what, and which source should win?
+- What changed, and does it matter?
+
+Consumers built on top of the OS — today the **Alpha Engine** (quant
+hypothesis testing) and **FRE** (AI document/company intelligence), later
+portfolio construction, risk, or other decision processes — are the ones
+that answer buy/sell/enter/exit/size/risk questions. They are valuable
+exactly insofar as the OS beneath them is complete, grounded, and honest.
 
 ## Hierarchy
 
 ```
-Fund Alpha
-└── Alpha Engine (decision-making layer)          ← the product
-    └── Trading & Investment Models                ← validated alpha sources
-        └── Research & Validation Framework        ← eliminates weak ideas fast
-            └── Data Infrastructure                ← feeds model discovery
+Investment OS
+├── Intelligence Infrastructure                    ← the product
+│   (data acquisition, document store, extraction,
+│    facts/events/factors/relationships, evidence/
+│    grounding, self-critique, coverage & confidence)
+├── Alpha Engine (quant hypothesis-testing consumer)
+├── FRE (AI analyst / company-intelligence consumer)
+└── [future consumers: portfolio construction, risk,
+     other decision processes — additive, not a redesign]
 ```
 
-**The standing priority hierarchy for all proposed work (2026-07-15):**
+**The standing priority hierarchy for all proposed work (revised
+2026-08-11):**
 
-1. Improves the Alpha Engine.
-2. Enables multiple future hypothesis families.
-3. Produces reusable datasets.
-4. Accelerates testing of many ideas.
-5. Only then: optimizes an individual hypothesis.
+1. Increases the OS's information completeness or grounding integrity
+   (closes a coverage gap, adds a source, strengthens provenance).
+2. Improves an existing consumer's decision quality (Alpha Engine or FRE)
+   using infrastructure that already exists.
+3. Enables multiple future hypothesis families or consumer capabilities.
+4. Produces reusable datasets or evidence-grade corpora.
+5. Accelerates testing of many ideas within an existing consumer.
+6. Only then: optimizes a single hypothesis or a single company's coverage.
 
-Work that only serves level 5 never outranks work at levels 1–4. Work that
-expands infrastructure without touching any level gets built only when a
-model demands it.
+Work that only serves level 6 never outranks work at levels 1–5. Work that
+expands infrastructure nobody has asked for gets built only when a consumer
+or a measured coverage gap demands it — the OS grows by evidence of need,
+same discipline the Alpha Engine already applies to itself.
 
-## Success metrics — the fund's KPIs (permanent, on every engine status report)
+## Success metrics — permanent, on every status report
 
-1. **Independent validated alpha sources** (the headline).
-2. **Hypotheses tested per month** (discovery throughput — honest rejections
-   count).
-3. **Average time from idea to verdict.**
-4. **Reusable evidence-grade datasets.**
-5. **Candidate hypothesis discovery rate** — evidence-based hypotheses
-   registered per quarter (human-generated now; Discovery-Engine-generated
-   later).
-6. **Alpha engine readiness** — models wired and able to emit
-   provenance-backed recommendations the day a source validates.
+**OS-level (new headline metrics):**
+1. **Mean coverage score across the tracked universe** — the OS's own
+   measured information completeness (currently 59.5% across the last
+   20-ticker validation pass; see `docs/INVESTMENT_OS_BASELINE_AUDIT.md`).
+2. **Grounding / citation integrity rate** — currently 100% on the last live
+   validation run; must never regress to grow coverage faster.
+3. **Coverage dimensions closed platform-wide** (financial statements,
+   secondary sources, entity relationships, cross-ticker corroboration,
+   temporal/point-in-time integrity) — tracked explicitly as ⛔/🟡/✅ per
+   dimension, not folded into a single vague score.
 
-The objective is never NGX sector rotation, or any single market or
-strategy class. The competitive advantage is the repeatable machine —
-discover, validate, deploy — pointed wherever alpha exists.
+**Consumer-level (existing metrics, now scoped per consumer):**
+4. **Alpha Engine: independent validated alpha sources** (currently 1,
+   capacity-constrained) and **hypotheses tested per month** (honest
+   rejections count as throughput).
+5. **FRE: coverage-justified confidence** — implications whose confidence
+   ceiling is honestly capped by measured coverage, not asserted past it.
+6. **Time from idea/gap to verdict**, for either consumer.
 
-## The living pipeline (hypothesis generation is a platform function)
+The objective is never NGX sector rotation, or any single market, strategy,
+or reasoning technique. The competitive advantage is the OS itself —
+an increasingly complete, provenance-tracked model of the investment
+universe that any well-governed consumer can be pointed at.
 
-The queue is never a fixed backlog. New datasets continuously generate new
-candidates, and every completed hypothesis — confirmed or rejected — is
-mined for follow-on ideas. After every verdict and every major ingestion,
-the platform asks, in writing (post-mortem, family map, or ledger entry):
+## The living pipeline (gap-discovery is a platform function)
 
-- What patterns appeared during validation that deserve their own hypothesis?
-- What unexpected relationships emerged from the data?
-- Which datasets can be combined into entirely new research programs?
-- Which rejected hypotheses suggest a different *mechanism* rather than a
-  dead end?
+The queue is never a fixed backlog. Every completed piece of work — a
+hypothesis verdict, a coverage assessment, a document ingestion run — is
+mined for what it reveals is still missing, on both sides of the hierarchy:
 
-Precedent: H-001's rejection generated H-002/H-003 (post-mortem §8); its
-validation by-products generated H-004/H-005 (attribution showed Oil & Gas
-dominance → F12; the walk-forward regime work → F11). That pattern is now
-mandatory, not incidental.
+- What OS-level gap does this consumer's result expose (missing data class,
+  ungrounded claim, low-coverage ticker)?
+- What patterns appeared during validation that deserve their own
+  hypothesis or their own extraction taxonomy entry?
+- Which datasets can be combined into entirely new research or intelligence
+  programs?
+- Which rejected hypotheses or capped-confidence implications suggest a
+  different *mechanism*, or a different *missing input*, rather than a dead
+  end?
+
+Precedent: H-001's rejection generated H-002/H-003; FRE's Phase 19
+self-assessment generated the current OS coverage-gap priority list
+(financial statements, secondary sources, entity graph, temporal/PIT
+integrity — see `docs/fre_runs/decision_intelligence_phase19_real_world_assessment.md`).
+That pattern is mandatory on both sides of the hierarchy, not incidental to
+either.
 
 ## Language rule: priority ≠ predicted success
 
-No hypothesis is ever described as "likely to validate" before testing.
-Priority language must cite **research efficiency** only: acquisition cost,
-dataset reuse, and time-to-verdict. "H-004 is the highest-priority candidate
-because it has low acquisition cost, reuses existing datasets, and can reach
-a statistically rigorous verdict quickly" — never "H-004 could be our first
-confirmed alpha." Expected success is what the validation exists to measure;
-assuming it corrupts the process.
+No hypothesis is ever described as "likely to validate" before testing. No
+coverage-gap closure is ever described as "will unlock alpha" before it's
+built and measured. Priority language must cite **research/infrastructure
+efficiency** only: acquisition cost, dataset reuse, coverage-dimensions
+unlocked, and time-to-verdict. Expected success is what validation and
+coverage measurement exist to determine; assuming it corrupts the process
+on either side of the hierarchy.
 
-## The queue, not the hypothesis
+## The queue, not the hypothesis (or the ticker)
 
-**The headline success metric is the number of independent, validated alpha
-sources accumulated in the engine — never the fate of any single hypothesis.**
-H-003 is the next candidate in the queue, nothing more. If it fails, the
-platform moves to H-004 the same day; if H-004 fails, H-005. Rejections are
-throughput, not setbacks — H-001's rejection was the platform working.
+**The headline success metrics are the OS's measured coverage/grounding
+and the Alpha Engine's count of independent validated alpha sources — never
+the fate of any single hypothesis or the completeness of any single
+ticker.** A hypothesis or a low-coverage company is the next item in the
+queue, nothing more. Rejections and coverage gaps are throughput, not
+setbacks.
 
 Operating rules:
-- The ledger must always hold a stocked queue of registered candidates so a
-  rejection immediately hands work to the next hypothesis.
-- Data acquisitions are justified by how many *queued and future* candidates
-  they feed (hierarchy level 2–3), never by one hypothesis's needs. Example:
-  Sprint 1 (MPC history + CBN circulars + Brent) feeds H-003, H-004, and
-  H-005 simultaneously — that is why it ranks, not because H-003 wants it.
-- No hypothesis may consume the roadmap: when in doubt, prefer the
-  acquisition or tool that shortens time-to-verdict for *many* ideas.
+- The hypothesis ledger must always hold a stocked queue of registered
+  candidates so a rejection immediately hands work to the next hypothesis.
+- The coverage backlog must always name its worst-covered dimension
+  platform-wide (today: financial statements, secondary sources — both at
+  effectively 0% platform-wide) so gap-closing work has an unambiguous next
+  target.
+- Data acquisitions are justified by how many *queued and future*
+  candidates or coverage dimensions they feed, never by one hypothesis's or
+  one ticker's needs.
+- No hypothesis, and no single company's coverage push, may consume the
+  roadmap: when in doubt, prefer the acquisition or tool that shortens
+  time-to-verdict, or closes a coverage dimension, for *many* items at once.
 
-## Long-term engine vision (build milestones, not upfront)
+## Long-term OS vision (build milestones, not upfront)
 
-The engine grows into an institutional investment intelligence system
-combining many validated model families simultaneously — event-driven,
-factor, statistical arbitrage, mean reversion, momentum, ML, alternative
-data, sentiment, macro allocation, liquidity/flow, execution optimization.
-Milestone-gated so the engine never outruns its evidence:
+The OS grows into infrastructure comprehensive enough to support many
+consumers simultaneously — quant factor families, AI company research,
+portfolio construction, risk monitoring, execution optimization —
+without redesigning itself for each one. Milestone-gated so the OS never
+outruns its evidence, and no consumer outruns the OS beneath it:
 
-- **≥1 validated source:** single-model recommendations with provenance
-  (adapter wiring, already designed).
-- **≥2 validated sources:** signal-combination and capital-allocation layer
-  (correlation of alpha sources, dynamic weighting) — built THEN, not now.
-- **Ongoing:** risk monitoring and full-provenance explanation attach to
-  every recommendation from day one; they are schema, not add-ons.
+- **Today:** two consumers (Alpha Engine, FRE), both explicitly
+  self-limited by what they can honestly claim — 0 deployable alpha
+  sources, coverage-capped confidence.
+- **≥1 validated alpha source (already true, capacity-constrained):**
+  single-model recommendations with provenance — built, minimal.
+- **≥2 validated alpha sources:** signal-combination and capital-allocation
+  layer — built THEN, not now.
+- **OS coverage crosses meaningful thresholds** (financial statements live,
+  secondary sources live, entity graph populated, temporal/PIT integrity
+  platform-wide): each crossing is evaluated for what new consumer
+  capability it unlocks, not treated as an end in itself.
+- **Ongoing:** every consumer's output carries full-provenance explanation
+  and an honest confidence ceiling from day one; these are OS schema, not
+  consumer add-ons.
 
-## What the engine is
+## What a consumer is (generalizing "what the engine is")
 
-A continuously running decision layer that ingests current data, runs every
-**validated** model, and emits ranked recommendations — each one carrying:
-instrument, action, size, horizon, expected risk-adjusted return, a
-confidence rating from the existing rating machinery, a plain-language
-rationale, and provenance (hypothesis ID + experiment IDs) tracing the
-recommendation to immutable research records.
+A consumer is anything built on top of the OS that turns intelligence into
+a decision-relevant output — a ranked trade recommendation (Alpha Engine),
+a grounded company research report (FRE), eventually a portfolio action or
+a risk flag. Every consumer output carries: the claim, a confidence rating
+honestly capped by OS-measured coverage, a plain-language rationale, and
+provenance (hypothesis/experiment IDs for the Alpha Engine; fact/evidence/
+document IDs for FRE) tracing it to immutable, inspectable records.
 
-Scope is deliberately broad: equities, macro, event-driven, sentiment,
-ML/statistical models, statistical arbitrage, portfolio construction, and
-execution optimization are all admissible model classes. The hypothesis
-family map (`HYPOTHESIS_FAMILY_MAP.md`) is open-ended by design; new
-families join it before signal work starts.
+Scope is deliberately broad and open-ended on both sides: the Alpha Engine
+admits equities, macro, event-driven, sentiment, ML/statistical, and
+execution-optimization model classes (`HYPOTHESIS_FAMILY_MAP.md`); FRE
+admits any reasoning question the OS's evidence can actually support, and
+refuses (via self-critique and coverage-capped confidence) the ones it
+can't. New consumer classes join by the same discipline — evidence of need,
+never speculative scaffolding.
 
-## The engine's honesty constraints (non-negotiable)
+## The honesty constraints (non-negotiable, apply to every consumer)
 
-1. **The engine only speaks from validated models.** A model becomes a
-   recommendation source only when its hypothesis is `confirmed` in the
-   ledger on evidence-grade data, having survived the full validation
-   gauntlet (placebo, multiple-testing correction, walk-forward, OOS,
-   capacity, costs). No exceptions for promising-looking development
-   results.
-2. **"No position" is a first-class output.** When no validated edge covers
-   a decision, the engine says so and explains what is in the pipeline and
-   what blocks it. An engine that always has a trade is broken.
-3. **Every recommendation is explainable and reproducible** down to
-   experiment IDs. If the provenance chain is missing, the recommendation is
-   invalid.
-4. **Capacity and cost are part of the recommendation**, not footnotes:
-   sizing respects the validated capacity analysis; expected returns are
-   net of the modeled cost stack.
-5. The engine outputs *model-generated signals for the fund's own research
-   and decision process* — it is decision support with full provenance, not
-   a substitute for the fund's judgment or its compliance obligations.
+1. **A consumer only speaks from validated or coverage-justified evidence.**
+   Alpha Engine: a model becomes a recommendation source only when its
+   hypothesis is `confirmed` in the ledger on evidence-grade data, having
+   survived the full validation gauntlet (placebo, multiple-testing
+   correction, walk-forward, OOS, capacity, costs). FRE: an implication's
+   confidence may never exceed the mechanical coverage-based ceiling, and
+   must clear the 8-question self-critique gate before any downstream
+   consumer can read it. No exceptions for promising-looking results.
+2. **"No position" / "insufficient information" is a first-class output.**
+   When no validated edge covers a decision, or the OS's coverage is too
+   thin to support a claim, the consumer says so and explains what's
+   missing and what's in the pipeline. A consumer that always has an answer
+   is broken.
+3. **Every output is explainable and reproducible** down to experiment IDs
+   (Alpha Engine) or fact/evidence/document IDs (FRE). If the provenance
+   chain is missing, the output is invalid, full stop.
+4. **Capacity, cost, and coverage are part of the output**, not footnotes:
+   Alpha Engine sizing respects validated capacity analysis and nets out
+   the modeled cost stack; FRE confidence respects the measured coverage
+   ceiling. Neither gets rounded up.
+5. Every consumer outputs *decision support with full provenance for the
+   fund's own research and judgment* — never a substitute for that judgment
+   or the fund's compliance obligations, and never packaged or represented
+   as investment advice.
 
-## Current honest state (2026-07-15)
+## Current honest state (2026-08-11)
 
-- Validated alpha sources: **0** (H-001 rejected & frozen; H-003 blocked on
-  event-data acquisition; F2–F12 families blocked mostly on data).
-- Therefore the engine's current correct output is: *no positions
-  recommended; benchmark/cash is the default; pipeline status attached.*
-- The bottleneck to a non-empty engine is **validated models**, and the
-  bottleneck to validated models is **decision-relevant data** — which is
-  why the acquisition core (price lists, membership PIT, dividend calendar,
-  event database) remains the active work, now justified in engine terms:
-  each dataset exists to raise the probability that some model graduates
-  into the engine.
+- **OS coverage**: mean 59.5% across the last 20-ticker validation pass
+  (`docs/fre_runs/decision_intelligence_phase19_real_world_assessment.md`).
+  Grounding/citation integrity: 100% on the last live run. Weakest
+  dimensions platform-wide: financial statements and secondary/news sources
+  (effectively 0% coverage on both, for every ticker) — the #1 and #2
+  infrastructure priorities.
+- **Alpha Engine**: 18 hypotheses tested — 1 confirmed (H-011, Size,
+  severely capacity-constrained: median tradeable leg ~₦694k), 15 rejected,
+  1 abandoned untested (H-002, needs formal retirement), 1 in first-look
+  testing (H-019, news-events, currently negative). **Zero deployable,
+  capacity-feasible alpha sources.** Architecture frozen V1.
+- **FRE**: Phases A–19 built and engineering-tested. Self-assessed as an
+  "Analyst Research Assistant, not institutional infrastructure" — strong
+  provenance and PIT discipline, structurally zero coverage of business
+  description/segments/management/ownership for every ticker, valuation
+  engine architecturally ready but deliberately gated pending owner
+  sign-off.
+- Therefore the OS's current correct output, end to end, is: *here is what
+  is known, here is how complete that knowledge is, here is what would
+  need to be true for a consumer to act — no consumer should currently
+  claim more than that.*
+- The bottleneck is **OS coverage breadth** (financial statements,
+  secondary sources, entity relationships, temporal/PIT integrity), not
+  reasoning sophistication on either consumer. Per the priority hierarchy
+  above, coverage-closing work now outranks new consumer features unless a
+  consumer surfaces a specific, evidenced gap.
 
 ## Priority test applied to the current queue
 
-| Work item | Engine justification | Verdict |
+| Work item | OS/consumer justification | Verdict |
 |---|---|---|
-| Daily ephemeral capture | Feeds F3–F8 model families; time-gated | keep (must run daily) |
-| H-003 Sprint 1 (MPC + circulars + Brent) | First candidate model class for the engine | **top priority** |
-| Membership PIT + dividend calendar | Precondition for constituent-level model families + TR truth | keep, high |
-| Wayback price-list probe | Historical depth for 5 families | keep, after Sprint 1 |
-| More governance/platform features | Engine-neutral | **deprioritized — build nothing here unless a model demands it** |
-| Engine decision layer (schema + status) | The product itself; grows only as models validate | built minimal today; expands per validated model |
+| Financial-statement dataset (structured income/balance/cash-flow, historical periods) | Closes the #1 platform-wide coverage gap; unlocks FRE valuation activation and Alpha Engine Value/Dividend-Yield hypothesis families simultaneously | **top priority** |
+| Secondary-source (news/analyst) ingestion with strict provenance | Closes the #2 platform-wide coverage gap; raises coverage score for every ticker at once | **top priority** |
+| Entity relationship graph (competitor/supplier/customer/subsidiary) | Unlocks cross-ticker propagation for FRE and pooled/cohort hypothesis design for Alpha Engine | high — after the two data gaps above |
+| Temporal / point-in-time integrity extension to documents & facts | Non-negotiable precondition for any future historical evaluation of FRE outputs, same discipline the Alpha Engine already enforces on prices | high, structural |
+| Daily ephemeral price capture | Feeds OS coverage and Alpha Engine model families; time-gated, must run daily | keep |
+| FRE-7 valuation-engine activation | Architecture ready; blocked on owner sign-off, not on more building | awaiting decision, not queued work |
+| New consumer scaffolding (portfolio construction, risk, etc.) | No consumer-level need demonstrated yet; Alpha Engine still has only 1 validated source | **deprioritized — build nothing here until a specific gap or ≥2 validated sources demands it** |
