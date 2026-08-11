@@ -1,3 +1,63 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11)
+
+**REFRAME (2026-08-11): Fund Alpha repositioned as an Investment OS, not
+an alpha model.** Owner directive: the product is the **intelligence
+infrastructure** (data acquisition -> document store -> extraction ->
+facts/events/factors/relationships -> evidence/grounding ->
+self-critique/validation -> investment intelligence); the Alpha Engine
+(quant hypothesis-testing) and FRE (AI document/company intelligence) are
+now framed as two **consumers** running on top of that shared OS, not the
+product itself. A future portfolio-construction, risk, or other decision
+engine is a third consumer, additive, not a redesign. `README.md` and
+`docs/FUND_ALPHA_CHARTER.md` were rewritten to lead with this framing
+(charter revision note dated 2026-08-11, explicitly superseding the
+2026-07-15 alpha-first version it inherits from — the charter still "sits
+above every other document," the objective clause is what changed).
+Priority hierarchy, success metrics, and honesty constraints were
+generalized from engine-specific to consumer-generic language; nothing
+about SQL-enforced governance, the placebo/Holm-BH/walk-forward gauntlet,
+or FRE's self-critique gate changed operationally — this is a positioning
+and documentation change, not a code or validation-standard change.
+Committed `7ec48c7`, pushed to `origin/main`.
+
+**Immediate practical consequence for future sessions**: read
+`docs/FUND_ALPHA_CHARTER.md`'s "Current honest state" and "Priority test"
+sections before proposing new work — the top two platform-wide priorities
+are now explicitly the OS's own coverage gaps (financial-statement dataset,
+secondary/news-source ingestion), ranked above new Alpha Engine hypotheses
+or new FRE reasoning features unless a specific, evidenced gap demands
+otherwise. New consumer scaffolding (portfolio construction, risk, etc.) is
+explicitly deprioritized until either the Alpha Engine has >=2 validated
+alpha sources (currently 1, capacity-constrained) or a coverage/consumer
+gap specifically demands it.
+
+**Also committed this session (2026-08-11), previously uncommitted since
+2026-08-08/09**: everything below the freeze that had never been
+committed — Project 1's fundamentals/insider-dealing closure (both NO-GO)
+and the H-019/H-020 news-event first backtest (negative, not
+confirmation-eligible); the Stage 16-21C alpha-discovery/illiquidity
+sweep (all NO-GO); Stages 22-27, the insider-dealing mechanism-discovery
+track carried furthest of the August push, reversed to NO-GO at the
+Stage 27 completeness audit (the earlier positive signal was one
+micro-cap outlier, MCNICHOLS, carrying the whole effect); Stage 28's
+market-structure mispricing discovery and the frozen DiD protocol built
+around the 2026-08-17 NGX volume-threshold reform (protocol complete and
+validated, execution blocked purely on the calendar until ~40
+post-reform sessions exist, roughly mid-to-late October 2026); the FRE
+Phase 14-19 decision-intelligence build (company state, materiality,
+confidence engine, peer taxonomy, targeted accounting extraction,
+portfolio decision support, culminating in the Phase 19 real-world
+self-assessment referenced above); and the Research OS / Investment OS
+infrastructure and audit layer (PIT dataset access, lineage,
+instrument-identity resolution, ngxpulse provider, the maturity
+scorecard the charter's coverage numbers are drawn from). Six commits,
+`9d9cd92`..`a06be06`, pushed to `origin/main`. Full narrative and verdicts
+for each stage: the `docs/STAGE16`-`docs/STAGE28E` files and
+`docs/fre_runs/*.md` themselves — this entry summarizes, does not
+replace them.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-07-27)
 
 **STABILIZATION PASS COMPLETE (2026-07-27), owner-mandated pause before
