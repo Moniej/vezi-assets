@@ -1,3 +1,66 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, continued)
+
+**DOCUMENT/FRE QUERY BRIDGE BUILT (2026-08-11), closing a gap a later
+handoff draft correctly flagged.** A subsequent "next AI" draft claimed
+the Research Query Layer was unverified and the Research Workspace was
+not built — both checked directly against the code before writing
+anything down (`docs/INVESTMENT_OS_SPECIFICATION.md` §0): both were
+actually already built and tested (`src/ngxrot/research_query.py`,
+`src/ngxrot/research_workspace.py`, 29 + workspace tests passing), but
+scoped ONLY to price/market/universe data — neither had any code path
+into `documents`, `extracted_facts`, `evidence`, or
+`investment_implications`. That part of the draft's claim (the
+document/evidence side has no query or workspace layer) was correct and
+was the real, narrower gap.
+
+Produced a 10-point architecture audit before touching any code (existing
+modules, tables, APIs, tests, exact missing bridge, minimal
+implementation, files to touch) per the draft's own "verify before
+coding" gate, then implemented the minimal bridge it specified — no new
+subsystem, no changes to any existing FRE module:
+
+- `research_query.py` gained 4 new query types — `facts`, `events`,
+  `entity_relationships`, `document_context` — each a thin `QueryResult`
+  wrapper around the EXISTING, unmodified `documents/retrieval.py`/
+  `context.py` primitives (`find_facts`, `find_events`,
+  `find_entity_relationships`, `build_reasoning_context`). New
+  `_document_provenance_summary` resolves provenance against
+  `documents`/`sources`, the document-side counterpart to the
+  pre-existing market-data provenance helper. `document_context` is
+  one-ticker-per-call by design (a full reasoning-context assembly, not a
+  cheap index read) and returns a summary row including
+  `coverage_score`/`confidence_ceiling`.
+- `research_workspace.py` gained `add_document_evidence()`, recording a
+  row from any of the four new query types as `research_evidence` by
+  reusing the existing `evidence_type='source_document'` value —
+  deliberately NOT a new evidence_type, so no schema/registry.sql change
+  and no migration of the live registry.sqlite was needed. Provenance
+  comes straight from the query result, no second lookup.
+- `scripts/ngxrot_research.py`: 4 new CLI subcommands (`facts`/`events`/
+  `relationships`/`context`) following the exact existing argparse
+  pattern.
+- Tests: 12 new checks in `scripts/test_research_query.py`, 6 new in
+  `scripts/test_research_workspace.py`, run (not just written) against
+  the real production database — 41/41 and 53/53 passing. Confirmed no
+  regression: `research_query_integration_test.py`,
+  `research_workspace_integration_test.py`, and
+  `scripts/test_reasoning_pipeline.py` all still pass unmodified.
+- Docs updated to reflect the closed gap, not left stale:
+  `docs/research_query_layer.md` §18a, `docs/research_workspace.md`,
+  `docs/INVESTMENT_OS_SPECIFICATION.md` §0 (row changed NOT BUILT ->
+  BUILT with evidence).
+
+Committed `ca57f2f` (the correction) and `83cb3c9` (the bridge), pushed to
+`origin/main`. A research project can now cite market data and document/
+fact/evidence/context side by side in the same evidence list, findings,
+and exported report. Alpha untouched throughout — no import of this work
+into `alpha_engine.py`/`runner.py`/the hypothesis registry. Next
+correctly-scoped priorities per the charter remain the data-foundation
+gaps (financial statements, secondary sources, entity-graph depth), not
+more query/workspace plumbing — that layer is now solid on both sides.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11)
 
 **REFRAME (2026-08-11): Fund Alpha repositioned as an Investment OS, not
