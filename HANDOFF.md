@@ -1,3 +1,60 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 3)
+
+**FIXED: has_financial_statements was a hardcoded False, not a real
+gap (2026-08-11).** A "next phase" audit (per its own "verify before
+coding" mandate) queried `data/ngx.sqlite` directly instead of trusting
+the platform's own prior documentation, and found
+`CoverageAssessment.has_financial_statements` in
+`src/ngxrot/documents/coverage_assessment.py` was a hardcoded `False`
+default, never actually computed — a genuine code bug, not a genuine
+data gap. Real financial-statement extraction already existed: FSI
+Phases 1-3 (`src/ngxrot/fre/financial_ratios.py`,
+`financial_health_flags.py`, `pit_financial_memory.py`,
+`financial_reasoning_report.py`) had already extracted ~260 real
+financial facts (revenue/net_profit/assets/liabilities/equity/
+cfo/cfi/cff/capex/fcf/ebitda/ebit/cogs/gross_profit) across 22 tickers,
+and computed 267 lineage-tracked ratio/trend/flag conclusions in
+`financial_reasoning_conclusions` (numerator/denominator-linked,
+PIT-safe via filing-date gating) — none of it reflected in coverage
+scoring or confidence ceilings.
+
+Fixed: `has_financial_statements` is now computed per-ticker from
+`extracted_facts` against `fact_taxonomy.toml`'s own
+`[financial_statements]` leaf set, not a hardcoded default.
+**Recomputed mean coverage across the same 20-ticker validation
+universe used throughout this session: 0.66 (was 0.595); 13/20 tickers
+now correctly show `has_financial_statements=True` (was 0/20)** —
+confirmed by direct query, not estimated. A ticker genuinely without
+financial facts (STANBICETF30, an ETF) correctly still shows False —
+the fix doesn't overcorrect into "always True."
+
+New `scripts/test_coverage_assessment_financial_statements.py` (10
+checks, real production DB). Verified zero regression: stashed the
+change and confirmed 3 unrelated pre-existing test failures (stale
+hardcoded exact-count assertions in `test_financial_ratios.py`/
+`test_valuation_engine.py` — e.g. "exactly 321 financial-statement
+line items," a count that has since grown) are byte-identical before
+and after this change, not caused by it. All of `test_reasoning_pipeline.py`,
+`test_research_query.py`, `test_research_workspace.py` still pass.
+
+Corrected the "no financial-statements dataset exists platform-wide"
+claim propagated into `README.md`, `docs/FUND_ALPHA_CHARTER.md`,
+`docs/INVESTMENT_OS_SPECIFICATION.md`, and `docs/EXECUTION_BACKLOG.md`
+earlier this same session, without the underlying table having been
+checked first — a reminder that documentation this platform itself
+produces is not exempt from "verify before writing it down." Genuine
+remaining gap: financial-statement coverage is narrow (22 of 300+
+tickers), not absent; real corporate-action data is still missing (the
+`corporate_actions` table's schema supports 14 event types but its 31
+rows are confirmed synthetic test fixtures, per `docs/
+FACTOR_REGISTRY.md`'s H-017 entry — unaffected by this fix, a separate
+open item). Valuation (`valuation_engine.py`'s `compute()`) remains
+correctly gated pending owner sign-off. Committed `28e1c85`, pushed to
+`origin/main`. Alpha untouched throughout — no changes to
+`alpha_engine.py`, `runner.py`, or the hypothesis registry.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, continued)
 
 **DOCUMENT/FRE QUERY BRIDGE BUILT (2026-08-11), closing a gap a later
