@@ -22,6 +22,8 @@ corrected, code-verified status:
 | Research Workspace (price/market-data side) | **BUILT** | `src/ngxrot/research_workspace.py` (819 lines) — question -> scope -> queries -> evidence -> analysis -> findings -> conclusion -> reproducible snapshot -> export, `research_projects`/`research_findings`/`research_hypotheses` tables, dated 2026-08-10, 109/109 regression baseline before it was built (`docs/fre_runs/research_workspace_report.md`) |
 | Document/Evidence query or workspace layer (FRE side) | **BUILT 2026-08-11** — was correctly identified as the real gap, now closed | `research_query.py` gained 4 new query types (`facts`, `events`, `entity_relationships`, `document_context`) wrapping the existing `documents/retrieval.py`/`context.py` primitives unmodified; `research_workspace.add_document_evidence()` records them as evidence (reusing `evidence_type='source_document'`, no schema change). CLI: `scripts/ngxrot_research.py facts\|events\|relationships\|context`. 12 new query-layer tests + 6 new workspace tests, all passing against the real production DB. Full detail: `docs/research_query_layer.md` §18a, `docs/research_workspace.md`. |
 | Monitoring / alerting | **PARTIAL** | No scheduler, file-watcher, or trigger infrastructure exists anywhere on the platform (confirmed absent). But a real deterministic alert pipeline function already exists: `src/ngxrot/fre/continuous_intelligence.py` (Phase 18) — change detection -> materiality assessment -> alert/review-queue entry, structurally refusing to emit an alert below LOW materiality. The logic exists; only the thing that would call it on a schedule doesn't. |
+| Financial-statement extraction | **BUILT 2026-08-11 (corrected)** — §21 below was wrong | `CoverageAssessment.has_financial_statements` was a hardcoded `False`, never actually computed — a bug, not a real gap. Real state confirmed directly against `data/ngx.sqlite`: FSI Phases 1-3 built a real, tested pipeline (`src/ngxrot/fre/financial_ratios.py`/`financial_health_flags.py`/`pit_financial_memory.py`), ~260 real extracted financial facts (revenue/net_profit/assets/liabilities/equity/cash-flow/EBITDA/EBIT/COGS/gross-profit) across 22 tickers, 267 already-computed lineage-tracked ratio/trend/flag conclusions. Fixed same day (see `HANDOFF.md`); recomputed mean coverage across the 20-ticker validation universe: 0.66 (was 0.595), 13/20 tickers now correctly show `has_financial_statements=True` (was 0/20). Genuine remaining gap is narrow coverage (22 of 300+ tickers platform-wide), not absence. Valuation (`valuation_engine.py`) remains correctly gated pending owner sign-off, unaffected. |
+| Corporate-action data | **PARTIAL, precisely** | Schema (`corporate_actions` table) supports 14 event types and is comprehensive. But its 31 rows are confirmed synthetic test fixtures (`docs/FACTOR_REGISTRY.md`'s H-017 entry), not real data — real source data exists in `data/reference/exdiv_closure_calendar.csv` but was never loaded into this table. |
 | Alpha | **Correctly untouched**, as it should be | 18 hypotheses tested (1 confirmed, capacity-constrained), Alpha Engine architecture frozen V1, unaffected by any OS/FRE work |
 
 **Update 2026-08-11**: the document/evidence query and workspace gap
@@ -331,16 +333,32 @@ is desirable behavior: "what I have is traceable, but I don't yet have a
 sufficiently complete representation of the investment universe." That is
 the problem the next phase needs to solve.
 
-## 21. Missing — financial statements (top priority)
+## 21. CORRECTED 2026-08-11 — financial statements: narrow, not missing
 
-`has_financial_statements = false` platform-wide — no financial-statements
-dataset exists yet. Needed: income statement (revenue, COGS, gross profit,
-operating profit, finance costs, PBT, tax, PAT, EPS), balance sheet (cash,
-receivables, inventory, PP&E, debt, liabilities, equity), cash flow
-(operating/investing/financing CF, capex, FCF), all longitudinal across
-historical periods (2022–2026+) so the OS can calculate growth, margin
-trends, ROE, ROIC, leverage, working capital, FCF conversion, earnings
-quality, and balance-sheet trajectory. **Highest-priority addition.**
+**This section was wrong when written.** `has_financial_statements = false`
+was a hardcoded default in `coverage_assessment.py`, never actually
+computed from `extracted_facts` — a code bug, not a real absence. Checked
+directly against `data/ngx.sqlite`: real financial-statement extraction
+already exists (FSI Phases 1-3, `src/ngxrot/fre/financial_ratios.py` and
+siblings) — revenue, net_profit, assets, liabilities, equity, cfo/cfi/cff,
+capex, fcf, ebitda, ebit, cogs, gross_profit are all real, extracted
+fact_types with real rows (~260 facts across 22 tickers), plus 267
+already-computed, lineage-tracked ratio/trend/flag conclusions in
+`financial_reasoning_conclusions`, and a PIT-safe historical-memory layer
+(`pit_financial_memory.py`, gates on source-document filing date). Fixed
+same day — `has_financial_statements` is now correctly computed per
+ticker (see `HANDOFF.md` for the fix and `scripts/
+test_coverage_assessment_financial_statements.py` for the regression
+test).
+
+**The real, remaining gap**: coverage is narrow — 22 of 300+ tracked
+tickers, 1-5 facts per metric per ticker, income statement/balance sheet/
+cash flow but no longitudinal multi-year history yet, and valuation
+(`valuation_engine.py`'s `compute()`) remains correctly gated pending
+owner sign-off. Priority is now *extending* the existing FSI Phase 1-3
+pipeline to more tickers/periods, not building financial extraction from
+scratch — a materially smaller, cheaper task than this section originally
+described.
 
 ## 22. Missing — secondary intelligence
 

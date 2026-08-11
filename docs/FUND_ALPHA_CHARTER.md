@@ -65,8 +65,10 @@ same discipline the Alpha Engine already applies to itself.
 
 **OS-level (new headline metrics):**
 1. **Mean coverage score across the tracked universe** — the OS's own
-   measured information completeness (currently 59.5% across the last
-   20-ticker validation pass; see `docs/INVESTMENT_OS_BASELINE_AUDIT.md`).
+   measured information completeness (the last 20-ticker validation pass
+   reported 59.5%, but that figure is now known stale — see "Current
+   honest state" below for the 2026-08-11 correction; `docs/
+   INVESTMENT_OS_BASELINE_AUDIT.md` predates the fix).
 2. **Grounding / citation integrity rate** — currently 100% on the last live
    validation run; must never regress to grow coverage faster.
 3. **Coverage dimensions closed platform-wide** (financial statements,
@@ -133,9 +135,11 @@ Operating rules:
 - The hypothesis ledger must always hold a stocked queue of registered
   candidates so a rejection immediately hands work to the next hypothesis.
 - The coverage backlog must always name its worst-covered dimension
-  platform-wide (today: financial statements, secondary sources — both at
-  effectively 0% platform-wide) so gap-closing work has an unambiguous next
-  target.
+  platform-wide (today: secondary sources at genuinely 0%, and real
+  corporate-action data — the table exists but holds synthetic fixtures
+  only; financial statements are built but narrow, not empty — see
+  "Current honest state" below) so gap-closing work has an unambiguous
+  next target.
 - Data acquisitions are justified by how many *queued and future*
   candidates or coverage dimensions they feed, never by one hypothesis's or
   one ticker's needs.
@@ -211,14 +215,27 @@ never speculative scaffolding.
    or the fund's compliance obligations, and never packaged or represented
    as investment advice.
 
-## Current honest state (2026-08-11)
+## Current honest state (2026-08-11, corrected same day)
 
-- **OS coverage**: mean 59.5% across the last 20-ticker validation pass
-  (`docs/fre_runs/decision_intelligence_phase19_real_world_assessment.md`).
-  Grounding/citation integrity: 100% on the last live run. Weakest
-  dimensions platform-wide: financial statements and secondary/news sources
-  (effectively 0% coverage on both, for every ticker) — the #1 and #2
-  infrastructure priorities.
+- **OS coverage**: mean 59.5% was reported by the last 20-ticker validation
+  pass (`docs/fre_runs/decision_intelligence_phase19_real_world_assessment.md`),
+  but that figure relied on `CoverageAssessment.has_financial_statements`,
+  which was found to be a **hardcoded `False`, never actually computed**
+  from real data — a genuine bug, not a genuine gap (fixed same day; see
+  `HANDOFF.md`). Real financial-statement extraction already exists
+  platform-wide (FSI Phases 1-3: revenue/net_profit/assets/liabilities/
+  equity/cash-flow/EBITDA facts, 267 already-computed, lineage-tracked
+  ratio/trend/flag conclusions) for a subset of tickers — confirmed
+  directly against `data/ngx.sqlite`, not inferred. **Recomputed mean
+  across the same 20-ticker universe after the fix: 0.66 (was 0.595); 13/20
+  tickers now correctly show `has_financial_statements=True` (was 0/20)**
+  — NASCON, UCAP, and 11 others. Grounding/citation integrity: 100% on the
+  last live run (unaffected by this fix). **Genuinely remaining,
+  still-verified-empty**: secondary/news sources (0% platform-wide, no
+  ingestion pipeline exists at all) and real corporate-action data (the
+  `corporate_actions` table's schema supports 14 event types but its 31
+  rows are synthetic test fixtures, not real data — confirmed against
+  `docs/FACTOR_REGISTRY.md`'s H-017 entry).
 - **Alpha Engine**: 18 hypotheses tested — 1 confirmed (H-011, Size,
   severely capacity-constrained: median tradeable leg ~₦694k), 15 rejected,
   1 abandoned untested (H-002, needs formal retirement), 1 in first-look
@@ -234,18 +251,23 @@ never speculative scaffolding.
   is known, here is how complete that knowledge is, here is what would
   need to be true for a consumer to act — no consumer should currently
   claim more than that.*
-- The bottleneck is **OS coverage breadth** (financial statements,
-  secondary sources, entity relationships, temporal/PIT integrity), not
-  reasoning sophistication on either consumer. Per the priority hierarchy
-  above, coverage-closing work now outranks new consumer features unless a
+- The bottleneck is **OS coverage breadth** — genuinely: secondary/news
+  sources (0%), real corporate-action data (schema ready, table holds
+  synthetic fixtures only), entity relationships (thin, 22 rows), temporal/
+  PIT integrity beyond financials — not reasoning sophistication on either
+  consumer. Financial statements are BUILT but NARROW (real data for a
+  subset of the universe, not all 20+ tracked tickers) — expanding
+  coverage, not building from zero. Per the priority hierarchy above,
+  coverage-closing work now outranks new consumer features unless a
   consumer surfaces a specific, evidenced gap.
 
 ## Priority test applied to the current queue
 
 | Work item | OS/consumer justification | Verdict |
 |---|---|---|
-| Financial-statement dataset (structured income/balance/cash-flow, historical periods) | Closes the #1 platform-wide coverage gap; unlocks FRE valuation activation and Alpha Engine Value/Dividend-Yield hypothesis families simultaneously | **top priority** |
-| Secondary-source (news/analyst) ingestion with strict provenance | Closes the #2 platform-wide coverage gap; raises coverage score for every ticker at once | **top priority** |
+| Expand financial-statement extraction to more tickers/periods (FSI Phases 1-3 already built and working — this is coverage expansion, not new infrastructure) | Real data exists for a subset of tickers only; unlocks FRE valuation activation and Alpha Engine Value/Dividend-Yield families as coverage grows | **top priority** |
+| Load real corporate-action data into the existing `corporate_actions` table (schema already supports 14 event types; table currently holds synthetic test fixtures only, per `docs/FACTOR_REGISTRY.md`'s H-017 entry) | Real source data already exists (`data/reference/exdiv_closure_calendar.csv`); no schema work needed, only ingestion | **top priority** |
+| Secondary-source (news/analyst) ingestion with strict provenance | Closes a genuinely empty (0%) platform-wide coverage gap; raises coverage score for every ticker at once | **top priority** |
 | Entity relationship graph (competitor/supplier/customer/subsidiary) | Unlocks cross-ticker propagation for FRE and pooled/cohort hypothesis design for Alpha Engine | high — after the two data gaps above |
 | Temporal / point-in-time integrity extension to documents & facts | Non-negotiable precondition for any future historical evaluation of FRE outputs, same discipline the Alpha Engine already enforces on prices | high, structural |
 | Daily ephemeral price capture | Feeds OS coverage and Alpha Engine model families; time-gated, must run daily | keep |

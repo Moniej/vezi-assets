@@ -23,29 +23,45 @@ queue" and `docs/INVESTMENT_OS_SPECIFICATION.md` §49's recommended build
 order — this section is the execution-level detail behind those two
 summaries.
 
-**P1 — Financial-statement dataset (structured, longitudinal)**
-- Description: canonical income statement / balance sheet / cash flow
-  fields per ticker, historical periods (not single-year snapshots), from
-  which growth, margins, ROE, ROIC, leverage, working-capital trends, and
-  FCF conversion can be computed.
-- Why it matters: the #1 platform-wide `CoverageAssessment` gap
-  (`has_financial_statements = false` for essentially every ticker per the
-  last live validation). Unlocks FRE-7 valuation activation (currently
-  architecturally ready but gated) AND the Alpha Engine's Value/Dividend-
-  Yield hypothesis families simultaneously — a single dataset feeding two
-  consumers at once, the platform's own definition of top priority.
-- Dependencies: none blocking; the DOL EPS/dividend parser retry (old E5,
-  below) is a partial, narrower predecessor attempt worth reviewing before
-  re-scoping this from scratch.
-- Engineering effort: HIGH (structured extraction from NGX filings/DOL
-  archives has twice already proven harder than initial estimates — see
-  E5's history below; plan accordingly, don't underscope).
-- Files/modules: new dataset + provider under `src/ngxrot/providers/` or
-  `src/ngxrot/fre/`, schema extension to `schema/schema.sql`.
-- Completion criteria: a stated, tested pass rate against known primary-
-  source anchors, same discipline as every other parser on this platform;
-  `has_financial_statements` flips true for a meaningful, disclosed subset
-  of the 20-ticker validation universe, not silently claimed platform-wide.
+**P1 — Expand financial-statement extraction coverage (CORRECTED
+2026-08-11 — this is NOT a from-scratch build; real infrastructure and
+real data already exist, see below)**
+- **Correction**: this item previously claimed no financial-statements
+  dataset existed platform-wide. That was traced to a bug, not reality —
+  `CoverageAssessment.has_financial_statements` was a hardcoded `False`,
+  never actually computed (fixed 2026-08-11, see `HANDOFF.md`). The real
+  state, confirmed directly against `data/ngx.sqlite`: FSI Phases 1-3
+  already built a real, tested pipeline —
+  `src/ngxrot/fre/financial_ratios.py`/`financial_health_flags.py`/
+  `pit_financial_memory.py`/`financial_reasoning_report.py`, ~260 real
+  extracted financial facts (revenue/net_profit/assets/liabilities/
+  equity/cfo/cfi/cff/capex/fcf/ebitda/ebit/cogs/gross_profit) across 22
+  tickers, and 267 already-computed, lineage-tracked ratio/trend/flag
+  conclusions in `financial_reasoning_conclusions`
+  (numerator/denominator-linked via `financial_reasoning_conclusion_facts`,
+  PIT-safe via `pit_financial_memory.py`'s filing-date gating). Coverage
+  is genuinely narrow (1-5 facts per metric per ticker, 22 of 300+ tickers)
+  — that is the real gap, not absence.
+- Description: extend the EXISTING FSI Phase 1-3 extraction to more
+  tickers and more historical periods — reuse the pipeline, don't rebuild
+  it. Valuation (`valuation_engine.py`'s `compute()`) remains correctly
+  gated pending owner sign-off, unaffected by this correction.
+- Why it matters: still unlocks FRE-7 valuation activation and the Alpha
+  Engine's Value/Dividend-Yield hypothesis families as coverage grows —
+  same rationale as before, just starting from real data instead of zero.
+- Dependencies: none blocking; review `scripts/fre/fre7b1_targeted_extraction.py`
+  and `docs/fre_runs/fre7b1_targeted_accounting_extraction_report.md`
+  (the existing targeted-extraction method) before designing a new
+  approach — it's already proven, per HANDOFF.md.
+- Engineering effort: MODERATE (extending a working, tested pipeline to
+  more tickers is materially cheaper than the HIGH estimate this item
+  previously carried, which assumed a from-scratch build).
+- Files/modules: `src/ngxrot/fre/` extraction scripts (extend, don't
+  replace), `scripts/fre/fre7b1_targeted_extraction.py` as the reference
+  pattern.
+- Completion criteria: `has_financial_statements` (now correctly computed,
+  not hardcoded) flips true for a materially larger, disclosed subset of
+  the tracked universe than the current 22 tickers.
 
 **P2 — Secondary-source (news/analyst) ingestion with strict provenance**
 - Description: financial news, industry news, reputable market commentary,

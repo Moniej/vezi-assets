@@ -25,9 +25,23 @@ from . import vocab
 PKG_ROOT = Path(__file__).resolve().parents[3]
 
 
+def _load_fact_taxonomy() -> dict:
+    return tomllib.loads((PKG_ROOT / "configs/fact_taxonomy.toml").read_text(encoding="utf-8"))
+
+
 def _fact_taxonomy_leaf_count() -> int:
-    raw = tomllib.loads((PKG_ROOT / "configs/fact_taxonomy.toml").read_text(encoding="utf-8"))
+    raw = _load_fact_taxonomy()
     return len({t for spec in raw.values() for t in spec.get("types", [])})
+
+
+def _financial_statement_fact_types() -> set[str]:
+    """The `[financial_statements]` leaf set from fact_taxonomy.toml (FSI
+    Phases 1-3: revenue/net_profit/assets/liabilities/equity/cfo/cfi/cff/
+    capex/fcf/ebitda/ebit/cogs/gross_profit) -- the taxonomy's own
+    canonical definition of "financial statement fact", read directly
+    rather than re-listing the fact types here a second time."""
+    raw = _load_fact_taxonomy()
+    return set(raw.get("financial_statements", {}).get("types", []))
 
 
 @dataclass
@@ -47,9 +61,15 @@ class CoverageAssessment:
     has_event_history: bool = False
     has_factor_exposures: bool = False
     has_cross_ticker_corroboration: bool = False
-    has_financial_statements: bool = False   # permanently False today — no
-                                             # financial-statements dataset
-                                             # exists platform-wide
+    has_financial_statements: bool = False   # per-ticker: true iff this
+                                             # ticker has >=1 extracted_facts
+                                             # row whose fact_type is in
+                                             # fact_taxonomy.toml's
+                                             # [financial_statements] leaf
+                                             # set (fixed 2026-08-11 -- this
+                                             # was previously a hardcoded
+                                             # False regardless of real data;
+                                             # see HANDOFF.md)
     has_secondary_sources: bool = False      # permanently False today — no
                                              # news/analyst ingestion built yet
 
@@ -85,6 +105,8 @@ def assess_coverage(con, ctx) -> CoverageAssessment:
     ca.has_entity_relationships = len(ctx.entity_relationships) > 0
     ca.has_event_history = len(ctx.events) > 0
     ca.has_factor_exposures = bool(ctx.factor_exposures)
+    ca.has_financial_statements = any(
+        f["fact_type"] in _financial_statement_fact_types() for f in ctx.facts)
 
     fact_ids = [f["fact_id"] for f in ctx.facts]
     if fact_ids:
@@ -131,9 +153,11 @@ def assess_coverage(con, ctx) -> CoverageAssessment:
         "has_cross_ticker_corroboration": "no prior implication for this ticker/fact_type has ever "
                                          "corroborated another — either no repetition observed, or every "
                                          "repetition disagreed",
-        "has_financial_statements": "no financial-statements dataset exists platform-wide yet "
-                                    "(docs/EXECUTION_BACKLOG.md) — this dimension cannot be satisfied "
-                                    "by ANY ticker until that dataset is built",
+        "has_financial_statements": "no extracted_facts for this ticker have a fact_type in "
+                                    "fact_taxonomy.toml's [financial_statements] set (revenue/net_profit/"
+                                    "assets/liabilities/equity/cfo/cfi/cff/capex/fcf/ebitda/ebit/cogs/"
+                                    "gross_profit) — real financial extraction exists platform-wide "
+                                    "(FSI Phases 1-3) but has not yet reached this specific ticker",
         "has_secondary_sources": "no news/analyst ingestion exists platform-wide yet — this dimension "
                                  "cannot be satisfied by ANY ticker until that pipeline is built",
     }

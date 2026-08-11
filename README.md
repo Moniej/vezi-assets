@@ -101,11 +101,20 @@ not hallucination**. The system is unusually honest about what it doesn't
 know — confidence ceilings are mechanically capped by measured information
 coverage (e.g. 0.60 coverage → 0.225 confidence ceiling, never the reverse)
 — and evidence grounding/citation integrity have tested at 100% on the most
-recent live validation run. The bottleneck is that the OS does not yet have
-comprehensive financial-statement, secondary-source, entity-relationship, or
-temporal/point-in-time infrastructure. **Priority is closing those gaps, not
-adding more reasoning on top of an incomplete world model.** See
-`docs/INVESTMENT_OS_BASELINE_AUDIT.md` for the current maturity scorecard.
+recent live validation run. **Correction (2026-08-11)**: the Phase 19 report's
+"no financial-statements dataset exists platform-wide" claim was traced to a
+hardcoded `False` in `coverage_assessment.py`, not real absence — real
+financial-statement extraction (revenue/net_profit/assets/liabilities/
+equity/cash-flow, FSI Phases 1-3) already exists for a subset of tickers,
+confirmed directly against the database and fixed the same day (see
+`HANDOFF.md`). The bottleneck is that the OS does not yet have comprehensive
+secondary-source, entity-relationship, real corporate-action data (the
+schema exists; the table holds synthetic fixtures), or temporal/
+point-in-time infrastructure beyond financials — and financial-statement
+extraction, while real, is still narrow (needs to reach more tickers).
+**Priority is closing those gaps, not adding more reasoning on top of an
+incomplete world model.** See `docs/INVESTMENT_OS_BASELINE_AUDIT.md` for
+the maturity scorecard (predates this correction).
 
 ## Layout
 

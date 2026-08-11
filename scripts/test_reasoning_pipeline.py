@@ -603,8 +603,9 @@ def test_coverage_assessment_before_and_after_extraction():
          ca_before is not None)
     check("coverage: score is 0 before any extraction", ca_before.coverage_score == 0.0)
     check("coverage: has_facts absent before extraction", "has_facts" in ca_before.dimensions_missing)
-    check("coverage: permanent gap (financial statements) always disclosed",
-         any("financial-statements dataset" in r for r in ca_before.reasons_confidence_limited))
+    check("coverage: financial-statements gap disclosed for a ticker with no financial facts "
+         "(fixed 2026-08-11 -- has_financial_statements is now computed per-ticker, not hardcoded)",
+         any("[financial_statements]" in r for r in ca_before.reasons_confidence_limited))
     check("coverage: permanent gap (secondary sources) always disclosed",
          any("news/analyst ingestion" in r for r in ca_before.reasons_confidence_limited))
     from ngxrot.documents.extract import UNREVIEWED_LLM_CONFIDENCE_FLOOR
