@@ -1,3 +1,58 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 4)
+
+**LOADED: real dividend corporate-action data, alpha-safety-checked
+(2026-08-11).** Priority 2 continuation. `corporate_actions` had held
+only synthetic dev fixtures (31 rows, tickers SYNBNKA/B/C,
+`source_id='synthetic_dev'`, confidence 0.0) since the table's creation
+— matches `docs/FACTOR_REGISTRY.md`'s H-017 entry, confirmed again by
+direct query. Real dividend data already existed, evidence-linked, in
+`extracted_facts` (161 dividend facts across 60 real tickers) — the fix
+derives `corporate_actions` rows from those facts rather than re-parsing
+anything.
+
+**Before writing any loader code**, found that `corporate_actions` is a
+**live input to `engine_full.py`'s total-return overlay**
+(`db.corporate_actions_asof`, adjusts returns for dividends on
+`markdown_date`) — `backtest_xs.py` already knows this and deliberately
+avoids the table, using `data/reference/exdiv_closure_calendar.csv`
+directly instead (its own comment: "synthetic-fixture-only
+`corporate_actions` table"). Flagged this explicitly to the owner given
+the alpha-untouched constraint rather than proceeding silently. Owner
+approved: load real data with `markdown_date` deliberately left NULL, so
+rows are queryable/visible to the OS but the overlay's activation
+condition (`pd.Timestamp(a.markdown_date) in px.index`) can never be
+satisfied — `NaT` is never a DatetimeIndex member. Confirmed this is a
+real behavioral no-op via a dedicated regression check
+(`scripts/test_corporate_actions_dividend_load.py`), not just reasoned
+about.
+
+Additive migration: `corporate_actions.source_fact_id` (nullable,
+`schema/schema.sql` + `src/ngxrot/db.py`'s existing ALTER-TABLE-with-
+try/except pattern), linking a row back to its source `extracted_facts`
+row. New `scripts/load_real_corporate_actions_dividends.py` — idempotent,
+dry-run supported, deliberately scoped to dividend facts only.
+Bonus/rights/reconstruction facts (13 more) NOT loaded this pass: their
+`numeric_value` is a price-adjustment factor (e.g. 0.6 for a 2-for-3
+bonus), not `ratio_new`/`ratio_old`, and some are proposed-only or
+cancelled per their own description text — mapping them safely needs
+dedicated parsing/validation, left as a disclosed, deferred follow-on
+(see the charter's priority table).
+
+Run against the real production database: **155 real dividend rows
+loaded (103 with a real per-share amount, 52 dates-only — never
+fabricated), spanning 60+ real tickers.** Rerun confirmed idempotent (0
+inserted second time). 10/10 new regression checks pass, including a
+direct assertion that zero fact-linked rows have `markdown_date`
+populated. Confirmed no regression across
+`test_reasoning_pipeline.py`/`test_research_query.py`/
+`test_research_workspace.py`/`test_corporate_action_exposure.py`.
+Committed `3141134`, pushed to `origin/main`. Alpha untouched throughout
+— no changes to `alpha_engine.py`, `runner.py`, `engine_full.py`, or the
+hypothesis registry; the one live data dependency `engine_full.py` has on
+this table was identified, flagged, and deliberately kept inert.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 3)
 
 **FIXED: has_financial_statements was a hardcoded False, not a real
