@@ -20,6 +20,13 @@ or FRE's self-critique gate changed operationally — this is a positioning
 and documentation change, not a code or validation-standard change.
 Committed `7ec48c7`, pushed to `origin/main`.
 
+**Also added (2026-08-11): `docs/INVESTMENT_OS_SPECIFICATION.md`** — a
+comprehensive 68-section AI-handoff context primer (architecture
+layer-by-layer with verified numbers, what's built vs. missing, priority
+order, explicit "do not do this" guidance). Read this FIRST in a fresh
+context, before the charter or the rest of this log — it's the intended
+entry point for any AI picking up this project.
+
 **Immediate practical consequence for future sessions**: read
 `docs/FUND_ALPHA_CHARTER.md`'s "Current honest state" and "Priority test"
 sections before proposing new work — the top two platform-wide priorities

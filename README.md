@@ -34,6 +34,12 @@ Decision Engines      Human Investor
 (Repository name `ngx-rotation` is historical — the scope outgrew it long
 before the scope outgrew "alpha engine" too.)
 
+**Read [`docs/INVESTMENT_OS_SPECIFICATION.md`](docs/INVESTMENT_OS_SPECIFICATION.md)
+first in a fresh context** — the complete Investment OS handoff spec:
+current architecture layer-by-layer, verified numbers, what's built vs.
+missing, priority order, and explicit "do not do this" guidance for any AI
+picking up this project.
+
 **This is a research/infrastructure tool. Nothing it outputs is investment
 advice.**
 
