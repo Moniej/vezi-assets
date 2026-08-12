@@ -788,6 +788,58 @@ CREATE TABLE IF NOT EXISTS news_outlets (
     notes                TEXT
 );
 
+-- ----------------------------------------------------------------------------
+-- Monitoring orchestration (2026-08-11, HANDOFF.md, Priority 6). Wraps the
+-- EXISTING deterministic pipeline in fre/continuous_intelligence.py
+-- (change detection -> materiality -> alert entry, Phase 18) -- no change
+-- to that logic here. This is the persistence layer that logic never had:
+-- one row per (ticker, run) so a resumable orchestrator knows what it last
+-- checked and when, and one row per generated alert so alerts survive
+-- past the in-memory dict process_new_information() returned them as.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS monitoring_runs (
+    run_id          INTEGER PRIMARY KEY,
+    ticker          TEXT NOT NULL REFERENCES securities(ticker),
+    as_of_date      TEXT NOT NULL,
+    prior_date      TEXT NOT NULL,
+    status          TEXT NOT NULL CHECK (status IN ('completed', 'failed')),
+    max_materiality TEXT,             -- NULL only on a failed run
+    n_changes       INTEGER,
+    error_detail    TEXT,             -- NULL unless status='failed'
+    started_at      TEXT NOT NULL,
+    completed_at    TEXT NOT NULL,
+    UNIQUE (ticker, as_of_date, prior_date)  -- idempotency: a rerun for the
+                                              -- same (ticker, as_of, prior)
+                                              -- is a no-op, enforced at the
+                                              -- DB level, not just in code
+);
+CREATE INDEX IF NOT EXISTS ix_monitoring_runs_ticker ON monitoring_runs (ticker, as_of_date);
+
+CREATE TABLE IF NOT EXISTS alerts (
+    alert_id                 INTEGER PRIMARY KEY,
+    run_id                   INTEGER NOT NULL REFERENCES monitoring_runs(run_id),
+    ticker                   TEXT NOT NULL REFERENCES securities(ticker),
+    as_of_date               TEXT NOT NULL,
+    prior_date                TEXT NOT NULL,
+    max_materiality           TEXT NOT NULL CHECK (max_materiality IN ('MEDIUM', 'HIGH', 'CRITICAL')),
+                                              -- LOW never reaches this table --
+                                              -- continuous_intelligence.py's own
+                                              -- alert_entry is None for LOW,
+                                              -- enforced structurally there, not here
+    reason                    TEXT NOT NULL,
+    requires_dossier_review   INTEGER NOT NULL DEFAULT 0,
+    generated_at              TEXT NOT NULL,
+    acknowledged_at           TEXT,          -- NULL = unacknowledged; set, never
+                                              -- unset, by a future review workflow
+    acknowledged_by           TEXT,
+    UNIQUE (ticker, as_of_date, prior_date)  -- same idempotency key as
+                                              -- monitoring_runs -- one alert
+                                              -- per (ticker, run), never duplicated
+);
+CREATE INDEX IF NOT EXISTS ix_alerts_ticker ON alerts (ticker, as_of_date);
+CREATE INDEX IF NOT EXISTS ix_alerts_unacknowledged ON alerts (acknowledged_at)
+    WHERE acknowledged_at IS NULL;
+
 -- FSI Phase 23: full provenance for every securities.sector_ngx value
 -- ever populated -- source, retrieval date, and document/URL, mirroring
 -- the same "never a bare value with no traceable source" discipline
