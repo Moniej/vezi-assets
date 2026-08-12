@@ -1,3 +1,46 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 8)
+
+**BUILT: monitoring orchestration around the existing deterministic
+alert pipeline (2026-08-11).** Priority 6. `fre/continuous_intelligence.py`
+(Phase 18) already had the real logic — change detection -> materiality
+-> alert entry, structurally refusing LOW-materiality alerts — but it
+was a pure function: no persistence, nothing to call it, no scheduler
+anywhere on the platform. Not rewritten.
+
+Built the persistence/orchestration layer it never had: new
+`monitoring_runs`/`alerts` tables (idempotent via
+`UNIQUE(ticker, as_of_date, prior_date)`, append-only, a failed run
+recorded with a real `error_detail` rather than dropped silently), and
+`scripts/run_continuous_intelligence.py` — an external-scheduler-callable
+orchestrator, per-ticker try/except so one failure never aborts the
+batch (same pattern as `run_phase_c_pilot.py`), resumable `prior_date`
+derivation from each ticker's last successful run. **No cron
+daemon/scheduler built** — per the standing "don't overengineer"
+instruction, this is deliberately the thing an external scheduler
+(cron, Task Scheduler) would invoke, not a running service.
+
+**Real bug found and fixed before this could run at any reasonable
+speed**: `process_new_information`'s own `intelligence_cache`
+parameter exists specifically to amortize expensive shared computation
+across a batch of tickers — nothing had ever actually passed one.
+Measured directly: a single ticker cold-took 25-84 seconds; sharing
+one cache dict across the run's tickers dropped every subsequent
+ticker to ~3 seconds.
+
+**Run for real** against 3 tickers (NASCON, UCAP, GTCO) — not a
+synthetic demo: generated a genuine **CRITICAL alert** (a real CBN
+circular raising bank minimum capital requirements and imposing new
+loan-to-deposit-ratio/dividend restrictions, correctly flagged for
+both UCAP and GTCO) and a **HIGH alert** (NASCON's leverage
+increasing). Confirmed idempotent: an identical rerun produced 0 new
+rows, correctly skipped. 8 new regression checks against the real,
+persisted results (`scripts/test_monitoring_orchestration.py`).
+Confirmed no regression across five existing document/FRE-side test
+suites. Confirmed zero alpha-path imports anywhere in the touched
+modules. Committed `4983c7f`, pushed to `origin/main`.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 7)
 
 **FIXED: two real look-ahead gaps in the document/FRE reasoning
