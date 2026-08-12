@@ -1,3 +1,76 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 10)
+
+**BUILT: CLIs for the Research Workspace and alert queue — deliberately
+no HTTP server (2026-08-11).** Priority 8 (product/API exposure).
+Audit: `research_workspace.py` had a full, tested Python API but zero
+CLI — only usable from a Python REPL/script. The `alerts` table (built
+last phase) had a write path but nothing to view or acknowledge it
+except raw SQL.
+
+Per the standing "don't introduce an API simply because APIs are
+fashionable" instruction and no demonstrated multi-user need, **no web
+server was built.** New `scripts/ngxrot_workspace.py` (create/list/
+show/note/market-evidence/doc-evidence/finding/hypothesis/
+completeness/integrity/snapshot/export/archive) and
+`scripts/ngxrot_alerts.py` (list/show/acknowledge) complete the
+CLI-first pattern `ngxrot_research.py` already established for the
+query layer — thin argparse wrappers, no new logic.
+
+**A real mistake, caught and corrected**: manually smoke-testing the
+alerts CLI end-to-end acknowledged a genuinely real alert (NASCON's
+leverage-increase alert from last phase) with `--by smoke-test` —
+reverted directly (`acknowledged_at`/`acknowledged_by` reset to
+`NULL`) once noticed. Because alert acknowledgment is a one-way,
+real-world-meaningful state change (it's supposed to mean "a human
+reviewed this"), `scripts/test_alerts_cli.py` now tests `acknowledge`
+against a scratch in-memory database only, never the real one —
+specifically so this can't happen again. `scripts/test_workspace_cli.py`
+does exercise the real database (matching every other CLI on this
+platform), but archives every project it creates so none linger as
+apparent live research.
+
+22 new regression checks (15 workspace CLI via subprocess against real
+data, 7 alerts CLI against a scratch DB). Confirmed no regression
+across five existing document/FRE-side test suites. Confirmed zero
+alpha-path callers of either new script. Committed `dd7dd00`, pushed
+to `origin/main`.
+
+---
+
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 9)
+
+**BUILT: research quality/completeness exposure in the Research
+Workspace (2026-08-11)** — *entry backfilled after the fact; this was
+committed (`9cb0108`) between the monitoring-orchestration phase below
+and the product/API-exposure phase above, but its own HANDOFF entry
+was missed at the time. Recorded now rather than left as a silent gap.*
+Priority 7. `research_workspace.py` had `project_quality_summary` for
+market-data quality but nothing surfacing document/FRE-side coverage —
+a research project could reference a ticker with thin coverage and
+never see that.
+
+New `document_completeness_summary()` reads already-recorded
+`research_evidence` (no re-invocation of the comparatively expensive
+`build_reasoning_context`, 3-84s/ticker per the monitoring-phase
+finding below); wired into `integrity_check()` (per-ticker missing-
+dimension and conflict warnings) and a new "Research Completeness"
+section in `export_markdown()`. A ticker referenced only by a price
+query, with no `document_context` evidence attached, is now explicitly
+flagged as missing document coverage rather than silently treated as
+complete. `research_query.py`'s `document_context` row extended to
+carry `dimensions_missing` and the evidence trust-tier distribution/
+conflict counts — both already computed by `assess_coverage`/
+`evidence_ranking_summary`, previously not surfaced. Evidence quality,
+information coverage, and model confidence remain three distinct,
+never-collapsed concepts.
+
+10 new checks, real end-to-end run against NASCON (honest empty state
+before evidence attached, real coverage/dimensions-missing data after,
+a real missing-ticker case for GTCO). Confirmed no regression; zero
+alpha-path callers. Pushed to `origin/main`.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 8)
 
 **BUILT: monitoring orchestration around the existing deterministic
