@@ -639,6 +639,58 @@ def project_quality_summary(con: sqlite3.Connection, reg: sqlite3.Connection, re
     return quality_report(con, sorted(tickers), min(starts), max(ends))
 
 
+def document_completeness_summary(reg: sqlite3.Connection, research_id: str) -> dict:
+    """Research quality/completeness for the DOCUMENT/FRE side of a project
+    (added 2026-08-11, HANDOFF.md -- Priority 7), the counterpart to
+    `project_quality_summary`'s market-data-side quality_report. Reads
+    from ALREADY-RECORDED `research_evidence` rows added via
+    `add_document_evidence()` on a `document_context` query result --
+    does NOT re-run `build_reasoning_context` (that's a comparatively
+    expensive, multi-second-per-ticker call; re-executing it here would
+    silently duplicate real work every time this summary is requested).
+    A ticker whose researcher never attached a `document_context` query
+    as evidence is reported as `tickers_missing_document_context`, not
+    silently omitted or assumed complete.
+
+    Deliberately keeps evidence quality (grounding/citation, already
+    100% in every live validation to date), information coverage (this
+    function), and model confidence (the ceiling this function surfaces,
+    never the thing that sets it) as three distinct concepts -- never
+    collapsed into one score, per the standing design principle."""
+    _require_project(reg, research_id)
+    per_ticker = []
+    for ev in list_evidence(reg, research_id):
+        if ev["evidence_type"] != "source_document":
+            continue
+        ref = ev["source_reference"]
+        if ref.get("query_type") != "document_context":
+            continue
+        per_ticker.append({
+            "ticker": ref.get("ticker"), "as_of": ref.get("as_of"),
+            "coverage_score": ref.get("coverage_score"),
+            "confidence_ceiling": ref.get("confidence_ceiling"),
+            "dimensions_missing": (ref.get("dimensions_missing") or "").split(",")
+                                 if ref.get("dimensions_missing") else [],
+            "n_conflicts_detected": ref.get("n_conflicts_detected", 0),
+            "source_tier_distribution": json.loads(ref["source_tier_distribution"])
+                                       if ref.get("source_tier_distribution") else {},
+            "evidence_id": ev["evidence_id"],
+        })
+    project_tickers = {t for q in list_queries(reg, research_id) for t in (q["entities_requested"] or [])}
+    assessed_tickers = {t["ticker"] for t in per_ticker if t["ticker"]}
+    missing = sorted(project_tickers - assessed_tickers)
+    scores = [t["coverage_score"] for t in per_ticker if t["coverage_score"] is not None]
+    return {
+        "tickers_assessed": sorted(assessed_tickers),
+        "mean_coverage_score": round(sum(scores) / len(scores), 4) if scores else None,
+        "per_ticker": per_ticker,
+        "tickers_missing_document_context": missing,
+        "note": None if per_ticker else
+               "no document_context evidence attached yet -- run a document_context query and "
+               "call add_document_evidence() to populate this summary",
+    }
+
+
 # ---------------------------------------------------------------------------
 # Integrity guardrails (aggregation of guarantees Phase 2 already
 # enforces at query time, plus workspace-level checks)
@@ -667,6 +719,23 @@ def integrity_check(con: sqlite3.Connection, reg: sqlite3.Connection, research_i
         if not flag.get("resolved"):
             warnings.append(f"[data quality] unresolved {flag['check_name']} on {flag['entity_code']} "
                             f"({flag.get('trade_date')})")
+
+    # Document/FRE-side completeness (added 2026-08-11, Priority 7) -- the
+    # OS should be able to say "this conclusion is weak because X and Y
+    # are missing," not just report a bare confidence number.
+    doc_summary = document_completeness_summary(reg, research_id)
+    for t in doc_summary["per_ticker"]:
+        if t["dimensions_missing"]:
+            warnings.append(f"[research completeness] {t['ticker']}: coverage="
+                            f"{t['coverage_score']}, confidence_ceiling={t['confidence_ceiling']} -- "
+                            f"missing: {', '.join(t['dimensions_missing'])}")
+        if t["n_conflicts_detected"]:
+            warnings.append(f"[research completeness] {t['ticker']}: "
+                            f"{t['n_conflicts_detected']} unresolved evidence conflict(s) on record")
+    for t in doc_summary["tickers_missing_document_context"]:
+        warnings.append(f"[research completeness] {t}: no document/FRE coverage assessment "
+                        f"attached to this project yet -- run a document_context query if "
+                        f"document-side completeness matters for this research question")
     return warnings
 
 
@@ -861,6 +930,27 @@ def export_markdown(con: sqlite3.Connection, reg: sqlite3.Connection, research_i
     else:
         lines.append("_no hypotheses tracked -- not every research question requires one_")
     lines.append("")
+
+    lines += ["## Research Completeness", ""]
+    doc_summary = document_completeness_summary(reg, research_id)
+    if doc_summary["per_ticker"]:
+        lines.append(f"Mean document/FRE coverage score across assessed tickers: "
+                     f"{doc_summary['mean_coverage_score']}")
+        lines.append("")
+        lines.append("| ticker | coverage | confidence ceiling | missing dimensions | conflicts |")
+        lines.append("|---|---|---|---|---|")
+        for t in doc_summary["per_ticker"]:
+            missing = ", ".join(t["dimensions_missing"]) or "_none_"
+            lines.append(f"| {t['ticker']} | {t['coverage_score']} | {t['confidence_ceiling']} | "
+                        f"{missing} | {t['n_conflicts_detected']} |")
+        lines.append("")
+    else:
+        lines.append(doc_summary["note"] or "_no document/FRE completeness data attached_")
+        lines.append("")
+    if doc_summary["tickers_missing_document_context"]:
+        lines.append(f"No document-side coverage assessment attached for: "
+                     f"{', '.join(doc_summary['tickers_missing_document_context'])}")
+        lines.append("")
 
     lines += ["## Limitations / Integrity Warnings", ""]
     warnings = integrity_check(con, reg, research_id)

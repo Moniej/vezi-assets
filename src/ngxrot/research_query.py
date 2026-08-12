@@ -639,7 +639,12 @@ def query_document_context(con: sqlite3.Connection, spec: QuerySpec) -> QueryRes
     as_of = spec.as_of or spec.end
     ctx = build_reasoning_context(con, ticker, as_of=as_of)
     warnings.extend(ctx.coverage_notes)
+    if len(ctx.documents) == 100:  # RetrievalQuery(limit=100) in context.py --
+        warnings.append("document count hit the retrieval limit (100) -- there may be MORE "
+                        "documents for this ticker than were fetched; not silently treated as "
+                        "complete coverage")
     cov = ctx.coverage_assessment
+    ers = ctx.evidence_ranking_summary or {}
     row = {
         "ticker": ticker, "as_of": ctx.as_of, "name": ctx.name,
         "n_documents": len(ctx.documents), "n_facts": len(ctx.facts),
@@ -649,6 +654,15 @@ def query_document_context(con: sqlite3.Connection, spec: QuerySpec) -> QueryRes
         "n_peer_propagations": len(ctx.peer_propagations),
         "coverage_score": cov.coverage_score if cov else None,
         "confidence_ceiling": cov.confidence_ceiling if cov else None,
+        # Added 2026-08-11, HANDOFF.md -- Priority 7 (research
+        # quality/completeness): both already computed by
+        # build_reasoning_context/assess_coverage/evidence_ranking_summary,
+        # just never surfaced in this row before now.
+        "dimensions_missing": ",".join(cov.dimensions_missing) if cov else None,
+        "source_tier_distribution": json.dumps(ers.get("tier_distribution", {})),
+        "n_conflicts_detected": ers.get("n_conflicts_detected", 0),
+        "n_conflicts_trust_vs_confidence_disagree":
+            ers.get("n_conflicts_where_trust_and_confidence_disagree", 0),
     }
     df = pd.DataFrame([row])
     return QueryResult(
