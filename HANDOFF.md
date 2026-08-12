@@ -1,3 +1,66 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 6)
+
+**BUILT: secondary-source (news) OS infrastructure (2026-08-11).**
+Priority 4, scoped by explicit owner direction to OS infrastructure
+only, reusing Nairametrics/MarketForces Africa/NGX Pulse, not touching
+H-019 or any alpha-generation path.
+
+Found before building anything: a full 12-document prior research
+program (`docs/STAGE10A`-`STAGE14`, 2026-08-08) had already audited and
+piloted secondary-source ingestion — but it was built to feed the
+H-019 alpha hypothesis and ends in "backtesting remains prohibited
+pending review" (Alpha Engine gating language). Its 5-source audit
+found only **Nairametrics** and **MarketForces Africa** clear both the
+access-policy bar (open `robots.txt`, no AI-crawler block, verified
+directly — Reuters/Bloomberg/FT are policy-blocked) and real NGX
+ticker coverage, including small/illiquid names other data sources
+(fundamentals, insider-dealing) had failed on. A `news_outlets`
+reliability-tier registry was proposed in that program but never
+created — its own text says an outlet's tier is "an owner judgment
+call, not something to infer," so this stayed unbuilt until now.
+
+Built: `news_outlets` table (new, additive — no ALTER migration
+needed, it's a new table not a new column) linking to the existing
+`sources` table, no second registry. `evidence_ranking.
+assign_trust_tier` now consults it for a real per-outlet trust tier
+instead of the provisional tier-3 fallback it used before — an
+unregistered outlet still falls back to that same provisional tier,
+never silently promoted. `scripts/register_news_sources.py`
+(idempotent) created `sources`/`news_outlets` rows for both outlets
+with **proposed** tier 3 (`secondary_reputable`) / 0.5 base_confidence
+— disclosed as proposed, pending your confirmation or correction, not
+asserted as final — and registered **27 real, already-staged news
+articles** (from the STAGE10 program's own `data/staging/news_text/`,
+real headers: date/author/source/URL) as `documents` rows across 17
+hand-verified real tickers (never fuzzy-matched).
+
+**No LLM extraction was run** — no `GEMINI_API_KEY` is configured in
+this environment's `.env`. These 27 documents are real, dated, and
+ready for `extract_document()` the moment a key is available; this is
+disclosed as the natural next step, not silently skipped.
+
+**Deliberately not done, flagged rather than attempted**:
+`ngx_pulse.fetch_corporate_actions`/`fetch_events` (disclosures) live
+ingestion — confirmed by grep before writing anything that both
+`corporate_actions` and `events` are live inputs to
+`engine_full.py`/`runner.py`/`backtest_xs.py`, the same alpha-safety
+class as the dividend load, needing the same kind of explicit decision
+rather than being assumed. No live web scraping beyond the
+already-staged articles.
+
+15/15 new regression checks (`scripts/test_news_infrastructure.py`,
+real production DB) verify registry integrity, ticker/source
+resolution, and the tier-assignment fix directly (registered vs.
+unregistered outlet, non-news source types unaffected). Confirmed no
+regression across `test_reasoning_pipeline.py`,
+`test_research_query.py`, `test_research_workspace.py`,
+`test_entity_mentions.py`,
+`test_coverage_assessment_financial_statements.py`. Confirmed zero
+alpha-path callers of `evidence_ranking.py`. Committed `5ee0436`,
+pushed to `origin/main`.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 5)
 
 **FIXED: entity_mentions was dead schema since Phase C, silently
