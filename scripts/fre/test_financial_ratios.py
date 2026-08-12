@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ngxrot import db  # noqa: E402
 from ngxrot.fre.financial_ratios import (  # noqa: E402
-    compute_ratios_for_ticker, list_tickers, write_ratio_results,
+    RULE_VERSION, compute_ratios_for_ticker, list_tickers, write_ratio_results,
 )
 
 passed = 0
@@ -116,8 +116,28 @@ def main() -> int:
     written = write_ratio_results(con2, test_results)
     con2.commit()
     after_conclusions = con2.execute("SELECT COUNT(*) FROM financial_reasoning_conclusions").fetchone()[0]
-    check("write_ratio_results writes exactly len(results) new conclusion rows",
-          written == len(test_results) and after_conclusions - before_conclusions == written)
+    check("write_ratio_results processes exactly len(results) rows",
+          written == len(test_results))
+    # Idempotency fix (2026-08-12, production-reliability audit): CAP already
+    # had real production conclusions in this scratch copy, so a rerun for
+    # the SAME rule_version must REPLACE those rows, not duplicate them --
+    # exactly the bug scripts/fre/fsi_phase13_fix_duplicate_conclusions.py
+    # had to clean up by hand once already. Verify the ticker's row count
+    # for this rule_version ends up at exactly len(test_results), not
+    # before_conclusions + written.
+    cap_rows_after = con2.execute(
+        "SELECT COUNT(*) FROM financial_reasoning_conclusions WHERE ticker='CAP' "
+        "AND conclusion_type='ratio' AND rule_version=?", (RULE_VERSION,)).fetchone()[0]
+    check("write_ratio_results replaces CAP's existing rows for this rule_version "
+          "instead of duplicating them",
+          cap_rows_after == len(test_results))
+    # Rerun a second time with the identical results: the table total must
+    # not grow further -- the actual idempotency property.
+    write_ratio_results(con2, test_results)
+    con2.commit()
+    after_second_run = con2.execute("SELECT COUNT(*) FROM financial_reasoning_conclusions").fetchone()[0]
+    check("a second identical write_ratio_results call is a true no-op on the total row count",
+          after_second_run == after_conclusions)
     # every 'computed' conclusion (among the NEWLY written rows, identified by
     # conclusion_id > max_id_before -- the scratch copy already contains the
     # real production conclusions, so matching on ticker/metric/period alone

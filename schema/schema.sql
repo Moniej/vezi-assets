@@ -351,6 +351,14 @@ CREATE TABLE IF NOT EXISTS documents (
 );
 CREATE INDEX IF NOT EXISTS ix_documents_ticker ON documents (ticker);
 CREATE INDEX IF NOT EXISTS ix_documents_doc_type ON documents (doc_type);
+-- Production-reliability audit, 2026-08-12: before this, document identity
+-- was enforced only by an in-memory `existing_paths` set in
+-- scripts/build_documents_table.py, checked once before its loop -- two
+-- overlapping ingestion runs (or any future loader) could each insert a
+-- documents row for the same local_path, reproduced on a scratch DB. Every
+-- current local_path in the live database is already unique (verified
+-- before adding this), so this applies cleanly with no dedup pass needed.
+CREATE UNIQUE INDEX IF NOT EXISTS ux_documents_local_path ON documents (local_path);
 
 CREATE TABLE IF NOT EXISTS entities (
     entity_id         INTEGER PRIMARY KEY,
@@ -495,7 +503,14 @@ CREATE TABLE IF NOT EXISTS entity_relationships (
     valid_from          TEXT,
     valid_to            TEXT,
     source_evidence_id  INTEGER REFERENCES evidence(evidence_id),
-    confidence          REAL NOT NULL CHECK (confidence BETWEEN 0.0 AND 1.0)
+    confidence          REAL NOT NULL CHECK (confidence BETWEEN 0.0 AND 1.0),
+    -- capture-vintage marker (2026-08-12, production-reliability audit,
+    -- Finding A) -- when THIS SYSTEM captured the relationship, distinct
+    -- from valid_from/valid_to (when it was true in the real world). NULL
+    -- = capture time unknown, treated conservatively by any vintage-gated
+    -- query. Native here for fresh databases; existing populated databases
+    -- get it via the ALTER-with-try/except in db.py's init_db().
+    recorded_at         TEXT
 );
 
 CREATE TABLE IF NOT EXISTS causal_chain_steps (

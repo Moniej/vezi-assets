@@ -7,7 +7,13 @@ decisions).
 
   python -u scripts/build_documents_table.py
 
-Idempotent/resume-safe: skips local_paths already present in `documents`.
+Idempotent/resume-safe: skips local_paths already present in `documents`,
+via the in-memory `existing_paths` snapshot (fast path, avoids redundant
+PDF text extraction) backed by a real `UNIQUE(local_path)` index on
+`documents` (2026-08-12, production-reliability audit -- the in-memory
+check alone cannot see a concurrent second run's not-yet-committed insert;
+the index is the authoritative guard, and a race against it is caught
+below and treated as "another run already has this file", not an error).
 Ticker resolution: only VERIFIED renames (symbol_renames.csv) map an old
 disclosure symbol to a current `securities.ticker`; everything else keeps
 ticker=NULL, raw_symbol=<as disclosed> — never a guessed match.
@@ -20,6 +26,7 @@ from __future__ import annotations
 
 import os
 import re
+import sqlite3
 import time
 from datetime import date, datetime
 from pathlib import Path
@@ -139,15 +146,26 @@ def main():
         by_type.setdefault(doc_type, {"native": 0, "ocr_pending": 0, "extraction_error": 0})
         by_year.setdefault(yr, {"native": 0, "ocr_pending": 0, "extraction_error": 0})
 
-        cur = con.execute(
-            "INSERT INTO documents (ticker, raw_symbol, doc_type, source_type, "
-            "filing_date, retrieved_date, source_url, local_path, text_path, "
-            "extraction_method, char_count, source_confidence, source_id, as_of_date) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (ticker, raw_symbol, doc_type, "filing", filing_date, retrieved_date,
-             str(r.url), rel_path, None, extraction_method,
-             char_count if char_count >= 0 else None, source_confidence,
-             source_id, as_of))
+        try:
+            cur = con.execute(
+                "INSERT INTO documents (ticker, raw_symbol, doc_type, source_type, "
+                "filing_date, retrieved_date, source_url, local_path, text_path, "
+                "extraction_method, char_count, source_confidence, source_id, as_of_date) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (ticker, raw_symbol, doc_type, "filing", filing_date, retrieved_date,
+                 str(r.url), rel_path, None, extraction_method,
+                 char_count if char_count >= 0 else None, source_confidence,
+                 source_id, as_of))
+        except sqlite3.IntegrityError:
+            # ux_documents_local_path: another run already holds this
+            # local_path -- not an error, just lost a race for a file we
+            # were about to insert anyway. Unlike Postgres, a failed SQLite
+            # statement does not abort the surrounding transaction, so no
+            # rollback() here -- that would also discard every uncommitted
+            # insert from earlier in this same batch.
+            stats["already_done"] += 1
+            existing_paths.add(rel_path)
+            continue
         doc_id = cur.lastrowid
 
         if extraction_method == "native":

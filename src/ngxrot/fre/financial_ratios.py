@@ -191,10 +191,28 @@ def compute_ratios_for_ticker(con: sqlite3.Connection, ticker: str) -> list[Rati
 
 def write_ratio_results(con: sqlite3.Connection, results: list[RatioResult]) -> int:
     """Writes RatioResult rows to financial_reasoning_conclusions +
-    financial_reasoning_conclusion_facts. Returns the number of conclusions written."""
+    financial_reasoning_conclusion_facts. Returns the number of conclusions written.
+
+    Idempotent on rerun (fixed 2026-08-12, production-reliability audit --
+    the exact bug scripts/fre/fsi_phase13_fix_duplicate_conclusions.py had
+    to clean up by hand once already): a conclusion is keyed by (ticker,
+    conclusion_type='ratio', metric, period_start, period_end, rule_version).
+    Rerunning this function for the same key replaces the prior row instead
+    of appending a duplicate -- rule_version still distinguishes a genuine
+    rule-set change (a new rule_version is a new row, old one kept) from a
+    same-rule recomputation (replaced, not duplicated)."""
     now = datetime.now(timezone.utc).isoformat()
     written = 0
     for r in results:
+        existing = con.execute(
+            "SELECT conclusion_id FROM financial_reasoning_conclusions WHERE "
+            "ticker=? AND conclusion_type='ratio' AND metric=? AND "
+            "period_start IS ? AND period_end IS ? AND rule_version=?",
+            (r.ticker, r.metric, r.period_start, r.period_end, RULE_VERSION),
+        ).fetchall()
+        for (old_id,) in existing:
+            con.execute("DELETE FROM financial_reasoning_conclusion_facts WHERE conclusion_id=?", (old_id,))
+            con.execute("DELETE FROM financial_reasoning_conclusions WHERE conclusion_id=?", (old_id,))
         cur = con.execute(
             "INSERT INTO financial_reasoning_conclusions "
             "(ticker, conclusion_type, metric, status, value_numeric, value_text, confidence_tier, "

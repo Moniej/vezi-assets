@@ -52,12 +52,25 @@ class RetrievedDocument:
     already_extracted: bool  # extracted_facts already exist for this doc
 
 
-def retrieve_documents(con, query: RetrievalQuery) -> list[RetrievedDocument]:
+def retrieve_documents(con, query: RetrievalQuery, vintage: str | None = None) -> list[RetrievedDocument]:
     """The one seam a future semantic retriever would replace/augment.
     Structured-only: exact ticker match, doc_type match, filing_date range,
     entity mention join. Ranked by filing_date DESC (most recent first) —
     no relevance scoring exists yet because there is only one signal
-    (recency) to rank on without embeddings."""
+    (recency) to rank on without embeddings.
+
+    `vintage` (added 2026-08-12, production-reliability audit, Finding A):
+    the CAPTURE-vintage cutoff, distinct from date_from/date_to (which
+    filter filing_date -- the market's knowledge date). Filters
+    `documents.as_of_date <= vintage` -- when the OS itself retrieved the
+    document, mirroring db.py's vintage parameter on the market-data
+    readers exactly. Verified on the live database: 98.8% of documents
+    have a retrieved_date more than 30 days after filing_date (avg gap
+    ~4.6 years), so filtering on filing_date alone lets a historical query
+    see documents the system had not yet captured as of that date. `None`
+    (the default) preserves the exact prior unfiltered behavior -- this
+    only matters for a genuine historical replay, not a live "as of today"
+    query (today's vintage is a no-op since as_of_date is always <= today)."""
     clauses, params = [], {}
     joins = ""
     if query.ticker:
@@ -72,6 +85,9 @@ def retrieve_documents(con, query: RetrievalQuery) -> list[RetrievedDocument]:
     if query.date_to:
         clauses.append("d.filing_date <= :date_to")
         params["date_to"] = query.date_to
+    if vintage:
+        clauses.append("d.as_of_date <= :vintage")
+        params["vintage"] = vintage
     if query.entity_name:
         joins += (" JOIN entity_mentions em ON em.doc_id = d.doc_id "
                  " JOIN entities en ON en.entity_id = em.entity_id ")
@@ -104,12 +120,18 @@ def retrieve_documents(con, query: RetrievalQuery) -> list[RetrievedDocument]:
 
 def find_facts(con, *, ticker: str | None = None, fact_type: str | None = None,
                date_from: str | None = None, date_to: str | None = None,
-               limit: int = 50) -> list[dict]:
+               vintage: str | None = None, limit: int = 50) -> list[dict]:
     """extracted_facts joined back to their document, for a company. Both
     LLM-sourced (model_id set) and deterministic (model_id NULL) facts are
     returned — the caller decides whether to filter, matching
     validate_extracted_facts.py's existing model_id IS NULL discipline
-    rather than silently picking one source here."""
+    rather than silently picking one source here.
+
+    `vintage` (added 2026-08-12, production-reliability audit, Finding A):
+    same capture-vintage cutoff as retrieve_documents' `vintage` -- filters
+    `documents.as_of_date <= vintage`, distinct from date_to's filing_date
+    filter. `None` (the default) preserves the exact prior unfiltered
+    behavior."""
     clauses, params = [], {"limit": limit}
     if ticker:
         clauses.append("(d.ticker = :ticker OR d.raw_symbol = :ticker)")
@@ -123,6 +145,9 @@ def find_facts(con, *, ticker: str | None = None, fact_type: str | None = None,
     if date_to:
         clauses.append("d.filing_date <= :date_to")
         params["date_to"] = date_to
+    if vintage:
+        clauses.append("d.as_of_date <= :vintage")
+        params["vintage"] = vintage
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     sql = (f"SELECT ef.fact_id, ef.doc_id, ef.fact_type, ef.description, "
           f"ef.numeric_value, ef.extraction_confidence, ef.model_id, "
@@ -138,6 +163,7 @@ def find_entity_relationships(con, *, ticker: str | None = None,
                               entity_name: str | None = None,
                               relation_type: str | None = None,
                               as_of: str | None = None,
+                              vintage: str | None = None,
                               limit: int = 50) -> list[dict]:
     """`as_of` (added 2026-08-11, HANDOFF.md -- Priority 5, point-in-time
     integrity): when given, excludes any relationship not yet valid as of
@@ -148,7 +174,20 @@ def find_entity_relationships(con, *, ticker: str | None = None,
     reconstructing "what did we know as of <a past date>" would silently
     see relationships recorded from documents filed AFTER that date. `None`
     (the default) preserves the exact prior unfiltered behavior for
-    existing callers that intentionally want the full history."""
+    existing callers that intentionally want the full history.
+
+    `vintage` (added 2026-08-12, production-reliability audit, Finding A):
+    a SEPARATE gate from `as_of` -- as_of/valid_from/valid_to describe when
+    a relationship was true in the real world; vintage gates on
+    `recorded_at`, when THIS SYSTEM actually captured it (verified on the
+    real database: relationship_id=11 has valid_from=2026-01-27 but its
+    source document's capture date is 2026-08-08 -- a historical query
+    as_of='2026-03-01' would previously see it as "known" six months
+    before the system had it). Conservative on missing data: a
+    relationship with recorded_at IS NULL (no source_evidence_id, or one
+    never backfilled) is EXCLUDED once vintage is given, not assumed safe
+    -- capture time unknown is not the same as capture time acceptable.
+    `None` (the default) preserves the exact prior unfiltered behavior."""
     clauses, params = [], {"limit": limit}
     if ticker:
         clauses.append("(subj.ticker = :ticker OR obj.ticker = :ticker)")
@@ -164,6 +203,9 @@ def find_entity_relationships(con, *, ticker: str | None = None,
         clauses.append("(r.valid_from IS NULL OR r.valid_from <= :as_of)")
         clauses.append("(r.valid_to IS NULL OR r.valid_to >= :as_of)")
         params["as_of"] = as_of
+    if vintage:
+        clauses.append("(r.recorded_at IS NOT NULL AND r.recorded_at <= :vintage)")
+        params["vintage"] = vintage
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     sql = (f"SELECT r.relationship_id, subj.canonical_name AS subject_name, "
           f"r.relation_type, obj.canonical_name AS object_name, "

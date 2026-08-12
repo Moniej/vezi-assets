@@ -159,10 +159,21 @@ def compute_flags_for_ticker(con: sqlite3.Connection, ticker: str) -> list[FlagR
 
 
 def write_flag_results(con: sqlite3.Connection, results: list[FlagResult]) -> int:
+    """Idempotent on rerun (fixed 2026-08-12, production-reliability audit --
+    same fix and same reasoning as financial_ratios.write_ratio_results)."""
     now = datetime.now(timezone.utc).isoformat()
     written = 0
     for r in results:
         value_text = None if r.fired is None else ("fired" if r.fired else "not_fired")
+        existing = con.execute(
+            "SELECT conclusion_id FROM financial_reasoning_conclusions WHERE "
+            "ticker=? AND conclusion_type='flag' AND metric=? AND "
+            "period_start IS ? AND period_end IS ? AND rule_version=?",
+            (r.ticker, r.flag_name, r.period_start, r.period_end, RULE_VERSION),
+        ).fetchall()
+        for (old_id,) in existing:
+            con.execute("DELETE FROM financial_reasoning_conclusion_facts WHERE conclusion_id=?", (old_id,))
+            con.execute("DELETE FROM financial_reasoning_conclusions WHERE conclusion_id=?", (old_id,))
         cur = con.execute(
             "INSERT INTO financial_reasoning_conclusions "
             "(ticker, conclusion_type, metric, status, value_numeric, value_text, confidence_tier, "

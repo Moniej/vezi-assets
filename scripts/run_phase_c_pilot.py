@@ -33,6 +33,7 @@ future provider swap in that config.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -50,6 +51,46 @@ from ngxrot.documents.llm_providers import QuotaExceededError, build_default_pro
 from ngxrot.documents.reasoning import resumable_financial_reasoning  # noqa: E402
 
 PILOT_SIZE = 18
+
+# Single-instance guard (2026-08-12, production-reliability audit). The
+# resumability this script already has (document_processing_status +
+# cross-checked against extracted_facts, see pipeline_status.py) is real
+# and correct for ONE worker resuming after its own crash/interruption --
+# but it does nothing to stop TWO workers from starting close together and
+# both extracting the same doc_id, since remaining_doc_ids() is computed
+# once up front with no per-document claim (reproduced by inspection: no
+# UNIQUE constraint exists on extracted_facts/evidence/investment_
+# implications to catch this after the fact). A per-document DB-level
+# claim would conflict with should_skip()'s own intentional treatment of a
+# stale 'processing' status as retryable after a real crash -- there is no
+# heartbeat/lease to tell "abandoned by a dead process" apart from
+# "actively being worked on right now". A whole-script lock file is the
+# minimum fix that doesn't reintroduce that conflict: it prevents two
+# invocations from running at all, and a stale lock (this script's own
+# prior run having died) is detected by age, not by an unreliable
+# cross-platform process-liveness check.
+LOCK_PATH = ROOT / "data" / "staging" / "run_phase_c_pilot.lock"
+STALE_LOCK_HOURS = 6.0  # generous vs. this pilot's real observed runtimes; a lock older
+                        # than this is assumed abandoned by a dead process, not active
+
+
+def _acquire_lock() -> None:
+    LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if LOCK_PATH.exists():
+        age_hours = (time.time() - LOCK_PATH.stat().st_mtime) / 3600
+        if age_hours < STALE_LOCK_HOURS:
+            print(f"Refusing to start: {LOCK_PATH} exists and is only {age_hours:.1f}h old "
+                 f"(stale threshold {STALE_LOCK_HOURS}h) -- another run_phase_c_pilot.py "
+                 f"invocation appears to be in progress. If you're certain none is, delete "
+                 f"the lock file and retry.", file=sys.stderr)
+            sys.exit(1)
+        print(f"Lock file is {age_hours:.1f}h old (> {STALE_LOCK_HOURS}h threshold) -- "
+             f"treating as abandoned by a dead process, proceeding.")
+    LOCK_PATH.write_text(f"pid={os.getpid()} started={datetime.now(timezone.utc).isoformat()}\n")
+
+
+def _release_lock() -> None:
+    LOCK_PATH.unlink(missing_ok=True)
 
 
 def select_pilot(con) -> pd.DataFrame:
@@ -115,6 +156,14 @@ def main():
                         "any already-existing facts. Use deliberately, not by default.")
     args = ap.parse_args()
 
+    _acquire_lock()
+    try:
+        _run(args)
+    finally:
+        _release_lock()
+
+
+def _run(args) -> None:
     con = db.init_db()
     provider = build_default_provider(model_id=args.model)
     print(f"Using provider: {provider.info.name}")

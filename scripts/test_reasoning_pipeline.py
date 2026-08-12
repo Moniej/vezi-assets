@@ -412,8 +412,8 @@ def test_pipeline_status_tracking():
             "INSERT INTO documents (doc_id, ticker, raw_symbol, doc_type, source_type, "
             "filing_date, retrieved_date, local_path, extraction_method, source_confidence, "
             "source_id, as_of_date) VALUES (?,'TESTCO','TESTCO','dividend','filing',"
-            "'2026-04-01','2026-04-01','x','native',0.85,?,?)",
-            (doc_id, source_id, date.today().isoformat()))
+            "'2026-04-01','2026-04-01',?,'native',0.85,?,?)",
+            (doc_id, f"x-doc{doc_id}", source_id, date.today().isoformat()))
     con.commit()
 
     pstatus.mark_status(con, 1, "processing", model_id="gemini-3.6-flash",

@@ -48,8 +48,20 @@ DEFAULT_DB = Path(os.environ.get("NGXROT_DB_PATH", str(PKG_ROOT / "data" / "ngx.
 def connect(db_path: str | Path = DEFAULT_DB) -> sqlite3.Connection:
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(db_path)
+    # timeout= (seconds sqlite3 itself will keep retrying before raising
+    # "database is locked", separate from and in addition to busy_timeout
+    # below) + WAL (2026-08-12, production-reliability audit): the default
+    # rollback-journal mode blocks readers behind a writer and vice versa,
+    # and the default ~0 busy timeout means any second connection touching
+    # the DB while another write is in flight (a monitoring run overlapping
+    # a research query, two scripts started close together) fails
+    # immediately instead of waiting a bounded amount of time. WAL lets
+    # readers proceed concurrently with a writer; busy_timeout covers
+    # writer-vs-writer contention.
+    con = sqlite3.connect(db_path, timeout=30.0)
     con.execute("PRAGMA foreign_keys = ON")
+    con.execute("PRAGMA journal_mode = WAL")
+    con.execute("PRAGMA busy_timeout = 30000")
     return con
 
 
@@ -191,6 +203,24 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
     try:
         con.execute("ALTER TABLE corporate_actions ADD COLUMN source_fact_id INTEGER "
                     "REFERENCES extracted_facts(fact_id)")
+    except sqlite3.OperationalError:
+        pass
+    # additive migration, 2026-08-12 (production-reliability audit, Finding
+    # A -- capture-vintage gap): entity_relationships.valid_from/valid_to
+    # describe when the relationship was true in the REAL WORLD, not when
+    # this system actually captured/extracted it -- there was no column at
+    # all for that. Verified on the live database: source documents can be
+    # retrieved many months after a relationship's valid_from (e.g.
+    # relationship_id=11: valid_from=2026-01-27, source document
+    # retrieved_date=2026-08-08), so a historical query as_of a date in
+    # that gap would previously see the relationship as "known" when the
+    # system did not yet possess it. Nullable/additive, no existing row
+    # affected -- NULL means "capture time unknown", handled conservatively
+    # (excluded, not assumed-safe) by find_entity_relationships' vintage
+    # filter in retrieval.py. Backfilled for existing rows with a source
+    # document by scripts/fre/backfill_entity_relationship_recorded_at.py.
+    try:
+        con.execute("ALTER TABLE entity_relationships ADD COLUMN recorded_at TEXT")
     except sqlite3.OperationalError:
         pass
     con.executescript((SCHEMA_DIR / "schema.sql").read_text(encoding="utf-8"))

@@ -18,6 +18,7 @@ data/staging/
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal
+*.sqlite-shm
 *.sqlite3
 *.db
 

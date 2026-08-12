@@ -46,6 +46,7 @@ class SourceFactPIT:
     fact_type: str
     doc_id: int
     filing_date: str
+    as_of_date: str
 
 
 @dataclass
@@ -76,51 +77,81 @@ class CompanyFinancialReasoningSnapshot:
 
 def _source_facts(con: sqlite3.Connection, conclusion_id: int) -> list[SourceFactPIT]:
     rows = con.execute(
-        "SELECT fc.fact_id, fc.role, f.fact_type, f.doc_id, d.filing_date "
+        "SELECT fc.fact_id, fc.role, f.fact_type, f.doc_id, d.filing_date, d.as_of_date "
         "FROM financial_reasoning_conclusion_facts fc "
         "JOIN extracted_facts f ON f.fact_id = fc.fact_id "
         "JOIN documents d ON d.doc_id = f.doc_id "
         "WHERE fc.conclusion_id = ? ORDER BY fc.fact_id, fc.role",
         (conclusion_id,),
     ).fetchall()
-    return [SourceFactPIT(fact_id=r[0], role=r[1], fact_type=r[2], doc_id=r[3], filing_date=r[4])
+    return [SourceFactPIT(fact_id=r[0], role=r[1], fact_type=r[2], doc_id=r[3],
+                          filing_date=r[4], as_of_date=r[5])
             for r in rows]
 
 
 def _earliest_filing_for_period(con: sqlite3.Connection, ticker: str,
-                                 period_start: str, period_end: str) -> str | None:
+                                 period_start: str, period_end: str) -> tuple[str, str] | None:
+    """Returns (filing_date, as_of_date) of the SAME governing document --
+    correlated, not independent MIN()s, so the capture-vintage check below
+    (added 2026-08-12) reflects the document that actually made the period
+    knowable, not an unrelated row's capture date."""
     row = con.execute(
-        "SELECT MIN(d.filing_date) FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
-        "WHERE d.ticker = ? AND f.period_start = ? AND f.period_end = ?",
+        "SELECT d.filing_date, d.as_of_date FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
+        "WHERE d.ticker = ? AND f.period_start = ? AND f.period_end = ? "
+        "ORDER BY d.filing_date ASC LIMIT 1",
         (ticker, period_start, period_end),
     ).fetchone()
-    return row[0] if row and row[0] is not None else None
+    return (row[0], row[1]) if row else None
 
 
-def _latest_filing_for_ticker(con: sqlite3.Connection, ticker: str) -> str | None:
+def _latest_filing_for_ticker(con: sqlite3.Connection, ticker: str) -> tuple[str, str] | None:
+    """Returns (filing_date, as_of_date) of the SAME governing document --
+    see _earliest_filing_for_period's docstring."""
     row = con.execute(
-        "SELECT MAX(d.filing_date) FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
-        "WHERE d.ticker = ?",
+        "SELECT d.filing_date, d.as_of_date FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
+        "WHERE d.ticker = ? ORDER BY d.filing_date DESC LIMIT 1",
         (ticker,),
     ).fetchone()
-    return row[0] if row and row[0] is not None else None
+    return (row[0], row[1]) if row else None
 
 
 def _knowable_as_of_date(con: sqlite3.Connection, ticker: str, period_start: str | None,
-                          period_end: str | None, source_facts: list[SourceFactPIT]) -> str | None:
+                          period_end: str | None,
+                          source_facts: list[SourceFactPIT]) -> tuple[str, str | None] | None:
+    """Returns (knowable_date, capture_vintage) -- capture_vintage is the
+    latest as_of_date among the governing fact(s) (added 2026-08-12,
+    production-reliability audit, Finding A), None only in the
+    zero-linked-fact fallback cases where _earliest_filing_for_period /
+    _latest_filing_for_ticker found nothing at all (knowable_date is then
+    also None, handled by the caller exactly as before)."""
     if source_facts:
-        return max(f.filing_date for f in source_facts)
+        return max(f.filing_date for f in source_facts), max(f.as_of_date for f in source_facts)
     if period_start is not None and period_end is not None:
-        return _earliest_filing_for_period(con, ticker, period_start, period_end)
-    return _latest_filing_for_ticker(con, ticker)
+        found = _earliest_filing_for_period(con, ticker, period_start, period_end)
+    else:
+        found = _latest_filing_for_ticker(con, ticker)
+    return found if found is not None else (None, None)
 
 
-def as_of(con: sqlite3.Connection, ticker: str, as_of_date: str) -> CompanyFinancialReasoningSnapshot:
+def as_of(con: sqlite3.Connection, ticker: str, as_of_date: str,
+          vintage: str | None = None) -> CompanyFinancialReasoningSnapshot:
     """Every FSI Phase 3 conclusion for `ticker` knowable on or before
     `as_of_date` -- gated by public filing dates, never financial period
     dates. Single-ticker only (mirrors Phase 3's own Area 7 guardrail):
     this function has no parameter or return field that could compare
-    or rank across tickers."""
+    or rank across tickers.
+
+    `vintage` (added 2026-08-12, production-reliability audit, Finding A):
+    a SEPARATE gate from `as_of_date` -- as_of_date is the market's
+    knowledge date (filing_date); vintage is when THIS SYSTEM captured the
+    governing document(s) (documents.as_of_date). This module's own
+    `audit_no_lookahead` only ever re-checked filing_date, so it reported
+    "clean" even though nothing here gated on capture time -- verified on
+    the live database, 98.8% of documents have a retrieved_date more than
+    30 days after filing_date (avg gap ~4.6 years), so a historical
+    `as_of_date` query without a vintage gate can include conclusions
+    built from documents the system did not yet possess as of that date.
+    `None` (the default) preserves the exact prior unfiltered behavior."""
     rows = con.execute(
         "SELECT conclusion_id, conclusion_type, metric, status, value_numeric, value_text, "
         "confidence_tier, method, limitations, period_start, period_end, computed_at "
@@ -134,8 +165,11 @@ def as_of(con: sqlite3.Connection, ticker: str, as_of_date: str) -> CompanyFinan
         (cid, ctype, metric, status, value_numeric, value_text, confidence_tier,
          method, limitations, period_start, period_end, computed_at) = row
         source_facts = _source_facts(con, cid)
-        knowable_date = _knowable_as_of_date(con, ticker, period_start, period_end, source_facts)
+        knowable_date, capture_vintage = _knowable_as_of_date(con, ticker, period_start, period_end, source_facts)
         if knowable_date is None or knowable_date > as_of_date:
+            excluded += 1
+            continue
+        if vintage and (capture_vintage is None or capture_vintage > vintage):
             excluded += 1
             continue
         knowable.append(KnowableConclusion(
@@ -149,7 +183,8 @@ def as_of(con: sqlite3.Connection, ticker: str, as_of_date: str) -> CompanyFinan
     )
 
 
-def audit_no_lookahead(con: sqlite3.Connection, ticker: str, as_of_date: str) -> list[str]:
+def audit_no_lookahead(con: sqlite3.Connection, ticker: str, as_of_date: str,
+                        vintage: str | None = None) -> list[str]:
     """Mechanical self-check (docs/fre_runs/fsi_phase4_preregistration.md
     Area 3): returns a list of violation descriptions (empty = clean) --
     every conclusion `as_of()` returns for `ticker`/`as_of_date` must have
@@ -157,8 +192,15 @@ def audit_no_lookahead(con: sqlite3.Connection, ticker: str, as_of_date: str) ->
     as_of()'s own internal filter logic in the sense that it re-checks the
     raw per-fact dates directly, not just the conclusion's own recorded
     `knowable_as_of` value -- catching a bug in the gating computation
-    itself, not merely re-asserting it."""
-    snapshot = as_of(con, ticker, as_of_date)
+    itself, not merely re-asserting it.
+
+    `vintage` (added 2026-08-12, production-reliability audit, Finding A):
+    when given, also re-checks every source fact's own document
+    as_of_date (capture date) against `vintage`, independent of as_of()'s
+    internal gating -- this is the check that would have caught Finding A
+    directly (the pre-fix version of this function only ever checked
+    filing_date, so it reported "clean" in the presence of the bug)."""
+    snapshot = as_of(con, ticker, as_of_date, vintage=vintage)
     violations = []
     for c in snapshot.conclusions:
         for f in c.source_facts:
@@ -166,5 +208,11 @@ def audit_no_lookahead(con: sqlite3.Connection, ticker: str, as_of_date: str) ->
                 violations.append(
                     f"conclusion_id={c.conclusion_id} ({ticker}/{c.metric}) includes fact_id={f.fact_id} "
                     f"from doc_id={f.doc_id} filed {f.filing_date}, which is AFTER as_of_date={as_of_date}"
+                )
+            if vintage and f.as_of_date > vintage:
+                violations.append(
+                    f"conclusion_id={c.conclusion_id} ({ticker}/{c.metric}) includes fact_id={f.fact_id} "
+                    f"from doc_id={f.doc_id} captured (as_of_date) {f.as_of_date}, which is AFTER "
+                    f"vintage={vintage}"
                 )
     return violations

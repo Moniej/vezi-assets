@@ -241,7 +241,7 @@ def _insert_second_ticker_fact(con, *, fact_id):
         "filing_date, retrieved_date, local_path, text_path, extraction_method, "
         "char_count, source_confidence, source_id, as_of_date) VALUES "
         "(2,'OTHERCO','OTHERCO','dividend','filing','2026-04-01','2026-04-01',"
-        "'x',?,'native',300,0.85,?,?)", (str(text_path), source_id, date.today().isoformat()))
+        "'x-doc2',?,'native',300,0.85,?,?)", (str(text_path), source_id, date.today().isoformat()))
     ev_id = con.execute(
         "INSERT INTO evidence (doc_id, quoted_text, source_confidence) VALUES "
         "(2,'a final dividend of N2.50 per share',0.85)").lastrowid

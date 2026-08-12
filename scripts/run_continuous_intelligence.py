@@ -33,6 +33,7 @@ For each ticker:
 from __future__ import annotations
 
 import argparse
+import sqlite3
 import sys
 import traceback
 from datetime import date, datetime, timedelta, timezone
@@ -128,12 +129,26 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 -- one ticker's failure must never abort the batch
             con.rollback()
             completed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            con.execute(
-                "INSERT INTO monitoring_runs (ticker, as_of_date, prior_date, status, "
-                "error_detail, started_at, completed_at) VALUES (?,?,?,?,?,?,?)",
-                (ticker, as_of_date, prior_date, "failed",
-                 f"{e!r}\n{traceback.format_exc(limit=3)}", started_at, completed_at))
-            con.commit()
+            try:
+                con.execute(
+                    "INSERT INTO monitoring_runs (ticker, as_of_date, prior_date, status, "
+                    "error_detail, started_at, completed_at) VALUES (?,?,?,?,?,?,?)",
+                    (ticker, as_of_date, prior_date, "failed",
+                     f"{e!r}\n{traceback.format_exc(limit=3)}", started_at, completed_at))
+                con.commit()
+            except sqlite3.IntegrityError:
+                # ux on monitoring_runs(ticker, as_of_date, prior_date): a
+                # concurrent orchestrator run already recorded a row (most
+                # likely 'completed') for this exact key while we were
+                # processing -- their result stands, this process simply
+                # lost the race. Not an error worth crashing the batch over
+                # (2026-08-12, production-reliability audit -- previously
+                # this second INSERT was unguarded and an uncaught
+                # IntegrityError here would abort every ticker after it).
+                con.rollback()
+                n_skipped += 1
+                print(f"RACE (already recorded by a concurrent run): {ticker} -- {e!r}", file=sys.stderr)
+                continue
             n_failed += 1
             print(f"FAILED: {ticker} -- {e!r}", file=sys.stderr)
 

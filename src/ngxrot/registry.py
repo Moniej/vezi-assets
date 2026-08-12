@@ -30,8 +30,13 @@ _FINGERPRINT_DIRS = ("src", "schema", "configs")
 def connect_registry(db_path: str | Path = REGISTRY_DB) -> sqlite3.Connection:
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(db_path)
+    # Same fix and same reasoning as ngxrot.db.connect (2026-08-12,
+    # production-reliability audit): WAL + a real busy_timeout instead of
+    # the default rollback-journal mode / ~0s timeout.
+    con = sqlite3.connect(db_path, timeout=30.0)
     con.execute("PRAGMA foreign_keys = ON")
+    con.execute("PRAGMA journal_mode = WAL")
+    con.execute("PRAGMA busy_timeout = 30000")
     # additive migrations FIRST (ALTER is allowed on the immutable tables; row
     # UPDATE/DELETE remain trigger-blocked). Must precede executescript so
     # triggers referencing new columns can be created on migrated DBs.

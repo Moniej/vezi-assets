@@ -63,13 +63,24 @@ def cmd_acknowledge(con, args) -> None:
     if row is None:
         print(f"no alert {args.id}", file=sys.stderr)
         sys.exit(1)
-    if row[0] is not None:
-        print(f"alert {args.id} already acknowledged at {row[0]}", file=sys.stderr)
-        sys.exit(1)
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    con.execute("UPDATE alerts SET acknowledged_at = ?, acknowledged_by = ? WHERE alert_id = ?",
-               (now, args.by, args.id))
+    # Conditional UPDATE + rowcount check, not a separate read-then-write
+    # (fixed 2026-08-12, production-reliability audit): the prior SELECT-
+    # then-UPDATE let two concurrent `acknowledge` calls for the same
+    # alert_id both pass the None-check and the second would silently
+    # overwrite the first's acknowledged_by/acknowledged_at with no
+    # indication a race happened. This UPDATE only succeeds if
+    # acknowledged_at is still NULL at the moment it runs.
+    cur = con.execute(
+        "UPDATE alerts SET acknowledged_at = ?, acknowledged_by = ? "
+        "WHERE alert_id = ? AND acknowledged_at IS NULL",
+        (now, args.by, args.id))
     con.commit()
+    if cur.rowcount == 0:
+        current = con.execute("SELECT acknowledged_at FROM alerts WHERE alert_id = ?",
+                              (args.id,)).fetchone()[0]
+        print(f"alert {args.id} already acknowledged at {current}", file=sys.stderr)
+        sys.exit(1)
     print(f"alert {args.id} acknowledged by {args.by!r} at {now}")
 
 
