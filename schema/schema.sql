@@ -764,6 +764,30 @@ CREATE TABLE IF NOT EXISTS watchlist_entries (
 );
 CREATE INDEX IF NOT EXISTS ix_watchlist_entries_ticker ON watchlist_entries (ticker);
 
+-- ----------------------------------------------------------------------------
+-- Secondary-source (news) reliability registry (2026-08-11, HANDOFF.md).
+-- Proposed schema originally from docs/STAGE10A_NEWS_ARCHITECTURE_AND_
+-- SOURCE_AUDIT_2026-08-08.md Section 2 -- not created at that stage,
+-- created here. Required before any evidence_ranking.py trust-tier
+-- assignment for a news source can be anything other than the provisional
+-- tier 3 fallback (vocab.EVIDENCE_TRUST_TIERS) -- an outlet's
+-- reliability_tier/base_confidence is an owner judgment call, never
+-- inferred from the article content itself. source_id links to the
+-- SAME `sources` table every other provenance record on this platform
+-- uses -- no second source registry.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS news_outlets (
+    outlet_id            INTEGER PRIMARY KEY,
+    outlet_name          TEXT NOT NULL UNIQUE,
+    source_id            INTEGER REFERENCES sources(source_id),
+    reliability_tier     INTEGER NOT NULL CHECK (reliability_tier BETWEEN 1 AND 4),
+    base_confidence      REAL NOT NULL CHECK (base_confidence BETWEEN 0.0 AND 1.0),
+    covers_ngx_directly  INTEGER NOT NULL DEFAULT 0,  -- 1 = files original NGX
+                                                        -- reporting; 0 = wire/
+                                                        -- syndicated only
+    notes                TEXT
+);
+
 -- FSI Phase 23: full provenance for every securities.sector_ngx value
 -- ever populated -- source, retrieval date, and document/URL, mirroring
 -- the same "never a bare value with no traceable source" discipline

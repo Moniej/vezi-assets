@@ -15,10 +15,12 @@ for every contradiction already on record and reports whether it agrees with
 the confidence-only one. Disagreement is not "fixed" — this project's rule is
 disclosed, not silently patched (same posture as the self-critique gate).
 
-Trust tiers: see vocab.EVIDENCE_TRUST_TIERS. Only tier 1 (primary_filing) and
-tier 4 (ai_derived_or_ungrounded) are reachable on the real database today —
-tiers 2-3 are reserved for the news/analyst sources the architecture doc
-already planned (§10) but that haven't been built.
+Trust tiers: see vocab.EVIDENCE_TRUST_TIERS. Tiers 2-3 were reserved for
+the news/analyst sources the architecture doc planned (§10) until the
+`news_outlets` registry existed to back them with a real, owner-set
+tier per outlet (built 2026-08-11, HANDOFF.md) -- a news source with no
+registry row still falls back to the original provisional tier 3, never
+silently promoted.
 """
 
 from __future__ import annotations
@@ -36,12 +38,16 @@ class TrustAssignment:
 
 
 def assign_trust_tier(*, source_type: str | None, grounding_check: str | None,
-                      is_propagated: bool) -> TrustAssignment:
+                      is_propagated: bool, news_outlet_tier: int | None = None,
+                      news_outlet_name: str | None = None) -> TrustAssignment:
     """Mechanical tier assignment — no judgment call, every input is already
-    a stored column value. A propagated (Phase F) or ungrounded row is
-    always tier 4 regardless of source_type: it is not itself a primary
-    citation, it inherits (and discounts) someone else's claim, or its quote
-    was never verified against the source document at all."""
+    a stored column value (news_outlet_tier is a value the CALLER already
+    looked up from news_outlets, same discipline as every other input here
+    — this function itself never touches the database). A propagated
+    (Phase F) or ungrounded row is always tier 4 regardless of source_type:
+    it is not itself a primary citation, it inherits (and discounts)
+    someone else's claim, or its quote was never verified against the
+    source document at all."""
     if is_propagated:
         return TrustAssignment(4, vocab.EVIDENCE_TRUST_TIERS[4],
                                "Phase F peer-propagated implication — copies a source "
@@ -55,9 +61,13 @@ def assign_trust_tier(*, source_type: str | None, grounding_check: str | None,
                                "primary regulatory/exchange filing, ingested via the "
                                "governed X-Issuer/NGX pipeline, quote verified grounded")
     if source_type == "news":
+        if news_outlet_tier is not None:
+            return TrustAssignment(news_outlet_tier, vocab.EVIDENCE_TRUST_TIERS[news_outlet_tier],
+                                   f"news source {news_outlet_name!r} — owner-set tier from the "
+                                   f"news_outlets registry (2026-08-11)")
         return TrustAssignment(3, vocab.EVIDENCE_TRUST_TIERS[3],
-                               "news source — reliability-tier registry (news_outlets) "
-                               "not yet built; provisional tier until one exists")
+                               "news source — no matching news_outlets registry row; "
+                               "provisional tier until one is added")
     return TrustAssignment(2, vocab.EVIDENCE_TRUST_TIERS[2],
                            f"source_type={source_type!r} treated as a primary "
                            f"non-filing source pending its own registry")
@@ -92,16 +102,18 @@ def rank_evidence_for_fact(con, fact_id: int) -> list[dict]:
             continue
         seen.add(evidence_id)
         row = con.execute(
-            "SELECT e.doc_id, e.quoted_text, e.source_confidence, d.source_type "
+            "SELECT e.doc_id, e.quoted_text, e.source_confidence, d.source_type, "
+            "no.reliability_tier, no.outlet_name "
             "FROM evidence e JOIN documents d ON d.doc_id = e.doc_id "
+            "LEFT JOIN news_outlets no ON no.source_id = d.source_id "
             "WHERE e.evidence_id = ?", (evidence_id,)).fetchone()
         if row is None:
             continue
-        ev_doc_id, quoted_text, source_confidence, source_type = row
+        ev_doc_id, quoted_text, source_confidence, source_type, outlet_tier, outlet_name = row
         assignment = assign_trust_tier(
             source_type=source_type,
             grounding_check=grounding_check if role == "extracted_facts.evidence_id" else "passed",
-            is_propagated=False)
+            is_propagated=False, news_outlet_tier=outlet_tier, news_outlet_name=outlet_name)
         out.append({
             "evidence_id": evidence_id, "doc_id": ev_doc_id, "role": role,
             "quoted_text": quoted_text, "source_confidence": source_confidence,
