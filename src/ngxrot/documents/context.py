@@ -131,10 +131,17 @@ def build_reasoning_context(con, ticker: str, as_of: str | None = None,
         con, RetrievalQuery(ticker=ticker, date_to=as_of, limit=100))
     ctx.facts = retrieval.find_facts(con, ticker=ticker, date_to=as_of, limit=200)
     ctx.evidence = _evidence_for_facts(con, [f["fact_id"] for f in ctx.facts])
-    ctx.entity_relationships = retrieval.find_entity_relationships(con, ticker=ticker, limit=100)
+    # as_of now passed to both calls below (fixed 2026-08-11, HANDOFF.md --
+    # Priority 5): neither had ANY date filtering before this, despite
+    # entity_relationships.valid_from and investment_implications.
+    # generated_at both genuinely spanning multiple years on the real
+    # database -- a real, previously-unclosed look-ahead gap in the core
+    # reasoning context, not just a query-layer wrapper issue.
+    ctx.entity_relationships = retrieval.find_entity_relationships(
+        con, ticker=ticker, as_of=as_of, limit=100)
     ctx.historical_implications = retrieval.find_prior_implications(
         con, ticker, before_date=as_of, limit=50)
-    ctx.peer_propagations = retrieval.find_peer_propagations(con, ticker, limit=50)
+    ctx.peer_propagations = retrieval.find_peer_propagations(con, ticker, as_of=as_of, limit=50)
 
     events_df = retrieval.find_events(con, ticker=ticker, sim_date=as_of, limit=100)
     if events_df is not None and len(events_df):

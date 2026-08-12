@@ -531,14 +531,20 @@ def query_facts(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
     """Extracted facts (deterministic + LLM-sourced) for one or more
     tickers -- thin wrapper around `documents.retrieval.find_facts`.
     `filters={'fact_type': ...}` narrows by taxonomy leaf;
-    `start`/`end` map to the underlying filing-date range."""
+    `start`/`end` map to the underlying filing-date range. `end` defaults
+    to `as_of` when not given (fixed 2026-08-11, HANDOFF.md -- Priority 5):
+    a caller asking for facts "as of" a date with no explicit `end` was
+    previously getting every fact regardless of filing date -- a real
+    look-ahead gap in this wrapper, not in find_facts itself (a deliberately
+    unopinionated primitive whose caller is expected to pass a bound)."""
     warnings = validate_spec(con, spec)
     resolved = [resolve_entity(con, e, "ticker") for e in spec.entities]
     fact_type = spec.filters.get("fact_type")
+    date_to = spec.end or spec.as_of
     rows = []
     for e in spec.entities:
         rows.extend(doc_retrieval.find_facts(
-            con, ticker=e, fact_type=fact_type, date_from=spec.start, date_to=spec.end,
+            con, ticker=e, fact_type=fact_type, date_from=spec.start, date_to=date_to,
             limit=spec.limit or 50))
     df = pd.DataFrame(rows)
     if df.empty:
@@ -547,7 +553,7 @@ def query_facts(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
     return QueryResult(
         query_id=str(uuid.uuid4()), query_type="facts", parameters=_spec_params(spec),
         entities_requested=spec.entities, entities_resolved=[vars(r) for r in resolved],
-        observations=df, row_count=len(df), date_range=(spec.start, spec.end),
+        observations=df, row_count=len(df), date_range=(spec.start, date_to),
         data_sources=["extracted_facts", "documents"], warnings=warnings,
         provenance=_document_provenance_summary(con, df["doc_id"] if "doc_id" in df.columns else None),
         execution_metadata=_exec_meta(),
@@ -585,14 +591,19 @@ def query_events(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
 def query_entity_relationships(con: sqlite3.Connection, spec: QuerySpec) -> QueryResult:
     """Persisted entity relationships (competitor/supplier/etc. mentions)
     for one or more tickers -- thin wrapper around
-    `documents.retrieval.find_entity_relationships`."""
+    `documents.retrieval.find_entity_relationships`. `as_of` (or `end`)
+    now filters on `valid_from`/`valid_to` (fixed 2026-08-11, HANDOFF.md --
+    Priority 5) -- this query type previously had no date filtering
+    whatsoever, a real look-ahead gap given valid_from genuinely spans
+    2020-2026 on the real database."""
     warnings = validate_spec(con, spec)
     resolved = [resolve_entity(con, e, "ticker") for e in spec.entities]
     relation_type = spec.filters.get("relation_type")
+    as_of = spec.as_of or spec.end
     rows = []
     for e in spec.entities:
         rows.extend(doc_retrieval.find_entity_relationships(
-            con, ticker=e, relation_type=relation_type, limit=spec.limit or 50))
+            con, ticker=e, relation_type=relation_type, as_of=as_of, limit=spec.limit or 50))
     df = pd.DataFrame(rows)
     if df.empty:
         warnings.append("no entity_relationships found for the requested ticker(s)/filters")
@@ -600,7 +611,7 @@ def query_entity_relationships(con: sqlite3.Connection, spec: QuerySpec) -> Quer
     return QueryResult(
         query_id=str(uuid.uuid4()), query_type="entity_relationships", parameters=_spec_params(spec),
         entities_requested=spec.entities, entities_resolved=[vars(r) for r in resolved],
-        observations=df, row_count=len(df), date_range=(None, None),
+        observations=df, row_count=len(df), date_range=(None, as_of),
         data_sources=["entity_relationships"], warnings=warnings, provenance=[],
         execution_metadata=_exec_meta(),
     )

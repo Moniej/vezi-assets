@@ -137,7 +137,18 @@ def find_facts(con, *, ticker: str | None = None, fact_type: str | None = None,
 def find_entity_relationships(con, *, ticker: str | None = None,
                               entity_name: str | None = None,
                               relation_type: str | None = None,
+                              as_of: str | None = None,
                               limit: int = 50) -> list[dict]:
+    """`as_of` (added 2026-08-11, HANDOFF.md -- Priority 5, point-in-time
+    integrity): when given, excludes any relationship not yet valid as of
+    that date (`valid_from > as_of`) and any relationship already expired
+    by then (`valid_to < as_of`). Real look-ahead risk this closes: this
+    function previously had NO date filtering at all -- entity_relationships.
+    valid_from genuinely spans 2020-2026 on the real database, so a caller
+    reconstructing "what did we know as of <a past date>" would silently
+    see relationships recorded from documents filed AFTER that date. `None`
+    (the default) preserves the exact prior unfiltered behavior for
+    existing callers that intentionally want the full history."""
     clauses, params = [], {"limit": limit}
     if ticker:
         clauses.append("(subj.ticker = :ticker OR obj.ticker = :ticker)")
@@ -149,6 +160,10 @@ def find_entity_relationships(con, *, ticker: str | None = None,
     if relation_type:
         clauses.append("r.relation_type = :relation_type")
         params["relation_type"] = relation_type
+    if as_of:
+        clauses.append("(r.valid_from IS NULL OR r.valid_from <= :as_of)")
+        clauses.append("(r.valid_to IS NULL OR r.valid_to >= :as_of)")
+        params["as_of"] = as_of
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     sql = (f"SELECT r.relationship_id, subj.canonical_name AS subject_name, "
           f"r.relation_type, obj.canonical_name AS object_name, "
@@ -180,20 +195,33 @@ def find_events(con, *, ticker: str | None = None, event_type: str | None = None
     return df.sort_values("announced_date", ascending=False).head(limit)
 
 
-def find_peer_propagations(con, ticker: str, *, limit: int = 20) -> list[dict]:
+def find_peer_propagations(con, ticker: str, *, as_of: str | None = None,
+                           limit: int = 20) -> list[dict]:
     """investment_implications this ticker RECEIVED as a peer (Phase F,
     industry_reasoning.propagate_implication) — propagated_from_implication_id
     IS NOT NULL rows keyed to this ticker. Distinct from
     find_prior_implications, which returns implications this ticker's OWN
-    facts produced."""
+    facts produced.
+
+    `as_of` (added 2026-08-11, HANDOFF.md -- Priority 5): excludes any
+    propagation generated after that date (`ii.generated_at > as_of`) --
+    same class of look-ahead gap as find_entity_relationships, closed the
+    same way. `None` (the default) preserves the exact prior unfiltered
+    behavior."""
+    clauses = ["ii.ticker = ?", "ii.propagated_from_implication_id IS NOT NULL"]
+    params: list = [ticker]
+    if as_of:
+        clauses.append("ii.generated_at <= ?")
+        params.append(as_of)
+    params.append(limit)
     rows = con.execute(
         "SELECT ii.implication_id, ii.propagated_from_implication_id, ii.direction, "
         "ii.magnitude, ii.confidence, ii.confidence_rationale, ii.status, ii.generated_at, "
         "src.ticker AS source_ticker "
         "FROM investment_implications ii "
         "JOIN investment_implications src ON src.implication_id = ii.propagated_from_implication_id "
-        "WHERE ii.ticker = ? AND ii.propagated_from_implication_id IS NOT NULL "
-        "ORDER BY ii.generated_at DESC LIMIT ?", (ticker, limit)).fetchall()
+        f"WHERE {' AND '.join(clauses)} "
+        "ORDER BY ii.generated_at DESC LIMIT ?", params).fetchall()
     cols = ["implication_id", "propagated_from_implication_id", "direction", "magnitude",
            "confidence", "confidence_rationale", "status", "generated_at", "source_ticker"]
     return [dict(zip(cols, row)) for row in rows]
