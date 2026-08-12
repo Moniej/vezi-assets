@@ -1,3 +1,50 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 5)
+
+**FIXED: entity_mentions was dead schema since Phase C, silently
+broke an existing retrieval feature (2026-08-11).** Priority 3
+(entity/relationship graph). Audited first: `entity_relationships`'
+`relation_type` being the literal `affects_order_N` (not
+`competitor_of`/`supplier_to`) is a deliberate, disclosed design
+choice (TD11) — the extraction prompt was never asked to classify
+relationship nature, and inventing a semantic label from that alone
+would be fabrication. Left untouched; flagged in the charter and spec
+as a real open decision (needs a prompt change, new LLM calls, new
+cost/quality validation) rather than silently attempted.
+
+Found instead a genuine, safe, purely mechanical gap: `entity_mentions`
+has existed in `schema/schema.sql` since Phase C but nothing had ever
+written to it (confirmed by grep). `resolve_or_create_entity` in
+`src/ngxrot/documents/entities.py` only stamped `first_seen_doc_id`
+once on entity creation and never recorded later mentions in other
+documents. Fixed: it now records an `entity_mentions` row on every
+call, idempotently.
+
+**Real, previously-undiscovered consequence found while testing this**:
+`documents/retrieval.py`'s `retrieve_documents` already JOINs
+`entity_mentions` when `RetrievalQuery.entity_name` is set — an
+existing, real feature with **zero test coverage**, which had silently
+returned 0 rows for every `entity_name` query for as long as
+`entity_mentions` was empty. Verified: a real query for a real entity
+name now returns real results (confirmed before writing this down, not
+assumed).
+
+New `scripts/backfill_entity_mentions.py` — idempotent, run against the
+real production database: 74 historical (entity, document) mentions
+derived from existing data (`entities.first_seen_doc_id` +
+`entity_relationships`' evidence doc_id), nothing invented. New
+`scripts/test_entity_mentions.py` (8 checks): backfill integrity (no
+dangling references, no duplicates), the `entity_name` retrieval fix
+verified directly against real data, and the live write path's
+idempotency on a synthetic DB. Confirmed no regression across
+`test_reasoning_pipeline.py`, `test_research_query.py`,
+`test_research_workspace.py`,
+`test_coverage_assessment_financial_statements.py`, and
+`test_corporate_actions_dividend_load.py`. Confirmed `entities.py` has
+zero callers outside `src/ngxrot/documents/` — alpha untouched.
+Committed `8ef186f`, pushed to `origin/main`.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 4)
 
 **LOADED: real dividend corporate-action data, alpha-safety-checked
