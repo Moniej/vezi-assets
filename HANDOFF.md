@@ -1,3 +1,48 @@
+# FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 7)
+
+**FIXED: two real look-ahead gaps in the document/FRE reasoning
+pipeline (2026-08-11).** Priority 5 (temporal/point-in-time
+integrity, document side). Audit first, as established this session:
+the price/index side's bitemporal PIT (`db.py`'s `*_asof` readers) and
+`pit_financial_memory.py`'s filing-date gating were already correct —
+not touched.
+
+Found instead: `documents/retrieval.py`'s `find_entity_relationships`
+and `find_peer_propagations` had **no date filtering at all**.
+Confirmed by direct query before writing any code:
+`entity_relationships.valid_from` genuinely spans 2020-2026 on the
+real database, `investment_implications.generated_at` spans
+2026-07-22 to 2026-08-10 — a real, not hypothetical, look-ahead risk.
+Both functions now accept `as_of` (default `None`, preserving exact
+prior behavior for existing callers). Critically, wired this into
+`context.build_reasoning_context` itself — **the core reasoning
+engine every FRE consumer already uses** (`extract.py`,
+`industry_reasoning.py`, the FRE company-intelligence modules), not
+just the `research_query.py` bridge built two phases ago. Verified
+directly: a query for a past `as_of` now genuinely returns fewer
+relationships than one for today, for the same real ticker (NCR) —
+was previously byte-identical regardless of `as_of`, meaning the
+reasoning engine could have silently used future relationship data in
+a "what did we know historically" query.
+
+Also fixed: `research_query.py`'s `facts` query type only bounded
+results when the caller explicitly set `end` — `as_of` alone (the
+natural way to ask "what did we know as of this date") returned every
+fact regardless of filing date. `end` now defaults to `as_of`.
+
+`scripts/test_pit_document_side.py` (11 checks, real production DB):
+proves each trap existed (sanity checks confirming real multi-year
+data spread) and is now blocked, at three levels — the retrieval
+primitives directly, the `research_query.py` bridge, and
+`build_reasoning_context` itself — plus a synthetic-DB check for peer
+propagations (none exist in production yet). Confirmed no regression
+across all six existing document/FRE-side test suites. Confirmed
+`documents.retrieval`/`documents.context` have zero callers outside
+`research_query.py` — alpha untouched throughout. Committed `cef6c84`,
+pushed to `origin/main`.
+
+---
+
 # FUND ALPHA — SESSION HANDOFF (2026-08-11, phase 6)
 
 **BUILT: secondary-source (news) OS infrastructure (2026-08-11).**
