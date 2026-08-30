@@ -1,0 +1,45 @@
+# EXPERIMENTAL provider/model catalogue (2026-08-13, AI Provider Expansion
+# Phase 1A). NOT read by build_default_provider() or load_llm_config() --
+# configs/llm_provider.toml remains the sole source of truth for the
+# DEFAULT/production provider (gemini). This file is only ever read by the
+# benchmark harness (Phase 3), via an explicit path, to know which
+# provider/model combinations exist as candidates -- it cannot silently
+# change what production extraction uses.
+#
+# `status` here is documentation, matching LLMProviderInfo.status --
+# nothing promotes a provider from experimental to production by editing
+# this file. Promotion is a Phase 11 decision, recorded in
+# docs/ai/AI_PROVIDER_BENCHMARK_*.md, not a config edit.
+#
+# Do NOT assume current free-tier limits or model availability -- model_id
+# values below are candidates to verify at benchmark time, not confirmed
+# facts about what each account/tier currently supports.
+
+[[candidates]]
+provider = "groq"
+model_id = "llama-3.3-70b-versatile"
+base_url = "https://api.groq.com/openai/v1"
+api_key_env_var = "GROQ_API_KEY"
+enabled = true
+capabilities = ["chat"]
+status = "experimental"
+
+[[candidates]]
+provider = "cerebras"
+model_id = "gpt-oss-120b"
+base_url = "https://api.cerebras.ai/v1"
+api_key_env_var = "CEREBRAS_API_KEY"
+enabled = true
+capabilities = ["chat"]
+status = "experimental"
+note = "Model IDs confirmed via live GET /v1/models on 2026-08-13 (this account's actual catalogue: gemma-4-31b, zai-glm-4.7, gpt-oss-120b -- the original guessed 'llama-3.3-70b' name does not exist on this account). As of the same check, ALL THREE return 402 payment_required on this key -- billing/quota issue on the Cerebras account, confirmed not a code or auth defect (Groq/OpenRouter succeed via the identical request path). Blocked pending your action on the Cerebras billing tab; not retried further without a state change on your end."
+
+[[candidates]]
+provider = "openrouter"
+model_id = "meta-llama/llama-3.3-70b-instruct"
+base_url = "https://openrouter.ai/api/v1"
+api_key_env_var = "OPENROUTER_API_KEY"
+enabled = true
+capabilities = ["chat"]
+status = "experimental"
+note = "OpenRouter may serve a different underlying model than requested -- see OpenRouterProvider docstring. The response's own model field is what gets recorded, not this value."
