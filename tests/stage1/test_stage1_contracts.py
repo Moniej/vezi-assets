@@ -36,6 +36,7 @@ from ngxrot.canonical.invariants import (
     validate_cross_database_reference,
 )
 from ngxrot.migrations.framework import Migration, MigrationRunner, SchemaAssertionError
+from ngxrot.migrations.catalog import baseline_migrations
 
 
 UTC = timezone.utc
@@ -163,6 +164,11 @@ class Stage1ContractTests(unittest.TestCase):
 
 
 class MigrationFrameworkTests(unittest.TestCase):
+    def test_retained_databases_have_explicit_baselines(self) -> None:
+        baselines = baseline_migrations()
+        self.assertEqual({migration.database_target for migration in baselines}, {"ngx", "registry", "portfolio"})
+        self.assertTrue(all(migration.expected_pre_version == 0 and migration.expected_post_version == 1 for migration in baselines))
+
     def test_migration_ledger_and_schema_assertion(self) -> None:
         con = sqlite3.connect(":memory:")
         migration = Migration(

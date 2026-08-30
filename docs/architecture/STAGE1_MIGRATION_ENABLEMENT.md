@@ -16,7 +16,10 @@ workflow records; Dataset Factory owns derived training artifacts.
 identities. Symbols are `IdentifierAlias` records, never company identity.
 Document identity is artifact UUID plus immutable SHA-256 content identity;
 `storage_uri` is an opaque storage abstraction and never a Windows-path domain
-contract. `RawDocument.raw_bytes` remains an acquisition DTO only.
+contract. `LocalImmutableArchive` implements the first storage adapter using
+content-addressed files and opaque `fund-alpha-archive://sha256/...` URIs;
+future S3/MinIO/R2/Azure adapters satisfy the same boundary. `RawDocument.raw_bytes`
+remains an acquisition DTO only.
 
 ## Temporal semantics
 
