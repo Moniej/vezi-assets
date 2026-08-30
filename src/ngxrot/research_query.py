@@ -50,6 +50,12 @@ from .documents import retrieval as doc_retrieval
 from .instrument_identity import resolve_ticker_history_symbols
 from .canonical.contracts import TemporalQueryContext
 from .identity.resolver import ResolutionStatus, resolve_instrument
+from .research_identity_references import (
+    CanonicalIdentityRequest,
+    CanonicalQueryReference,
+    canonical_reference_from_lookup,
+    not_requested_reference,
+)
 
 # ---------------------------------------------------------------------------
 # Field registries -- the ONLY fields a query may request. Anything not
@@ -772,7 +778,7 @@ _DISPATCH = {
 
 
 def execute(con: sqlite3.Connection, spec: QuerySpec, reg: sqlite3.Connection | None = None,
-            log: bool = True) -> QueryResult:
+            log: bool = True, canonical_identity: CanonicalIdentityRequest | None = None) -> QueryResult:
     """Single entry point: validate -> resolve -> execute -> (optionally)
     log. `reg` defaults to the real registry.sqlite unless a scratch
     connection is passed (e.g. in tests)."""
@@ -784,7 +790,16 @@ def execute(con: sqlite3.Connection, spec: QuerySpec, reg: sqlite3.Connection | 
     result = fn(con, spec)
     result.execution_metadata["duration_ms"] = round((time.monotonic() - t0) * 1000, 2)
     if log:
-        _log_query(reg or registry.connect_registry(), result)
+        reference = not_requested_reference()
+        if canonical_identity is not None:
+            lookup = lookup_identity(
+                con, canonical_identity.identifier, exchange=canonical_identity.exchange,
+                identifier_type=canonical_identity.identifier_type,
+                temporal_context=canonical_identity.temporal_context,
+                allow_legacy_fallback=canonical_identity.allow_legacy_fallback,
+            )
+            reference = canonical_reference_from_lookup(con, lookup)
+        _log_query(reg or registry.connect_registry(), result, reference)
     return result
 
 
@@ -840,19 +855,46 @@ def _provenance_summary(con: sqlite3.Connection, df: pd.DataFrame) -> list[dict]
     return out
 
 
-def _log_query(reg: sqlite3.Connection, result: QueryResult) -> None:
+def _log_query(reg: sqlite3.Connection, result: QueryResult,
+               canonical_reference: CanonicalQueryReference | None = None) -> None:
     """query_log is deliberately lightweight -- parameters + result
     metadata only, never the observations DataFrame itself (per spec:
     'Do NOT store enormous duplicated result datasets unnecessarily')."""
+    reference = canonical_reference or not_requested_reference()
+    columns = {row[1] for row in reg.execute("PRAGMA table_info(query_log)")}
+    canonical_columns = {"canonical_instrument_id", "canonical_resolution_status",
+                         "canonical_reference_status"}
+    if not canonical_columns.issubset(columns):
+        if reference.resolution_status != "not_requested":
+            raise QueryValidationError("registry schema lacks the Stage 2C canonical identity reference migration")
+        reg.execute(
+            "INSERT INTO query_log (query_id, executed_at, code_fingerprint, query_type, "
+            "parameters_json, row_count, date_range_start, date_range_end, data_sources_json, "
+            "warnings_json, content_hash, entities_requested_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (result.query_id, result.execution_metadata["executed_at"],
+             result.execution_metadata["code_fingerprint"], result.query_type,
+             json.dumps(result.parameters, sort_keys=True, default=str), result.row_count,
+             result.date_range[0], result.date_range[1], json.dumps(result.data_sources),
+             json.dumps(result.warnings), result.content_hash(),
+             json.dumps(result.entities_requested)),
+        )
+        reg.commit()
+        return
     reg.execute(
         "INSERT INTO query_log (query_id, executed_at, code_fingerprint, query_type, "
         "parameters_json, row_count, date_range_start, date_range_end, data_sources_json, "
-        "warnings_json, content_hash, entities_requested_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        "warnings_json, content_hash, entities_requested_json, canonical_instrument_id, "
+        "canonical_resolution_status, canonical_exchange, canonical_resolution_decision_time, "
+        "canonical_resolution_system_vintage, canonical_availability_policy, canonical_resolver_version, "
+        "canonical_reference_status, canonical_resolution_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (result.query_id, result.execution_metadata["executed_at"],
          result.execution_metadata["code_fingerprint"], result.query_type,
          json.dumps(result.parameters, sort_keys=True, default=str), result.row_count,
          result.date_range[0], result.date_range[1], json.dumps(result.data_sources),
          json.dumps(result.warnings), result.content_hash(),
-         json.dumps(result.entities_requested)),
+         json.dumps(result.entities_requested), reference.instrument_id,
+         reference.resolution_status, reference.exchange, reference.decision_time,
+         reference.system_vintage, reference.availability_policy, reference.resolver_version,
+         reference.reference_status.value, reference.resolution_reason),
     )
     reg.commit()

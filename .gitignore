@@ -91,3 +91,4 @@ data/raw/
 my ai/
 data/.fuse_hidden*
 baselines/
+backups/
