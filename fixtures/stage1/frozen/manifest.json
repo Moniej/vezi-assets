@@ -1,0 +1,8 @@
+{
+  "fixture_class": "frozen_regression",
+  "synthetic_non_evidence": true,
+  "generation_provenance": "Stage 0 recipe; owner-safe derived fixture only, never mutable production DB",
+  "expected_schema_version": 1,
+  "expected_outputs": {"strict_relationship_without_recorded_at_visible": false},
+  "row_counts": {"fixture_records": 1}
+}

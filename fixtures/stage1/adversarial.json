@@ -1,0 +1,10 @@
+{
+  "fixture_class": "adversarial",
+  "synthetic_non_evidence": true,
+  "scenarios": [
+    "publication_leakage", "strict_system_vintage", "verified_historical_reconstruction",
+    "unknown_publication_time", "effective_date", "supersession", "retraction",
+    "evidence_grounding", "synthetic_exclusion", "unknown_identity", "unknown_membership",
+    "relationship_missing_recorded_at", "source_document_id_confusion", "corporate_action_specialization"
+  ]
+}

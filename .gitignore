@@ -83,3 +83,11 @@ secrets/
 # ============================================================
 
 data/raw/
+
+# Stage 0 baseline safety: an accidental nested donor checkout and stale
+# FUSE artifacts are never part of the canonical repository.  Baseline
+# manifests and fixture recipes are versioned; their SQLite payloads remain
+# local, read-only snapshots.
+my ai/
+data/.fuse_hidden*
+baselines/
