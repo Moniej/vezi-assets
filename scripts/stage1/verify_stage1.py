@@ -33,7 +33,8 @@ def main() -> int:
     before = {path: sha256_or_absent(path) for path in live}
     checks = [
         ("Stage 1 contracts, invariants, migrations, fixture integrity", [sys.executable, "-m", "unittest", "discover", "-s", "tests/stage1"]),
-        ("Stage 2A canonical identity migration/resolver", [sys.executable, "-m", "unittest", "discover", "-s", "tests/stage2"]),
+        ("Stage 2A canonical identity migration/resolver", [sys.executable, "-m", "unittest", "tests.stage2.test_canonical_identity"]),
+        ("Stage 2B Research OS canonical identity lookup", [sys.executable, "-m", "unittest", "tests.stage2.test_research_identity_lookup"]),
         ("FRE frozen financial-ratio regression", [sys.executable, "scripts/fre/test_financial_ratios.py", "--temp-dir", str(runtime)]),
         ("Research OS frozen regression", [sys.executable, "scripts/test_research_memory.py"]),
         ("Alpha governance regression", [sys.executable, "-m", "unittest", "tests.stage1.test_stage1_contracts"]),

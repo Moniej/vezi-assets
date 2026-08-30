@@ -41,12 +41,15 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
+from enum import Enum
 
 import pandas as pd
 
 from . import db, registry, universe
 from .documents import retrieval as doc_retrieval
 from .instrument_identity import resolve_ticker_history_symbols
+from .canonical.contracts import TemporalQueryContext
+from .identity.resolver import ResolutionStatus, resolve_instrument
 
 # ---------------------------------------------------------------------------
 # Field registries -- the ONLY fields a query may request. Anything not
@@ -104,6 +107,87 @@ class EntityResolution:
     canonical: str | None = None
     full_chain: list[str] = field(default_factory=list)
     notes: str | None = None
+
+
+class ResearchIdentityStatus(str, Enum):
+    RESOLVED = "resolved"
+    UNKNOWN = "unknown"
+    AMBIGUOUS = "ambiguous"
+    TEMPORALLY_UNAVAILABLE = "temporally_unavailable"
+    LEGACY_FALLBACK = "legacy_fallback"
+
+
+@dataclass(frozen=True)
+class ResearchIdentityLookupResult:
+    """Read-only identity inspection result; it does not alter QuerySpec or registry records."""
+    status: ResearchIdentityStatus
+    requested_identifier: str
+    identifier_type: str
+    exchange: str | None
+    canonical_status: str
+    instrument_id: str | None = None
+    company_id: str | None = None
+    matched_alias_id: str | None = None
+    verification_status: str | None = None
+    issuer_status: str = "unresolved"
+    decision_time: object | None = None
+    system_vintage: object | None = None
+    availability_policy: str | None = None
+    fallback_used: bool = False
+    legacy_ticker: str | None = None
+    compatibility_status: str | None = None
+    pit_safe_canonical_resolution: bool = False
+    resolution_reason: str | None = None
+
+
+def lookup_identity(con: sqlite3.Connection, identifier: str, *, exchange: str | None = None,
+                    identifier_type: str = "ticker",
+                    temporal_context: TemporalQueryContext | None = None,
+                    allow_legacy_fallback: bool = True) -> ResearchIdentityLookupResult:
+    """Explicit canonical-first Research OS inspection, with labeled legacy fallback.
+
+    Existing research queries continue calling ``resolve_entity``. This helper
+    only reads the Investment OS connection and never writes registry state.
+    """
+    canonical = resolve_instrument(con, identifier=identifier, identifier_type=identifier_type,
+                                   exchange=exchange, temporal_context=temporal_context)
+    temporal = {}
+    if temporal_context is not None:
+        temporal = {
+            "decision_time": temporal_context.decision_time.value,
+            "system_vintage": temporal_context.system_vintage.value,
+            "availability_policy": temporal_context.availability_policy.value,
+        }
+    if canonical.status is ResolutionStatus.RESOLVED:
+        return ResearchIdentityLookupResult(
+            ResearchIdentityStatus.RESOLVED, identifier, identifier_type, exchange,
+            canonical.status.value, canonical.instrument_id, canonical.company_id,
+            canonical.alias_id, canonical.verification_status,
+            "resolved" if canonical.company_id else "unresolved",
+            pit_safe_canonical_resolution=True,
+            resolution_reason="canonical alias matched",
+            **temporal,
+        )
+    status = ResearchIdentityStatus(canonical.status.value)
+    # Ambiguity may never be escaped through a ticker fallback; that would
+    # select a legacy row arbitrarily and conceal the canonical conflict.
+    if allow_legacy_fallback and canonical.status is not ResolutionStatus.AMBIGUOUS and identifier_type == "ticker":
+        row = con.execute("SELECT ticker FROM securities WHERE ticker=?", (identifier,)).fetchone()
+        if row:
+            return ResearchIdentityLookupResult(
+                ResearchIdentityStatus.LEGACY_FALLBACK, identifier, identifier_type, exchange,
+                canonical.status.value, fallback_used=True, legacy_ticker=row[0],
+                compatibility_status="legacy_only_non_pit_safe" if temporal_context else "legacy_only",
+                pit_safe_canonical_resolution=False,
+                resolution_reason=f"canonical {canonical.status.value}; legacy ticker found",
+                **temporal,
+            )
+    return ResearchIdentityLookupResult(
+        status, identifier, identifier_type, exchange, canonical.status.value,
+        pit_safe_canonical_resolution=False,
+        resolution_reason=f"canonical {canonical.status.value}",
+        **temporal,
+    )
 
 
 @dataclass
