@@ -1,0 +1,551 @@
+========================================================================
+FUND ALPHA — ENGINE STATUS  2026-08-17T18:45:51+00:00
+========================================================================
+SUCCESS METRICS
+  independent validated alpha sources : 1
+  discovery throughput                : 15 verdicts, 1 candidates queued
+  reusable evidence-grade datasets    : 8
+  median time-to-verdict (days)       : 0.0
+  hypothesis generation rate (this qtr): 18
+models wired to engine  : 1
+recommendations         : 20 actionable
+
+--- hypothesis pipeline ---
+hypothesis_id    status  frozen  n_experiments                                                            description
+        H-001  rejected       1            111 Cross-sectional 3-6M price momentum across NGX sector indices, long-on
+        H-002  untested       0              0 Total-return sector momentum: dividend-adjusted 3-6M cross-sectional m
+        H-003  rejected       0             11 Catalyst/event-driven sector rotation: positioning on announced struct
+        H-004  rejected       0             16 Oil-to-equity lead-lag (family F12): lagged Brent crude moves predict 
+        H-005  rejected       0             11 MPC announcement-window effects (family F11): NGX sector returns and v
+        H-006  rejected       0              9 PEAD via filing-window market-reaction proxy, 60-session event book vs
+        H-007  rejected       0             12 Cross-sectional 12-1 momentum, long-only top-N vs EW-IRU, quarterly (d
+        H-008  rejected       0             12 Low-volatility: long bottom-vol quintile within IRU vs EW-IRU, quarter
+        H-009  rejected       0             12 Turnover-budgeted 12-1 momentum: same signal as H-007, annual/semiannu
+        H-010  rejected       0             13 Pooled overlapping-cohort 12-1 momentum (4 staggered annual cohorts), 
+        H-011 confirmed       0             15 Size: long smallest-cap quintile within IRU vs EW-IRU, quarterly (docs
+        H-012  rejected       0             11 Regime-Conditional Low-Volatility Gate: long the lowest-volatility 20 
+        H-013  rejected       0             27         Size x Liquidity interaction (forensic decomposition of H-011)
+        H-014  rejected       0             17          Size x Momentum interaction (forensic decomposition of H-011)
+        H-015  rejected       0             15        Size x Volatility interaction (forensic decomposition of H-011)
+        H-016  rejected       0             24 Liquidity: does a whole-universe cross-sectional sort on trailing 60-d
+        H-017  rejected       0             11 Dividend Payer-Status: within the IRU, do firms with a trailing-12m di
+        H-019   testing       0              3 News-derived discrete event signal: Governance/Management-Change (GMC)
+
+--- recommendations ---
+{
+  "as_of": "2026-08-17",
+  "instrument": "MCNICHOLS",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): MCNICHOLS is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "NSLTECH",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): NSLTECH is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "OMATEK",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): OMATEK is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "WAPIC",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): WAPIC is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "DEAPCAP",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): DEAPCAP is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "LEGENDINT",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): LEGENDINT is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "ROYALEX",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): ROYALEX is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "RTBRISCOE",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): RTBRISCOE is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "REGALINS",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): REGALINS is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "UNIVINSURE",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): UNIVINSURE is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "CILEASING",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): CILEASING is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "CAVERTON",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): CAVERTON is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "NCR",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): NCR is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "VERITASKAP",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): VERITASKAP is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "TANTALIZER",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): TANTALIZER is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "PRESTIGE",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): PRESTIGE is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "CUTIX",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): CUTIX is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "SUNUASSUR",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): SUNUASSUR is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "LASACO",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): LASACO is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+{
+  "as_of": "2026-08-17",
+  "instrument": "REDSTAREX",
+  "action": "buy",
+  "size_pct_nav": 0.05,
+  "horizon": "quarterly",
+  "expected_excess_ann": 0.1502,
+  "expected_max_drawdown": -0.3281,
+  "confidence_rating": "High",
+  "rationale": "Size factor (H-011, confirmed 2026-07-22): REDSTAREX is in the smallest-cap quintile of IRU v2 as of the 2026-06-30 formation (latest completed quarterly rebalance on or before 2026-08-17).",
+  "hypothesis_id": "H-011",
+  "experiment_ids": [
+    "2f6c7f95-ca50-4957-8299-22ca00308001",
+    "f20e6eb1-7aa4-414c-bad7-de1e87182d03"
+  ],
+  "caveats": [
+    "SEVERE, MEASURED CAPACITY CONSTRAINT: median leg capacity ~NGN 694,336; 100% of trade legs were rejected at NGN 1bn AUM during validation \u2014 the worst of any hypothesis tested on this platform. This is a small-AUM-only strategy by construction; deploying it at institutional scale would itself move the prices the backtest assumed were fixed.",
+    "size_pct_nav is the weight WITHIN this sleeve (1/top_n), not a recommended share of total fund NAV.",
+    "Full-issue market cap, NOT float-adjusted (no shares-outstanding/free-float dataset exists yet) \u2014 see docs/PREREG_H-011.md known limitations.",
+    "Price-only returns (no dividend reinvestment).",
+    "Untouched-OOS net excess was materially higher (+53.0% over 2025-01 to 2026-06) than the figure quoted above \u2014 an 18-month window, not extrapolated as a steady-state expectation.",
+    "Rebalances quarterly at month-end; this reflects the LATEST completed formation on or before as_of, not necessarily today."
+  ]
+}
+
+--- what would change this output ---
+1. H-003 Sprint 1 data (MPC history, CBN circulars, Brent) ->
+   first event-model candidates enter validation.
+2. Any hypothesis reaching 'confirmed' on evidence-grade data
+   after the full gauntlet -> its adapter is wired and the
+   engine begins emitting positions with provenance.
+3. Acquisition core datasets -> more model families testable
+   (see docs/HYPOTHESIS_FAMILY_MAP.md).
+
+--- appended: per-ticker "why" (size score/rank + market cap, formation 2026-06-30) ---
+NASCON is NOT in this list -- rank 68 of 96, mcap NGN 593,182.76mn (25x the
+selected cutoff and 31x the universe median). Included for direct comparison.
+
+ rank  ticker        score   mcap_ngn_mn
+    1  MCNICHOLS    0.4154      2,776.97
+    2  NSLTECH      0.4150      4,223.66
+    3  OMATEK       0.4148      5,001.04
+    4  WAPIC        0.4146      5,598.55
+    5  DEAPCAP      0.4146      5,700.00
+    6  LEGENDINT    0.4134     10,000.00
+    7  ROYALEX      0.4132     10,498.71
+    8  RTBRISCOE    0.4129     11,704.70
+    9  REGALINS     0.4124     13,444.20
+   10  UNIVINSURE   0.4122     14,400.00
+   11  CILEASING    0.4118     15,774.89
+   12  CAVERTON     0.4116     16,417.50
+   13  NCR          0.4113     17,409.60
+   14  VERITASKAP   0.4109     18,997.33
+   15  TANTALIZER   0.4106     20,000.00
+   16  PRESTIGE     0.4105     20,408.95
+   17  CUTIX        0.4104     20,713.15
+   18  SUNUASSUR    0.4103     20,918.88
+   19  LASACO       0.4102     21,502.16
+   20  REDSTAREX    0.4097     23,431.09   <- cutoff (20th largest score)
+  ---  NASCON       (n/a)    593,182.76   <- rank 68/96, far outside top 20
+  ---  (universe median mcap: 18,829.89)
