@@ -15,7 +15,12 @@ recommendations()'s existing output shape was consumed directly.
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
+import shutil
+import sqlite3
 import sys
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,17 +59,25 @@ class FakeRec:
     experiment_ids: tuple = (); caveats: tuple = ()
 
 
-def run_scenario(recommendations, portfolio_id: str, as_of_entry: str, as_of_exit: str, label: str):
+FROZEN_NGX = ROOT / "fixtures" / "stage1" / "frozen" / "ngx_regression.sqlite"
+FROZEN_REGISTRY = ROOT / "fixtures" / "stage1" / "frozen" / "registry_regression.sqlite"
+
+
+def file_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def run_scenario(recommendations, portfolio_id: str, as_of_entry: str, as_of_exit: str, label: str,
+                 market_db: Path, registry_db: Path, portfolio_db: Path):
     """Runs the full loop for one signal set and returns True iff every
     stage produced a real, verifiable artifact (not just "didn't crash")."""
     print(f"\n=== {label} ===")
-    p = pdb.new_scratch_db_path()
-    pcon = pdb.init_db(p)
+    pcon = pdb.init_db(portfolio_db)
     pcon.execute("INSERT INTO portfolios (portfolio_id,name,base_currency,initial_capital,"
                 "inception_date,created_at) VALUES (?,?,?,?,?,?)",
                 (portfolio_id, label, "NGN", 1_000_000, as_of_entry, as_of_entry))
     pcon.commit()
-    mcon = mdb.connect()
+    mcon = sqlite3.connect(f"file:{market_db.as_posix()}?mode=ro", uri=True)
 
     # 1. Hypothesis -> Signal
     sigs = record_signals(pcon, recommendations)
@@ -157,7 +170,7 @@ def run_scenario(recommendations, portfolio_id: str, as_of_entry: str, as_of_exi
     check(f"[{label}] attribution records produced", len(attribution) > 0)
 
     # 9. Lineage reconstruction, exact
-    reg_con = mreg.connect_registry()
+    reg_con = sqlite3.connect(f"file:{registry_db.as_posix()}?mode=ro", uri=True)
     for ticker, pl_id in lifecycle_ids.items():
         chain = reconstruct_lineage(pcon, reg_con, pl_id)
         if chain.get("hypothesis_id"):
@@ -174,39 +187,35 @@ def run_scenario(recommendations, portfolio_id: str, as_of_entry: str, as_of_exi
     check(f"[{label}] monitoring checks run without error", isinstance(alerts, list))
 
     print(f"[{label}] total realized P&L: {total_realized:.2f}, NAV: {nav:.2f}, drawdown: {dd:.4f}")
+    reg_con.close()
+    mcon.close()
+    pcon.close()
 
 
-# --- Scenario 1: complete synthetic scenario ---
-synthetic_recs = [
-    FakeRec("2026-08-05", "DANGCEM", "buy", 0.5, "quarterly", 0.15, -0.30, "High",
-           "synthetic test signal A", "H-SYNTHETIC", ("exp-synthetic",)),
-    FakeRec("2026-08-05", "GTCO", "buy", 0.5, "quarterly", 0.10, -0.20, "High",
-           "synthetic test signal B", "H-SYNTHETIC", ("exp-synthetic",)),
-]
-run_scenario(synthetic_recs, "SYNTH_PAPER", "2026-08-05", "2026-08-06", "Synthetic scenario")
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--market-db", type=Path, default=FROZEN_NGX)
+    parser.add_argument("--registry-db", type=Path, default=FROZEN_REGISTRY)
+    parser.add_argument("--temp-dir", type=Path, default=ROOT / ".test-runtime")
+    args = parser.parse_args(argv)
+    if not args.market_db.is_file() or not args.registry_db.is_file():
+        raise RuntimeError("frozen market and registry fixtures are required")
+    before = {path: file_hash(path) for path in (args.market_db, args.registry_db)}
+    args.temp_dir.mkdir(parents=True, exist_ok=True)
+    portfolio_db = args.temp_dir / f"portfolio-{uuid.uuid4().hex}.sqlite"
+    synthetic_recs = [
+        FakeRec("2026-08-05", "DANGCEM", "buy", 0.5, "quarterly", 0.15, -0.30, "High", "synthetic test signal A", "H-SYNTHETIC", ("exp-synthetic",)),
+        FakeRec("2026-08-05", "GTCO", "buy", 0.5, "quarterly", 0.10, -0.20, "High", "synthetic test signal B", "H-SYNTHETIC", ("exp-synthetic",)),
+    ]
+    run_scenario(synthetic_recs, "SYNTH_PAPER", "2026-08-05", "2026-08-06", "Synthetic scenario", args.market_db, args.registry_db, portfolio_db)
+    check("fixture market and registry databases are unchanged", all(file_hash(path) == value for path, value in before.items()))
+    check("portfolio test database was independently created", portfolio_db.is_file())
+    for candidate in (portfolio_db, portfolio_db.with_suffix(portfolio_db.suffix + "-wal"), portfolio_db.with_suffix(portfolio_db.suffix + "-shm")):
+        if candidate.exists(): candidate.unlink()
+    check("portfolio test database was independently removed", not portfolio_db.exists())
+    print(f"\n{passed}/{passed + failed} checks passed")
+    return 0 if failed == 0 else 1
 
-# --- Scenario 2: real Alpha Engine (H-011) as the upstream signal source ---
-print("\n=== Real Alpha Engine scenario ===")
-from ngxrot.alpha_engine import AlphaEngine  # noqa: E402  -- imported, never modified
-engine = AlphaEngine()
-real_recs = engine.recommendations()
-check("AlphaEngine.recommendations() called live, unmodified", isinstance(real_recs, list))
-buy_recs = [r for r in real_recs if r.action == "buy"]
-if buy_recs:
-    # Use a fixed historical as_of pair so the scenario is reproducible and
-    # real market data exists for the exit date -- the live recommendation
-    # itself is real (H-011, confirmed), only the entry/exit dates used for
-    # this specific paper-trade rehearsal are fixed for test determinism.
-    fixed_recs = [FakeRec("2026-08-05", r.instrument, r.action, r.size_pct_nav, r.horizon,
-                          r.expected_excess_ann, r.expected_max_drawdown, r.confidence_rating,
-                          r.rationale, r.hypothesis_id, tuple(r.experiment_ids), tuple(r.caveats))
-                 for r in buy_recs[:5]]  # cap at 5 names to keep the test fast
-    run_scenario(fixed_recs, "H011_PAPER", "2026-08-05", "2026-08-06", "Real Alpha Engine (H-011)")
-    check("real Alpha Engine scenario used genuine H-011 recommendations, not fabricated ones",
-         all(r.hypothesis_id == "H-011" for r in fixed_recs))
-else:
-    check("AlphaEngine produced zero buy recommendations at call time -- scenario skipped, "
-         "not fabricated (see report for what this means)", True)
 
-print(f"\n{passed}/{passed + failed} checks passed")
-sys.exit(0 if failed == 0 else 1)
+if __name__ == "__main__":
+    sys.exit(main())

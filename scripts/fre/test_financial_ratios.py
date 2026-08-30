@@ -6,15 +6,17 @@ for edge cases (zero denominator, missing input).
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
 import shutil
 import sqlite3
 import sys
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
-from ngxrot import db  # noqa: E402
 from ngxrot.fre.financial_ratios import (  # noqa: E402
     RULE_VERSION, compute_ratios_for_ticker, list_tickers, write_ratio_results,
 )
@@ -33,22 +35,32 @@ def check(name: str, condition: bool) -> None:
         failed += 1
 
 
-def ro() -> sqlite3.Connection:
-    return sqlite3.connect(f"file:{db.DEFAULT_DB.as_posix()}?mode=ro", uri=True)
+FROZEN_DB = ROOT / "fixtures" / "stage1" / "frozen" / "ngx_regression.sqlite"
 
 
-def main() -> int:
-    con = ro()
-    doc_count_before = con.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
-    facts_count_before = con.execute("SELECT COUNT(*) FROM extracted_facts").fetchone()[0]
+def ro(path: Path) -> sqlite3.Connection:
+    if not path.is_file():
+        raise RuntimeError(f"frozen regression fixture is required: {path}")
+    return sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
 
-    # Updated FSI Phase 13 (coverage expansion): 5 new tickers (MTNN,
-    # DANGCEM, UBN, OANDO, NESTLE) added alongside the original 5 --
-    # was {"UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON"} only.
+
+def file_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fixture-db", type=Path, default=FROZEN_DB)
+    parser.add_argument("--temp-dir", type=Path, default=ROOT / ".test-runtime")
+    args = parser.parse_args(argv)
+    fixture_hash_before = file_hash(args.fixture_db)
+    con = ro(args.fixture_db)
+
+    # Frozen fixture preserves the three representative company patterns:
+    # cross-document balance sheet, full CFO coverage, and bank no-EBIT.
     tickers = list_tickers(con)
-    check("list_tickers finds all 10 real FSI tickers (5 original + 5 added in Phase 13)",
-          set(tickers) == {"UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON",
-                            "MTNN", "DANGCEM", "UBN", "OANDO", "NESTLE"})
+    check("list_tickers finds the frozen representative financial universe",
+          set(tickers) == {"UCAP", "CAP", "NASCON"})
 
     # --- CAP FY2020 debt_to_equity: doc 4508 (the FY2020 revenue/ebit
     # source) itself has no balance-sheet data, but a SEPARATE, later CAP
@@ -87,7 +99,7 @@ def main() -> int:
     # for at least 2 of its 3 periods (cfo_to_net_profit computes for all 3)
     nascon_results = compute_ratios_for_ticker(con, "NASCON")
     nascon_cfo_np = [r for r in nascon_results if r.metric == "cfo_to_net_profit"]
-    check("NASCON cfo_to_net_profit computes for all 3 real periods (the only ticker with "
+    check("NASCON cfo_to_net_profit computes for all 3 frozen periods (the only ticker with "
           "cfo in every period)",
           len(nascon_cfo_np) == 3 and all(r.status == "computed" for r in nascon_cfo_np))
 
@@ -115,9 +127,11 @@ def main() -> int:
 
     con.close()
 
-    # --- write path: scratch-copy only, verify row counts and provenance ---
-    scratch = db.new_scratch_db_path()
-    shutil.copy(db.DEFAULT_DB, scratch)
+    # --- write path: fixture-copy only, in an explicitly injected writable directory ---
+    args.temp_dir.mkdir(parents=True, exist_ok=True)
+    scratch = args.temp_dir / f"financial-ratios-{uuid.uuid4().hex}.sqlite"
+    shutil.copy(args.fixture_db, scratch)
+    scratch.chmod(0o666)
     con2 = sqlite3.connect(scratch)
     before_conclusions = con2.execute("SELECT COUNT(*) FROM financial_reasoning_conclusions").fetchone()[0]
     max_id_before = con2.execute(
@@ -173,16 +187,9 @@ def main() -> int:
           not mismatch and len(new_rows) == written)
     con2.close()
     Path(scratch).unlink()
-    Path(scratch).parent.rmdir()
 
-    # --- confirm the real production database was never touched by this test ---
-    con = sqlite3.connect(db.DEFAULT_DB)
-    doc_count_after = con.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
-    facts_count_after = con.execute("SELECT COUNT(*) FROM extracted_facts").fetchone()[0]
-    check("production documents count unchanged", doc_count_after == doc_count_before)
-    check("production extracted_facts count unchanged (this test writes only to a scratch copy)",
-          facts_count_after == facts_count_before)
-    con.close()
+    check("frozen fixture hash unchanged (writes used a separate scratch copy)",
+          file_hash(args.fixture_db) == fixture_hash_before)
 
     print()
     print(f"{passed}/{passed + failed} checks passed")

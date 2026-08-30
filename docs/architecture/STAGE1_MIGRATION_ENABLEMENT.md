@@ -64,3 +64,10 @@ remains untouched during Stage 1.
 Frozen regression fixtures are owner-safe derived recipes/manifests. CI must
 run `python scripts/stage1/verify_stage1.py` and must not use mutable live
 databases.
+
+The executable frozen fixture comprises `ngx_regression.sqlite`,
+`registry_regression.sqlite`, and `manifest.json`. It is a deterministic,
+selected regression subset with retained documented financial values, source
+baseline hashes and commit, schema/baseline versions, counts, hashes, and
+expected query outputs. It is explicitly `synthetic_non_evidence=true` even
+where a representative value originated from a production observation.

@@ -1,8 +1,44 @@
 {
+  "database_file": "ngx_regression.sqlite",
+  "database_sha256": "1305ff6ec26131489169d28c90143baacc1e6cbf866405aa54d28de46e844c69",
+  "expected_query_outputs": {
+    "cap_fy2020_debt_to_equity": 0.5,
+    "corporate_action_count": 1,
+    "financial_ratio_tickers": [
+      "CAP",
+      "NASCON",
+      "UCAP"
+    ],
+    "nascon_cfo_to_net_profit_periods": 3,
+    "ucap_ebit_margin_periods": 5
+  },
+  "extraction_provenance": "Deterministically selected and structurally recreated regression subset; numeric values retain documented regression values. It is non-evidence and cannot support research or Alpha verdicts.",
   "fixture_class": "frozen_regression",
+  "fixture_version": "1.0.0",
+  "registry_database_file": "registry_regression.sqlite",
+  "registry_database_sha256": "77339adb2d3fe2df12afd93e03ac81c8d5f17924be549860f281da1096492390",
+  "registry_table_row_counts": {
+    "hypotheses": 4
+  },
+  "schema_baseline_version": 1,
+  "source_baseline_commit": "84df6af27066febb376ce02dd0eea2d06345bfe2",
+  "source_baseline_database_hashes": {
+    "ngx.sqlite": "0ea0966b581d43e1f4bc3abf8c15bb0992796cf71b4f9a7c38abed407bfff976",
+    "registry.sqlite": "0b30a292a612a314208950230d65dae52d0a0c090145b914b2ea13e9e319e87c"
+  },
+  "sqlite_schema_versions": {
+    "ngx": 70,
+    "registry": 57
+  },
   "synthetic_non_evidence": true,
-  "generation_provenance": "Stage 0 recipe; owner-safe derived fixture only, never mutable production DB",
-  "expected_schema_version": 1,
-  "expected_outputs": {"strict_relationship_without_recorded_at_visible": false},
-  "row_counts": {"fixture_records": 1}
+  "table_row_counts": {
+    "corporate_actions": 1,
+    "documents": 9,
+    "equity_prices": 8,
+    "events": 1,
+    "evidence": 29,
+    "extracted_facts": 29,
+    "securities": 5,
+    "sources": 1
+  }
 }
