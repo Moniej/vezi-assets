@@ -25,11 +25,52 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from ngxrot.fre.confidence_propagation import propagate_confidence_tier
 from ngxrot.fre.financial_ratios import RATIO_DEFINITIONS
 from ngxrot.fre.period_normalization import periods_overlap
+
+# 2026-08-13, FRE scale-validation program (Gate 2): real, confirmed gap
+# found investigating ELLAHLAKES's own irregular 17-month reporting
+# period (period_start=2024-08-01, period_end=2025-12-31, period_type=
+# None -- a genuine, company-disclosed transition period, NOT an
+# extraction defect; validate_period() correctly preserved it rather than
+# force-mapping to FY). periods_overlap() alone is NOT sufficient: two
+# periods can be non-overlapping and still economically NOT comparable
+# via a raw pct_change if their durations differ materially (a 17-month
+# revenue figure vs. an adjacent 12-month figure is not apples-to-apples
+# -- the percent change would be distorted by the span mismatch, not a
+# real change in performance). This module does NOT annualize/normalize
+# to make the comparison work (that would be a modeling assumption this
+# phase is not authorized to make, same discipline as the module's own
+# "states the mechanical direction only" rule) -- it refuses the
+# comparison instead, preserving both underlying facts untouched.
+_MAX_DURATION_RATIO = 1.20  # generous vs. real calendar variance between
+                            # two genuine same-type periods (e.g. a 365-
+                            # vs-366-day FY across a leap year is ~1.003;
+                            # a 91-vs-92-day quarter is ~1.011) while still
+                            # decisively catching a 17-month (~517d) vs a
+                            # 12-month (~365d) mismatch (ratio ~1.42)
+
+
+def _duration_days(period_start: str, period_end: str) -> int:
+    return (date.fromisoformat(period_end) - date.fromisoformat(period_start)).days + 1
+
+
+def _durations_comparable(earlier: "_Point", later: "_Point") -> bool:
+    """False if the two periods' calendar SPANS differ enough that a raw
+    pct_change between their values would be distorted by the span
+    mismatch itself, not by a real change -- e.g. ELLAHLAKES's own
+    17-month period vs. any adjacent standard-length period. Both points
+    are guaranteed non-null period_start/period_end by _base_fact_points'
+    own WHERE clause before this is ever called."""
+    d1 = _duration_days(earlier.period_start, earlier.period_end)
+    d2 = _duration_days(later.period_start, later.period_end)
+    if d1 <= 0 or d2 <= 0:
+        return False
+    ratio = max(d1, d2) / min(d1, d2)
+    return ratio <= _MAX_DURATION_RATIO
 
 RULE_VERSION = "trend_v1"
 
@@ -66,13 +107,31 @@ class TrendResult:
     input_fact_ids: list[tuple[int, str]] = field(default_factory=list)
 
 
+def _has_tabular_unit_check_column(con: sqlite3.Connection) -> bool:
+    """Same guard as financial_ratios.py's own copy -- production is
+    deliberately frozen/unmigrated for this column during the FRE
+    scale-validation program; degrade gracefully rather than raise."""
+    cols = {r[1] for r in con.execute("PRAGMA table_info(extracted_facts)").fetchall()}
+    return "tabular_unit_check" in cols
+
+
 def _base_fact_points(con: sqlite3.Connection, ticker: str, fact_type: str) -> list[_Point]:
+    # 2026-08-13, FRE scale-validation program (Gate 2): this query reads
+    # RAW facts directly, a SEPARATE path from financial_ratios._fact_for()
+    # -- the tabular-unit-check quarantine fix there does NOT cover this
+    # query. Found live during the Gate-2 investigation: without this
+    # filter, a fact quarantined for a likely-unscaled table figure could
+    # still feed a REVENUE/NET_PROFIT/etc. trend directly, bypassing the
+    # ratio-side enforcement entirely.
+    quarantine_filter = (" AND f.tabular_unit_check NOT IN ('flag','ambiguous')"
+                        if _has_tabular_unit_check_column(con) else "")
     rows = con.execute(
         "SELECT f.period_start, f.period_end, f.numeric_value, f.confidence_tier, f.fact_id "
         "FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
         "WHERE d.ticker = ? AND f.fact_type = ? AND f.numeric_value IS NOT NULL "
-        "AND f.period_start IS NOT NULL AND f.period_end IS NOT NULL "
-        "ORDER BY f.period_end",
+        "AND f.period_start IS NOT NULL AND f.period_end IS NOT NULL"
+        + quarantine_filter +
+        " ORDER BY f.period_end",
         (ticker, fact_type),
     ).fetchall()
     return [_Point(ps, pe, val, tier, [(fid, "point_value")]) for ps, pe, val, tier, fid in rows]
@@ -141,6 +200,32 @@ def _classify_points(points: list[_Point], ticker: str, metric: str) -> list[Tre
         earlier, later = points[i], points[i + 1]
         if periods_overlap(earlier.period_start, earlier.period_end, later.period_start, later.period_end):
             continue  # e.g. NASCON's own real H1 2024 vs FY2024 -- not a valid sequential pair
+        if not _durations_comparable(earlier, later):
+            # Real, disclosed non-comparability (e.g. a 17-month transition
+            # period) -- both facts are preserved untouched; this pair is
+            # simply never turned into a pct_change trend claim. Recorded
+            # as insufficient_data (not silently dropped) so the gap is
+            # visible, not invisible.
+            input_fact_ids = (
+                [(fid, f"earlier_period_{role}") for fid, role in earlier.fact_ids]
+                + [(fid, f"later_period_{role}") for fid, role in later.fact_ids]
+            )
+            results.append(TrendResult(
+                ticker=ticker, metric=metric, status="insufficient_data",
+                period_start=later.period_start, period_end=later.period_end,
+                value_numeric=None, value_text=None, confidence_tier=None,
+                method=f"{metric} trend = pct_change(...) -- REFUSED",
+                limitations=(
+                    f"Periods {earlier.period_start}..{earlier.period_end} and "
+                    f"{later.period_start}..{later.period_end} have materially "
+                    f"different durations ({_duration_days(earlier.period_start, earlier.period_end)}d "
+                    f"vs {_duration_days(later.period_start, later.period_end)}d) -- a raw percent "
+                    f"change would be distorted by the span mismatch itself, not a real change. "
+                    f"Not annualized/normalized (that would be an unstated modeling assumption); "
+                    f"both underlying facts are preserved, this pair is simply not comparable."),
+                input_fact_ids=input_fact_ids,
+            ))
+            continue
         results.append(_classify_pair(earlier, later, ticker, metric))
     return results
 

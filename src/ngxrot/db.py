@@ -223,6 +223,30 @@ def init_db(db_path: str | Path = DEFAULT_DB, seed: bool = True) -> sqlite3.Conn
         con.execute("ALTER TABLE entity_relationships ADD COLUMN recorded_at TEXT")
     except sqlite3.OperationalError:
         pass
+    # additive migration, 2026-08-12 (Financial Extraction Quality Fix,
+    # Fix 2): a deterministic (not LLM-judged) check that numeric_value's
+    # order of magnitude is consistent with its own linked evidence quote
+    # -- catches a transcription error grounding_check cannot (the quote
+    # can be genuinely correct while numeric_value is wrong). Nullable-
+    # equivalent default 'not_run', no existing row affected.
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN numeric_consistency_check TEXT "
+                    "NOT NULL DEFAULT 'not_run' CHECK (numeric_consistency_check IN "
+                    "('not_run','not_checked','pass','flag'))")
+    except sqlite3.OperationalError:
+        pass
+    # 2026-08-13, FRE scale-validation program: a distinct failure mode from
+    # numeric_consistency_check (table-header scale declaration, e.g. "₦'000",
+    # vs. a scale word adjacent to the number in the quote) -- see schema.sql's
+    # comment on this column and numeric_consistency.check_tabular_unit_
+    # consistency() for the full contract. Nullable-equivalent default
+    # 'not_run', no existing row affected.
+    try:
+        con.execute("ALTER TABLE extracted_facts ADD COLUMN tabular_unit_check TEXT "
+                    "NOT NULL DEFAULT 'not_run' CHECK (tabular_unit_check IN "
+                    "('not_run','not_checked','pass','flag','ambiguous'))")
+    except sqlite3.OperationalError:
+        pass
     con.executescript((SCHEMA_DIR / "schema.sql").read_text(encoding="utf-8"))
     if seed:
         con.executescript((SCHEMA_DIR / "seed_reference.sql").read_text(encoding="utf-8"))

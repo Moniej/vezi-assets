@@ -50,15 +50,26 @@ def main() -> int:
           set(tickers) == {"UCAP", "BUAFOODS", "AFRIPRUD", "CAP", "NASCON",
                             "MTNN", "DANGCEM", "UBN", "OANDO", "NESTLE"})
 
-    # --- CAP FY2020 (doc 4508): no balance-sheet data at all (Stage 2's own
-    # disclosed gap) -- debt_to_equity must be insufficient_data, not guessed
+    # --- CAP FY2020 debt_to_equity: doc 4508 (the FY2020 revenue/ebit
+    # source) itself has no balance-sheet data, but a SEPARATE, later CAP
+    # document (doc_id=4960, filed 2021-05-18) reports FY2020's comparative
+    # balance sheet (liabilities/equity as of 2020-12-31) -- a completely
+    # normal annual-report pattern (this year's statements alongside prior-
+    # year comparatives). Point-in-time matching fix (2026-08-12, Financial
+    # Extraction Quality Fix, Fix 1) now correctly finds it: debt_to_equity
+    # is keyed on period_end alone for balance-sheet fact types (a snapshot
+    # has no meaningful period_start to match against), not on which
+    # specific document happened to report the flow-side facts for that
+    # period. Previously blocked platform-wide by a matching-logic gap
+    # (confirmed independently on DANGCEM's production data), not a real
+    # data gap -- this is a correct improvement, not a regression.
     cap_results = compute_ratios_for_ticker(con, "CAP")
     fy2020 = [r for r in cap_results if r.period_start == "2020-01-01" and r.period_end == "2020-12-31"]
     d2e_fy2020 = next(r for r in fy2020 if r.metric == "debt_to_equity")
-    check("CAP FY2020 debt_to_equity is insufficient_data (doc 4508 has no assets/liabilities/equity)",
-          d2e_fy2020.status == "insufficient_data" and d2e_fy2020.value_numeric is None)
-    check("CAP FY2020 debt_to_equity has zero input facts (neither liabilities nor equity exist)",
-          d2e_fy2020.input_fact_ids == [])
+    check("CAP FY2020 debt_to_equity now computes from a real comparative "
+         "balance sheet in a different CAP document (doc_id=4960)",
+          d2e_fy2020.status == "computed" and d2e_fy2020.value_numeric is not None
+          and {fid for fid, _ in d2e_fy2020.input_fact_ids} == {416, 417})
 
     # --- CAP FY2020 ebit_margin: ebit (1,645,000,000) IS reported directly for
     # this doc, revenue (8,737,000,000) is a real Phase 1 fact -- ratio

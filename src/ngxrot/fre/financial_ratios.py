@@ -29,6 +29,23 @@ RULE_VERSION = "ratios_v1"
 
 CORP_ACTION_FACT_TYPES = ("dividend", "rights_issue", "bonus_issue")
 
+# Point-in-time (balance-sheet, "as of" a single date -- period_start is
+# always NULL by construction, see documents/prompts.py's own copy of this
+# same classification) vs flow (spans a period, both period_start and
+# period_end populated). configs/financial_ontology.toml's
+# [node_families].balance_sheet is the authoritative source for this split.
+#
+# Financial Extraction Quality Fix (2026-08-12), Fix 1: before this,
+# _fact_for()/_periods_for_ticker() required an EXACT period_start match
+# for every fact_type, including point-in-time ones -- which, since a
+# point-in-time fact's period_start is correctly always NULL, meant
+# debt_to_equity (liabilities/equity, BOTH point-in-time) could never
+# compute for ANY ticker, confirmed on real production data (DANGCEM: 267
+# real conclusions, debt_to_equity 'insufficient_data' on every single one
+# of its 4 periods, despite having real liabilities/equity facts for all
+# of them). Not a coverage gap -- a matching-logic gap.
+POINT_IN_TIME_FACT_TYPES = frozenset({"assets", "liabilities", "equity"})
+
 # metric -> (numerator fact_type, denominator fact_type)
 RATIO_DEFINITIONS: dict[str, tuple[str, str]] = {
     "debt_to_equity": ("liabilities", "equity"),
@@ -74,6 +91,20 @@ def _periods_for_ticker(con: sqlite3.Connection, ticker: str) -> list[tuple[str,
     return [(r[0], r[1]) for r in rows]
 
 
+def _has_tabular_unit_check_column(con: sqlite3.Connection) -> bool:
+    """2026-08-13: some callers (e.g. scripts/fre/test_financial_ratios.py)
+    open a raw read-only connection straight to a database that may predate
+    db.py's init_db() migration for tabular_unit_check -- most notably
+    production itself, deliberately frozen/unmigrated during the FRE
+    scale-validation program pending explicit approval (same pattern as
+    the period-metadata backfill). Checked fresh each call rather than
+    cached: this module has no other per-connection state, and the cost is
+    one cheap PRAGMA, not worth the complexity of a cache keyed by a
+    mutable sqlite3.Connection object."""
+    cols = {r[1] for r in con.execute("PRAGMA table_info(extracted_facts)").fetchall()}
+    return "tabular_unit_check" in cols
+
+
 def _fact_for(con: sqlite3.Connection, ticker: str, fact_type: str,
               period_start: str, period_end: str
               ) -> tuple[int, float, str | None, str | None] | None:
@@ -84,14 +115,57 @@ def _fact_for(con: sqlite3.Connection, ticker: str, fact_type: str,
     Section 7 rule 2) -- every existing fact backfilled to 'NGN'; may be
     NULL only for a fact written before this column existed and never
     backfilled, which the same-currency guard below treats as unknown,
-    not as a silent match."""
-    rows = con.execute(
-        "SELECT f.fact_id, f.numeric_value, f.confidence_tier, f.currency "
-        "FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
-        "WHERE d.ticker = ? AND f.fact_type = ? AND f.period_start = ? AND f.period_end = ? "
-        "AND f.numeric_value IS NOT NULL",
-        (ticker, fact_type, period_start, period_end),
-    ).fetchall()
+    not as a silent match.
+
+    Point-in-time fact types (Fix 1, 2026-08-12) match on period_end ONLY,
+    ignoring period_start entirely -- a balance-sheet fact's own
+    period_start SHOULD always be NULL (it is a snapshot, not a span; the
+    extraction prompt now enforces this going forward), but real
+    production data has an inconsistent legacy convention: some tickers'
+    balance-sheet facts (e.g. DANGCEM) have period_start=NULL as expected,
+    while others (e.g. NASCON) were extracted with a real, non-null
+    period_start value copied onto the snapshot fact by an earlier prompt
+    version. Requiring period_start IS NULL would silently stop matching
+    NASCON's facts (confirmed: broke NASCON's own regression test during
+    development of this fix); ignoring period_start unconditionally for
+    these fact types is the only match rule that is correct for both
+    conventions without needing a data migration first. A flow fact_type
+    still requires the exact period_start+period_end pair -- the
+    "equivalent reporting spans" discipline this module's own docstring
+    describes stays exactly as strict as before for anything that isn't a
+    snapshot."""
+    # 2026-08-13, FRE scale-validation program: a fact QUARANTINED by the
+    # tabular-unit-scale check (likely-unscaled table figure, or an
+    # ambiguous mixed-unit document -- see numeric_consistency.py) must
+    # never silently feed a ratio. Excluding 'flag'/'ambiguous' here is
+    # what actually makes quarantine real -- extraction_confidence alone
+    # is a metadata annotation nothing else in this query reads.
+    # Conditional on the column existing (see _has_tabular_unit_check_
+    # column's docstring): production is deliberately frozen/unmigrated
+    # for this column during this program, and at least one existing
+    # caller (test_financial_ratios.py) reads production directly without
+    # running init_db() first -- degrading gracefully (no quarantine
+    # filter) rather than raising "no such column" against an
+    # intentionally-unmigrated database is the correct backward-
+    # compatible behavior here, not a bug.
+    quarantine_filter = (" AND f.tabular_unit_check NOT IN ('flag','ambiguous')"
+                        if _has_tabular_unit_check_column(con) else "")
+    if fact_type in POINT_IN_TIME_FACT_TYPES:
+        rows = con.execute(
+            "SELECT f.fact_id, f.numeric_value, f.confidence_tier, f.currency "
+            "FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
+            "WHERE d.ticker = ? AND f.fact_type = ? "
+            "AND f.period_end = ? AND f.numeric_value IS NOT NULL" + quarantine_filter,
+            (ticker, fact_type, period_end),
+        ).fetchall()
+    else:
+        rows = con.execute(
+            "SELECT f.fact_id, f.numeric_value, f.confidence_tier, f.currency "
+            "FROM extracted_facts f JOIN documents d ON d.doc_id = f.doc_id "
+            "WHERE d.ticker = ? AND f.fact_type = ? AND f.period_start = ? AND f.period_end = ? "
+            "AND f.numeric_value IS NOT NULL" + quarantine_filter,
+            (ticker, fact_type, period_start, period_end),
+        ).fetchall()
     if not rows:
         return None
     # Multiple facts for the same exact ticker/fact_type/period would itself be

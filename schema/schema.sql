@@ -462,6 +462,38 @@ CREATE TABLE IF NOT EXISTS extracted_facts (
     prompt_version        TEXT,               -- NULL for regex/manual
     grounding_check        TEXT NOT NULL DEFAULT 'not_run'
                              CHECK (grounding_check IN ('not_run','passed','failed','overridden')),
+    -- Added 2026-08-12, Financial Extraction Quality Fix, Fix 2
+    -- (docs/alpha/FINANCIAL_EXTRACTION_QUALITY_FIX_REPORT.md): a
+    -- DETERMINISTIC (not LLM-judged) check that numeric_value's order of
+    -- magnitude is consistent with the number(s) parseable from its own
+    -- linked evidence quote. grounding_check verifies a quote is REAL;
+    -- this verifies the structured number PARSED FROM a real quote wasn't
+    -- transcribed wrong (found live: a fact whose quote correctly said
+    -- "N94.1 billion" but whose numeric_value stored 941,000,000,000 --
+    -- grounding_check alone would report 'passed' on that fact, since the
+    -- quote itself is genuine). Never auto-corrects a value -- 'flag'
+    -- means review, not evidence of a wrong answer (see
+    -- numeric_consistency.py's own docstring for the full pass/flag/
+    -- not_checked contract). For a pre-existing database this column is
+    -- added via db.py's init_db() ALTER TABLE call.
+    numeric_consistency_check TEXT NOT NULL DEFAULT 'not_run'
+                             CHECK (numeric_consistency_check IN
+                                    ('not_run','not_checked','pass','flag')),
+    -- Added 2026-08-13 (FRE scale-validation program): a DISTINCT failure
+    -- mode from numeric_consistency_check above -- that check catches a
+    -- scale word stated NEXT TO a number in the quote itself ("N94.1
+    -- billion"); this one catches a table's scale declared ONCE, in a
+    -- column header away from the data row ("₦'000" above "Revenue
+    -- 146,658"), which numeric_consistency_check cannot see (found live,
+    -- real document: ELLAHLAKES doc 11122, all 6 facts silently
+    -- ~1000x too small, numeric_consistency_check reported not_checked
+    -- on every one). Never auto-corrects -- see numeric_consistency.py's
+    -- check_tabular_unit_consistency() for the full pass/flag/ambiguous/
+    -- not_checked contract. For a pre-existing database this column is
+    -- added via db.py's init_db() ALTER TABLE call.
+    tabular_unit_check    TEXT NOT NULL DEFAULT 'not_run'
+                             CHECK (tabular_unit_check IN
+                                    ('not_run','not_checked','pass','flag','ambiguous')),
     extracted_at          TEXT NOT NULL,
     -- Added 2026-08-04, MC-001 (docs/MULTI_CURRENCY_FINANCIAL_ARCHITECTURE_
     -- REVIEW_2026-08-04.md): the currency numeric_value is denominated in.
@@ -683,6 +715,72 @@ CREATE INDEX IF NOT EXISTS ix_llm_calls_doc ON llm_calls (doc_id);
 CREATE INDEX IF NOT EXISTS ix_llm_calls_cache_key ON llm_calls (cache_key);
 CREATE INDEX IF NOT EXISTS ix_llm_calls_document_hash ON llm_calls (document_hash);
 
+-- 2026-08-13, AI Provider Expansion Phase 1A. Audit trail for EXPERIMENTAL
+-- (non-production) provider calls -- deliberately a SEPARATE table from
+-- llm_calls, never written to by cached_complete()/extract.py/
+-- self_critique.py. Keeps experimental benchmark traffic structurally
+-- unable to mix into the production extraction audit trail or lineage.
+-- Never stores an API key value.
+CREATE TABLE IF NOT EXISTS benchmark_calls (
+    call_id         INTEGER PRIMARY KEY,
+    doc_id          INTEGER REFERENCES documents(doc_id),
+    provider        TEXT NOT NULL,   -- 'groq' | 'cerebras' | 'openrouter' | 'gemini' | ...
+    purpose         TEXT NOT NULL,   -- free text, NOT constrained to the
+                                     -- llm_calls purpose CHECK -- benchmark
+                                     -- tasks are not always draft_reasoning/
+                                     -- self_critique
+    model_id_requested TEXT NOT NULL,
+    model_id_returned  TEXT NOT NULL,  -- for OpenRouter this can differ
+                                        -- from model_id_requested
+    prompt_version  TEXT NOT NULL,
+    document_hash   TEXT,
+    system_prompt   TEXT NOT NULL,
+    user_prompt     TEXT NOT NULL,
+    response_text   TEXT,
+    input_tokens    INTEGER,
+    output_tokens   INTEGER,
+    stop_reason     TEXT,
+    request_id      TEXT,
+    cache_key       TEXT NOT NULL,
+    served_from_cache INTEGER NOT NULL DEFAULT 0,
+    latency_s       REAL,
+    status          TEXT NOT NULL CHECK (status IN ('success', 'failure')),
+    error_message   TEXT,            -- never an API key; only server-returned
+                                     -- error text / exception message
+    called_at       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_benchmark_calls_doc ON benchmark_calls (doc_id);
+CREATE INDEX IF NOT EXISTS ix_benchmark_calls_provider ON benchmark_calls (provider);
+CREATE INDEX IF NOT EXISTS ix_benchmark_calls_cache_key ON benchmark_calls (cache_key);
+
+-- 2026-08-14, AI Provider Reliability + Decision Layer. Live, MUTABLE health
+-- state per (provider, model_id) -- deliberately separate from benchmark_calls
+-- (an append-only log) because "is this provider currently in cooldown"
+-- requires a current-state row, not a log replay, to be checked cheaply
+-- before every call. Never written to by production extraction -- only by
+-- provider_reliability.py's own guard functions, driven by benchmark_calls
+-- outcomes.
+CREATE TABLE IF NOT EXISTS provider_reliability_state (
+    provider              TEXT NOT NULL,
+    model_id              TEXT NOT NULL,
+    state                 TEXT NOT NULL CHECK (state IN ('healthy', 'cooldown', 'disabled')),
+    consecutive_failures   INTEGER NOT NULL DEFAULT 0,
+    consecutive_structural_failures INTEGER NOT NULL DEFAULT 0,  -- 413-style
+                          -- "this request can never succeed regardless of
+                          -- timing" failures, tracked SEPARATELY from
+                          -- transient 429 rate-limit failures -- see
+                          -- provider_reliability.py's classify_failure()
+    last_failure_at        TEXT,
+    last_failure_reason    TEXT,
+    last_failure_class     TEXT CHECK (last_failure_class IN
+                          ('rate_limit', 'structural', 'other', NULL)),
+    cooldown_until         TEXT,
+    disabled_at            TEXT,
+    disabled_reason        TEXT,
+    updated_at             TEXT NOT NULL,
+    PRIMARY KEY (provider, model_id)
+);
+
 -- ----------------------------------------------------------------------------
 -- FSI Phase 3 (docs/fre_runs/fsi_phase3_preregistration.md Area 6):
 -- Financial Reasoning conclusions -- ratios, trends, and rule-based health
@@ -872,6 +970,37 @@ CREATE TABLE IF NOT EXISTS sector_ngx_provenance (
     retrieval_date  TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_sector_ngx_provenance_ticker ON sector_ngx_provenance (ticker);
+
+-- ----------------------------------------------------------------------------
+-- FRE data-quality monitoring (2026-08-13, Investment OS end-to-end build).
+-- Deterministic checks over extracted_facts/financial_reasoning_conclusions
+-- (src/ngxrot/fre/data_quality_monitoring.py) -- distinct from portfolio_
+-- alerts (portfolio-state monitoring) and `alerts` (continuous_intelligence's
+-- materiality-change monitoring, which requires a monitoring_run). This
+-- table has no such dependency: a data-quality check can run standalone,
+-- any time, against extracted_facts alone. A 'critical' severity row has a
+-- REAL downstream effect -- factor_eligible_tickers() in the same module
+-- excludes any ticker with an open critical alert from factor-ready
+-- coverage, not merely logging a warning nothing else reads.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS data_quality_alerts (
+    alert_id       TEXT PRIMARY KEY,              -- 'DQ-' + uuid4
+    check_name     TEXT NOT NULL,                 -- the check function's own name, e.g.
+                                                   -- 'duplicate_facts', 'pit_violation'
+    severity       TEXT NOT NULL CHECK (severity IN ('info', 'warning', 'critical')),
+    ticker         TEXT REFERENCES securities(ticker),  -- nullable: some checks are
+                                                          -- cross-ticker (e.g. coverage swings)
+    fact_id        INTEGER REFERENCES extracted_facts(fact_id),  -- nullable: some checks
+                                                                  -- span multiple facts
+    message        TEXT NOT NULL,
+    details_json   TEXT,
+    status         TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved')),
+    detected_at    TEXT NOT NULL,
+    resolved_at    TEXT,
+    resolved_by    TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_data_quality_alerts_ticker ON data_quality_alerts (ticker, status);
+CREATE INDEX IF NOT EXISTS ix_data_quality_alerts_check ON data_quality_alerts (check_name, status);
 
 -- ----------------------------------------------------------------------------
 -- Point-in-time views: latest as_of per (entity, trade_date).

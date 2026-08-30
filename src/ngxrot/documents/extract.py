@@ -24,17 +24,87 @@ from .cache import cached_complete, document_text_hash
 from .grounding import check_banned_phrase, check_grounding
 from .json_utils import parse_json_object
 from .llm_providers import LLMProvider
-from .prompts import DRAFT_PROMPT_VERSION, build_draft_prompt
+from .numeric_consistency import check_numeric_consistency, check_tabular_unit_consistency
+from .prompts import DRAFT_PROMPT_VERSION, POINT_IN_TIME_FACT_TYPES, build_draft_prompt
 from .entities import record_relationship, resolve_or_create_entity
 
 PKG_ROOT = Path(__file__).resolve().parents[3]
 UNREVIEWED_LLM_CONFIDENCE_FLOOR = 0.3  # architecture doc §6: unreviewed LLM
                                       # output capped low until human review
 
+_PERIOD_TYPES = frozenset({"Q1", "Q2", "Q3", "Q4", "H1", "H2", "9M", "FY"})
+
 
 def _fact_taxonomy_leaves() -> set[str]:
     raw = tomllib.loads((PKG_ROOT / "configs/fact_taxonomy.toml").read_text(encoding="utf-8"))
     return {t for spec in raw.values() for t in spec.get("types", [])}
+
+
+def _valid_iso_date(value) -> str | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        date.fromisoformat(value)
+        return value
+    except ValueError:
+        return None
+
+
+def validate_period(fact: dict, fact_type: str, filing_date: str,
+                    warnings: list[str]) -> tuple[str | None, str | None, str | None]:
+    """Financial Extraction Quality Fix (2026-08-12), Fix 1: validates the
+    model's period_start/period_end/period_type before they ever reach the
+    database. Never fabricates or infers a missing value -- every failure
+    mode here NULLS the suspect field(s) and records why, rather than
+    guessing or silently keeping a value that fails a sanity check. This
+    mirrors the existing _safe_enum/grounding-check discipline elsewhere in
+    this module: validate, don't trust; when in doubt, null and warn, never
+    default to something that looks plausible."""
+    period_start = _valid_iso_date(fact.get("period_start"))
+    period_end = _valid_iso_date(fact.get("period_end"))
+    period_type = fact.get("period_type")
+
+    if fact.get("period_start") is not None and period_start is None:
+        warnings.append(f"fact_type={fact_type}: period_start "
+                        f"{fact.get('period_start')!r} is not a valid YYYY-MM-DD date — nulled")
+    if fact.get("period_end") is not None and period_end is None:
+        warnings.append(f"fact_type={fact_type}: period_end "
+                        f"{fact.get('period_end')!r} is not a valid YYYY-MM-DD date — nulled")
+
+    if period_type is not None and period_type not in _PERIOD_TYPES:
+        warnings.append(f"fact_type={fact_type}: period_type {period_type!r} not in "
+                        f"{sorted(_PERIOD_TYPES)} — nulled, NOT force-mapped to a default "
+                        f"(an irregular/non-standard period is real information, not an error "
+                        f"to paper over)")
+        period_type = None
+
+    if fact_type in POINT_IN_TIME_FACT_TYPES and period_start is not None:
+        warnings.append(f"fact_type={fact_type}: point-in-time fact type but model provided "
+                        f"a period_start ({period_start}) — nulled per the balance-sheet-is-"
+                        f"a-snapshot rule (a snapshot has no 'start')")
+        period_start = None
+
+    if period_start is not None and period_end is not None and period_start > period_end:
+        warnings.append(f"fact_type={fact_type}: period_start ({period_start}) is after "
+                        f"period_end ({period_end}) — implausible, both nulled rather than "
+                        f"guessing which one is wrong")
+        period_start = period_end = None
+
+    # The specific failure mode this fix exists to prevent: a period_end
+    # that silently equals the document's OWN filing/retrieval date is far
+    # more likely to be a fallback/substitution bug than a real accounting
+    # period end (a results announcement is filed some time AFTER the
+    # period it reports on, never on the same day for any real company).
+    if period_end is not None and filing_date and period_end == filing_date:
+        warnings.append(f"fact_type={fact_type}: period_end ({period_end}) exactly equals "
+                        f"this document's filing_date — suspicious (a real reporting period "
+                        f"virtually never ends on its own filing date), nulled rather than "
+                        f"risk silently using the filing date AS the period")
+        period_end = None
+        if period_start is not None:
+            period_start = None
+
+    return period_start, period_end, period_type
 
 
 @dataclass
@@ -139,17 +209,58 @@ def extract_document(con, provider: LLMProvider, doc_id: int,
                                    f"found verbatim in source text — grounding FAILED, "
                                    f"extraction_confidence forced to 0.0")
 
+        period_start, period_end, period_type = validate_period(
+            fact, fact_type, filing_date, result.warnings)
+
+        numeric_value = fact.get("numeric_value")
+        consistency = check_numeric_consistency(numeric_value, quoted)
+        numeric_consistency_check = consistency.status
+        if consistency.status == "flag":
+            # Same discipline as the grounding-failure branch above: never
+            # silently correct the value, never drop the fact -- lower the
+            # confidence floor so a flagged fact is structurally
+            # distinguishable from a trusted one, and record exactly why.
+            extraction_confidence = min(extraction_confidence, UNREVIEWED_LLM_CONFIDENCE_FLOOR / 2)
+            result.warnings.append(f"fact_type={fact_type}: numeric consistency FLAGGED — "
+                                   f"{consistency.reason} — extraction_confidence lowered, "
+                                   f"NOT auto-corrected, needs review")
+
+        # 2026-08-13, FRE scale-validation program: table-header unit-scale
+        # check (₦'000/million/billion), distinct from the prose-scale-word
+        # check above -- see numeric_consistency.py's module docstring. A
+        # 'flag' (likely-unscaled) or 'ambiguous' (mixed conventions,
+        # cannot resolve deterministically) result is treated as a hard
+        # QUARANTINE, not just a lowered-confidence advisory: extraction_
+        # confidence forced to 0.0 (the same disposition as a grounding
+        # failure), AND financial_ratios.py's _fact_for() excludes both
+        # states from ratio/trend/flag computation outright -- a merely-
+        # lowered confidence float is not itself enforced anywhere
+        # downstream today, so quarantine has to be structural, not just a
+        # metadata annotation nothing reads.
+        tabular = check_tabular_unit_consistency(numeric_value, quoted, doc_text)
+        tabular_unit_check = tabular.status
+        if tabular.status in ("flag", "ambiguous"):
+            extraction_confidence = 0.0
+            result.warnings.append(f"fact_type={fact_type}: tabular unit check "
+                                   f"{tabular.status.upper()} — {tabular.reason} — "
+                                   f"extraction_confidence forced to 0.0, QUARANTINED "
+                                   f"from ratio/trend/flag computation, NOT auto-corrected")
+
         fact_id = con.execute(
             "INSERT INTO extracted_facts (doc_id, fact_type, description, "
             "numeric_value, qualification_date, payment_date, agm_date, "
-            "closure_date, evidence_id, extraction_confidence, model_id, "
-            "prompt_version, grounding_check, extracted_at, currency) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (doc_id, fact_type, fact.get("description", ""), fact.get("numeric_value"),
+            "closure_date, period_start, period_end, period_type, "
+            "evidence_id, extraction_confidence, model_id, "
+            "prompt_version, grounding_check, numeric_consistency_check, "
+            "tabular_unit_check, extracted_at, currency) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (doc_id, fact_type, fact.get("description", ""), numeric_value,
              fact.get("qualification_date"), fact.get("payment_date"),
-             fact.get("agm_date"), fact.get("closure_date"), evidence_id,
-             extraction_confidence, resp.model_id, DRAFT_PROMPT_VERSION,
-             grounding_status, as_of, fact_currency)).lastrowid
+             fact.get("agm_date"), fact.get("closure_date"),
+             period_start, period_end, period_type,
+             evidence_id, extraction_confidence, resp.model_id, DRAFT_PROMPT_VERSION,
+             grounding_status, numeric_consistency_check, tabular_unit_check,
+             as_of, fact_currency)).lastrowid
         result.fact_ids.append(fact_id)
 
         for i, step in enumerate(fact.get("causal_chain", [])):
