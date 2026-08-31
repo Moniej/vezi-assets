@@ -1,0 +1,586 @@
+{
+  "classification": "evidence_acquisition_queue_not_identity_assertions",
+  "items": [
+    {
+      "candidate_formations_priority_only": 139,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "ACCESS->ACCESSCORP"
+    },
+    {
+      "candidate_formations_priority_only": 139,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX ticker/change-of-name notice"
+      ],
+      "transition": "FBNH->FIRSTHOLDCO"
+    },
+    {
+      "candidate_formations_priority_only": 139,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FirstHoldCo->FIRSTHOLDCO"
+    },
+    {
+      "candidate_formations_priority_only": 139,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "GUARANTY->GTCO"
+    },
+    {
+      "candidate_formations_priority_only": 139,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "WAPCO->HBMNG"
+    },
+    {
+      "candidate_formations_priority_only": 123,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "UBCAP->UCAP"
+    },
+    {
+      "candidate_formations_priority_only": 121,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FLOURMILL->FGS202669"
+    },
+    {
+      "candidate_formations_priority_only": 116,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->LINKASSURE"
+    },
+    {
+      "candidate_formations_priority_only": 104,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX ticker/change-of-name notice"
+      ],
+      "transition": "FO->ARDOVA"
+    },
+    {
+      "candidate_formations_priority_only": 101,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "STERLNBANK->STERLINGNG"
+    },
+    {
+      "candidate_formations_priority_only": 98,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "CUSTODYINS->CUSTODIAN"
+    },
+    {
+      "candidate_formations_priority_only": 82,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "UNITYKAP->VERITASKAP"
+    },
+    {
+      "candidate_formations_priority_only": 80,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "UAC-PROP->UPDC"
+    },
+    {
+      "candidate_formations_priority_only": 72,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "JAPAULOIL->JAPAULGOLD"
+    },
+    {
+      "candidate_formations_priority_only": 71,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "BOCGAS->IMG"
+    },
+    {
+      "candidate_formations_priority_only": 64,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "EQUITYASUR->SUNUASSUR"
+    },
+    {
+      "candidate_formations_priority_only": 55,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "CHIPLC->CONHALLPLC"
+    },
+    {
+      "candidate_formations_priority_only": 55,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "HMARKINS->CHIPLC"
+    },
+    {
+      "candidate_formations_priority_only": 55,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "MULTITREX->CHIPLC"
+    },
+    {
+      "candidate_formations_priority_only": 45,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "ABBEYBDS->ABBEYBANK"
+    },
+    {
+      "candidate_formations_priority_only": 38,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "7UP->FGS2020S9"
+    },
+    {
+      "candidate_formations_priority_only": 35,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "DNMEYER->MEYER"
+    },
+    {
+      "candidate_formations_priority_only": 28,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202518->NIDF"
+    },
+    {
+      "candidate_formations_priority_only": 23,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->TANTALIZER"
+    },
+    {
+      "candidate_formations_priority_only": 19,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "DEAPCAP->CMFC"
+    },
+    {
+      "candidate_formations_priority_only": 19,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->FIRSTALUM"
+    },
+    {
+      "candidate_formations_priority_only": 9,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->AFRINSURE"
+    },
+    {
+      "candidate_formations_priority_only": 7,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS201912->NOTORE"
+    },
+    {
+      "candidate_formations_priority_only": 6,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->CAPOIL"
+    },
+    {
+      "candidate_formations_priority_only": 5,
+      "priority": 2,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "DNMEYER->INITSPLC"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FBNH->FirstHoldCo"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FFFBNMMF->FGS202129"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FFFBNMMF->FGSUK2024S1"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FG142027S1->FGS202760"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FG192038S2->FGS202886"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS2020S3->FGS2020S7"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS2020S5->FFFBNMMF"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS2020S9->FGS2019S2"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202162->FGSUK2024S1"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202520->FG162029S1"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202520->FGS202543"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202543->FG162029S1"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202667->FGS202758"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202760->MOFIREIF"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202766->FGS202667"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "FGS202774->CNIF"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->GNI"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->MTI"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->MULTITREX"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OASISINS->UNHOMES"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "OMOSAVBNK->OMOMORBNK"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "SKYESHELT->SFSREIT"
+    },
+    {
+      "candidate_formations_priority_only": 0,
+      "priority": 4,
+      "reason": "continuity is unresolved; no outcome data used",
+      "required_evidence": [
+        "official historical price-list observations",
+        "NGX listing/delisting or scheme/reorganization notice",
+        "SEC or issuer primary document"
+      ],
+      "transition": "VALUEFUND->FG132021S3"
+    }
+  ]
+}

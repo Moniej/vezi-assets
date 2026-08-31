@@ -42,6 +42,7 @@ def main() -> int:
         ("Historical identity reconstruction assertions", [sys.executable, "-m", "unittest", "tests.stage2.test_historical_identity"]),
         ("Historical identity Phase 1 evidence/coverage fixture", [sys.executable, "-m", "unittest", "tests.stage2.test_historical_identity_phase1_fixture"]),
         ("Historical market-data identity semantics audit", [sys.executable, "-m", "unittest", "tests.stage2.test_historical_market_identity_semantics"]),
+        ("Historical universe reconstruction and continuity audit", [sys.executable, "-m", "unittest", "tests.stage2.test_historical_universe_reconstruction"]),
         ("FRE frozen financial-ratio regression", [sys.executable, "scripts/fre/test_financial_ratios.py", "--temp-dir", str(runtime)]),
         ("Research OS frozen regression", [sys.executable, "scripts/test_research_memory.py"]),
         ("Alpha governance regression", [sys.executable, "-m", "unittest", "tests.stage1.test_stage1_contracts"]),
