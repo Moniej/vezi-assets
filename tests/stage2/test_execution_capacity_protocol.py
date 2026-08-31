@@ -1,6 +1,8 @@
 """Pre-result consistency checks for the immutable Execution & Capacity v1 protocol."""
 from __future__ import annotations
 
+import hashlib
+import json
 import tomllib
 import unittest
 from pathlib import Path
@@ -9,6 +11,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "configs" / "execution_capacity_v1.toml"
 PROTOCOL = ROOT / "docs" / "research_protocols" / "EXECUTION_CAPACITY_STUDY_V1_H011_H013.md"
+MANIFEST = ROOT / "fixtures" / "frozen" / "execution_capacity_v1" / "protocol_manifest.json"
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class ExecutionCapacityProtocolTests(unittest.TestCase):
@@ -50,6 +57,16 @@ class ExecutionCapacityProtocolTests(unittest.TestCase):
         self.assertIn("classification is `INSUFFICIENT_DATA`", self.protocol)
         self.assertIn("median daily equity HHI", self.protocol)
         self.assertIn("including zero-fill expiries", self.protocol)
+
+    def test_pre_result_manifest_binds_protocol_config_and_fee_schedule(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["artifact_type"], "pre_result_protocol_freeze")
+        self.assertEqual(manifest["capacity_result_artifacts_before_freeze"], [])
+        self.assertEqual(manifest["config"]["sha256"], sha256(CONFIG))
+        self.assertEqual(manifest["protocol"]["sha256"], sha256(PROTOCOL))
+        fee = manifest["frozen_inputs"]["explicit_fee_schedule"]
+        self.assertEqual(fee["row_count"], 7)
+        self.assertEqual(len(fee["deterministic_sha256"]), 64)
 
 
 if __name__ == "__main__":

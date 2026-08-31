@@ -1,0 +1,49 @@
+{
+  "artifact_type": "pre_result_protocol_freeze",
+  "study_id": "execution_capacity_v1",
+  "freeze_timestamp_utc": "2026-08-31T23:25:31.5253849Z",
+  "freeze_commit": "9fcbc87ed668b097f3f62f03f92e46a7782099cc",
+  "capacity_result_artifacts_before_freeze": [],
+  "config": {
+    "path": "configs/execution_capacity_v1.toml",
+    "sha256": "d0b99e131c69a04cf410058a874bd3babcb57c1ec8a1a3da9c490d31966fcaed"
+  },
+  "protocol": {
+    "path": "docs/research_protocols/EXECUTION_CAPACITY_STUDY_V1_H011_H013.md",
+    "sha256": "5fa6145d109d3c4cb917271c7a626fd801f68ad2f716a7c06c13bd8bfe9eb645"
+  },
+  "frozen_inputs": {
+    "h011_config": {
+      "path": "configs/h011_size.toml",
+      "sha256": "d39bb8d715637e752ab4286e0c7fcdb6f6cfccdecaf85a1b48c34f9011acdf7d"
+    },
+    "h013_high_config": {
+      "path": "configs/h013_size_x_liquidity_high.toml",
+      "sha256": "f79dad086be652f021001bb0ef4c3559a408b596968258e7aa2e9d5186deaf6d"
+    },
+    "h011_comparison_fixture": {
+      "path": "fixtures/frozen/h011_liquidity_comparison.sqlite",
+      "sha256": "0707ccd87931207780e9f26109f540f333c486b6ec4a9cd2ce73b58507cec70e"
+    },
+    "h011_comparison_manifest": {
+      "path": "fixtures/frozen/h011_liquidity_comparison_manifest.json",
+      "sha256": "975c35594ed73d65356762b9312dbbee011edda3b1a343c4ec4a70fb8ac56dcd"
+    },
+    "h013_high_result": {
+      "path": "experiments/size_interaction_H-013_high_2026-08-03.json",
+      "sha256": "8857d0f5ba75944dd44a1c5ec9cd1f7824ad2c022381667236278ed8f93ba0bb"
+    },
+    "explicit_fee_schedule": {
+      "source": "fixtures/frozen/h011_liquidity_comparison.sqlite:modeled_cost_schedule",
+      "version": "h011_liquidity_comparison_fixture_v1",
+      "row_count": 7,
+      "deterministic_sha256": "e14b4dff01e08453a78f1d3954875793d5fc72b25be679c7937060959cdd6075"
+    }
+  },
+  "governance": {
+    "result_label": "MODEL-BASED HISTORICAL EXECUTION REPLAY",
+    "no_live_database_writes": true,
+    "h024_access": false,
+    "post_first_result_change_requires": "execution_capacity_v2"
+  }
+}
