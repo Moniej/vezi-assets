@@ -37,6 +37,7 @@ def main() -> int:
         ("Stage 2B Research OS canonical identity lookup", [sys.executable, "-m", "unittest", "tests.stage2.test_research_identity_lookup"]),
         ("Stage 2C Research OS canonical identity persistence", [sys.executable, "-m", "unittest", "tests.stage2.test_research_identity_persistence"]),
         ("Stage 2D Research OS canonical-preferred reads", [sys.executable, "-m", "unittest", "tests.stage2.test_research_identity_preferred_reads"]),
+        ("H-011 frozen liquidity comparison fixture", [sys.executable, "-m", "unittest", "tests.stage2.test_h011_liquidity_fixture"]),
         ("FRE frozen financial-ratio regression", [sys.executable, "scripts/fre/test_financial_ratios.py", "--temp-dir", str(runtime)]),
         ("Research OS frozen regression", [sys.executable, "scripts/test_research_memory.py"]),
         ("Alpha governance regression", [sys.executable, "-m", "unittest", "tests.stage1.test_stage1_contracts"]),

@@ -1,0 +1,82 @@
+{
+  "audit_sha256": "9649d8e939a58bdf48f01fdc70a640d05de5ad725e4820d75736c87c33406fe4",
+  "classification": "best_available_frozen_reconstruction",
+  "config_hash": "6b5361256d7bd8f2",
+  "config_path": "configs\\h011_size.toml",
+  "data_vintage": "2026-07-21",
+  "evidence_eligibility": "prohibited",
+  "extraction_provenance": "Read-only query of the H-011 2026-07-21 source vintage plus the versioned market-cap CSV; no live database rows were changed.",
+  "fixture_sqlite_sha256": "0707ccd87931207780e9f26109f540f333c486b6ec4a9cd2ce73b58507cec70e",
+  "fixture_version": "1",
+  "formation_count": 35,
+  "market_cap_csv_sha256": "6a4457260a1e2c0ecb77239eabaf47dd6062aa74bc6470f753f00b17bfc0c74c",
+  "non_evidence_regression_artifact": true,
+  "reason_not_exact": "historical H-011 input-panel and target hashes were not stored in the original experiment",
+  "reconstruction_metrics": {
+    "benchmark_ann_return": 0.27072947279095616,
+    "capacity": {
+      "bottleneck_constituents": {
+        "AGLEVENT": 8,
+        "BOCGAS": 8,
+        "MCNICHOLS": 11,
+        "NNFM": 9,
+        "SUNUASSUR": 8
+      },
+      "configured_aum_ngn": 1000000000.0,
+      "median_capacity_ngn": 694335.9781098382,
+      "n_legs": 264,
+      "p25_capacity_ngn": 137555.3616346155,
+      "pct_legs_rejected": 100.0,
+      "worst_capacity_date": "2019-04-01",
+      "worst_capacity_ngn": 4914.28
+    },
+    "gross_ann_return": 0.4801258275191518,
+    "modeled_cost": 0.3556091976622856,
+    "net_ann_return": 0.4209202587105356,
+    "turnover_one_way": 9.87911638302217
+  },
+  "reproduction_comparison": {
+    "benchmark_ann_return": {
+      "classification": "tolerable_deterministic_difference",
+      "original": 0.2707,
+      "reconstructed": 0.27072947279095616
+    },
+    "capacity_median_ngn": {
+      "classification": "exact_match",
+      "original": 694335.9781098382,
+      "reconstructed": 694335.9781098382
+    },
+    "formation_count": {
+      "classification": "exact_match",
+      "original": 35,
+      "reconstructed": 35
+    },
+    "gross_ann_return": {
+      "classification": "tolerable_deterministic_difference",
+      "original": 0.4801,
+      "reconstructed": 0.4801258275191518
+    },
+    "net_ann_return": {
+      "classification": "tolerable_deterministic_difference",
+      "original": 0.4209,
+      "reconstructed": 0.4209202587105356
+    },
+    "note": "Registry presentation rounds annual returns to four decimals; the frozen reconstruction retains full precision."
+  },
+  "row_counts": {
+    "benchmark_weights": 3270,
+    "corporate_action_flags": 186,
+    "daily_market_data": 318070,
+    "formations": 35,
+    "iru_membership": 3429,
+    "market_cap_panel": 326354,
+    "modeled_cost_schedule": 7,
+    "security_identity": 323,
+    "source_metadata": 21,
+    "target_weights": 700
+  },
+  "source_baseline_commit": "2d9dfd8ad4a08778da99f6d0d08ffff38166aa36",
+  "source_database_sha256": "bcf6bd56061c0f817013c8fa69b1cd11a720d31c1bc21c8f5de00d57b98dd9e5",
+  "source_experiment_id": "5e89b1c7-58f4-4e19-b19d-e4ed813f4692",
+  "synthetic_non_evidence": false
+}
