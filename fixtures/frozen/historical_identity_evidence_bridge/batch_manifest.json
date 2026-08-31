@@ -1,0 +1,17 @@
+{
+  "artifact": "historical_identity_evidence_bridge",
+  "canonical_mutation": false,
+  "evidence_policy_version": "historical_identity_source_policy_v1",
+  "h024_outcome_access": "none",
+  "manual_import_manifests": {
+    "ACCESS_ACCESSCORP_ngx_manual_import.json": "fc4a5f901806e212fab55c79571e8b834a1d3b0e723602a71992a115a0761d24",
+    "FBNH_FIRSTHOLDCO_ngx_manual_import.json": "a51e31c96a4b467a4027cfe81b60c095b53e67f3416c0612a4ffe3bf384c5446",
+    "FO_ARDOVA_ngx_manual_import.json": "4e4931ab9a76f1cb64ee169266e79131387cbdd0222a3aafe2ec98026f7e8b75",
+    "GUARANTY_GTCO_ngx_manual_import.json": "57b833da9aaddee010d6b9d7dfc82bf9893a8f7b23ac1e8b39c4f28f65993f6b"
+  },
+  "retained_tier2_fixture_hashes": {
+    "ACCESS issuer scheme": "236badfaba26292d0dda457cd80eead15f713e6097122918049e0608bc786b79",
+    "FBNH issuer notice": "c68d19788314631086c79afb70fee2db1bb69fbbab71b4f493b2f34341b6525f"
+  },
+  "source_checkpoint": "2eb977c3dd82277ddb85ebc1b2c45fdf43ba83c2"
+}

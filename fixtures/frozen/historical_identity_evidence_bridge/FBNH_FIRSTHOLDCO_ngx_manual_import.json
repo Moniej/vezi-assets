@@ -1,0 +1,11 @@
+{
+  "case": "FBNH_to_FIRSTHOLDCO",
+  "canonical_mutation": false,
+  "import_status": "not_imported",
+  "required_artifact": "Official NGX market bulletin for FBN Holdings Plc change of name and trading-symbol implementation",
+  "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20on%20the%20Change%20of%20Name%20of%20FBN%20Holdings%20Plc.pdf",
+  "source_authority": "official_exchange",
+  "operator_requirements": ["original local file", "source URL", "actual import time", "publication date/precision only if evidenced by artifact"],
+  "acquisition_mode": "manual_operator_import",
+  "required_review": "separate approved historical-identity assertion review"
+}

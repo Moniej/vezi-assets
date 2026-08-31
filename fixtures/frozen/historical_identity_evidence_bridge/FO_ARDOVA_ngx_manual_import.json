@@ -1,0 +1,11 @@
+{
+  "case": "FO_to_ARDOVA",
+  "canonical_mutation": false,
+  "import_status": "not_imported",
+  "required_artifact": "Official NGX market bulletin for Forte Oil Plc change of name and trading-symbol implementation",
+  "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20-%20Forte%20Oil%20Change%20of%20Name.pdf",
+  "source_authority": "official_exchange",
+  "operator_requirements": ["original local file", "source URL", "actual import time", "publication date/precision only if evidenced by artifact"],
+  "acquisition_mode": "manual_operator_import",
+  "required_review": "separate approved historical-identity assertion review"
+}

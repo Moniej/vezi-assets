@@ -1,0 +1,11 @@
+{
+  "case": "GUARANTY_to_GTCO",
+  "canonical_mutation": false,
+  "import_status": "not_imported",
+  "required_artifact": "Official NGX material describing GTB delisting and GT HoldCo listing",
+  "source_url": "https://doclib.ngxgroup.com/market_data-site/other-market-information-site/Week%20Market%20Report/Weekly%20Market%20Report%20for%20the%20Week%20Ended%2025-06-2021.pdf",
+  "source_authority": "official_exchange",
+  "operator_requirements": ["original local file", "source URL", "actual import time", "publication date/precision only if evidenced by artifact"],
+  "acquisition_mode": "manual_operator_import",
+  "required_review": "separate approved continuity-relationship review"
+}

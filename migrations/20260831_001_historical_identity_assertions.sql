@@ -10,7 +10,7 @@ CREATE TABLE historical_identifier_assertions (
     validity_precision TEXT NOT NULL CHECK(validity_precision IN ('exact_date','month','year','observed_on_date_only','interval_verified')),
     verification_status TEXT NOT NULL CHECK(verification_status IN ('verified','corroborated','candidate','conflicting','unresolved')),
     verification_method TEXT NOT NULL,
-    evidence_id INTEGER REFERENCES evidence(evidence_id),
+    evidence_id TEXT REFERENCES canonical_evidence_items(evidence_id),
     citation_reference TEXT,
     source_authority_tier TEXT NOT NULL CHECK(source_authority_tier IN ('tier1','tier2','tier3','tier4')),
     recorded_at TEXT NOT NULL,

@@ -20,7 +20,9 @@ MIGRATION_ID = "20260831_001_historical_identity_assertions"
 
 def historical_identity_assertion_migration() -> Migration:
     sql = (ROOT / "migrations" / f"{MIGRATION_ID}.sql").read_text(encoding="utf-8")
-    return Migration(MIGRATION_ID, "ngx", 2, 3, sql)
+    # Evidence persistence occupies logical version 3.  This un-applied Phase 1
+    # migration remains dormant until a separately approved identity stage.
+    return Migration(MIGRATION_ID, "ngx", 3, 4, sql)
 
 
 class HistoricalIdentityPolicy(str, Enum):
@@ -48,7 +50,7 @@ def assert_historical_identity(con: sqlite3.Connection, *, assertion_id: str,
                                instrument_id: str, ticker: str, valid_from: str,
                                valid_to: str | None, validity_precision: str,
                                verification_status: str, verification_method: str,
-                               evidence_id: int | None, citation_reference: str | None,
+                               evidence_id: str | None, citation_reference: str | None,
                                source_authority_tier: str, recorded_at: str,
                                alias_id: str | None = None,
                                supersedes_assertion_id: str | None = None) -> None:
