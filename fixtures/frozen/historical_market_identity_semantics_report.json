@@ -1,0 +1,463 @@
+{
+  "audit_version": 1,
+  "coverage_gate_recommendation": {
+    "maximum_single_instrument_share": 0.1,
+    "maximum_single_year_share": 0.4,
+    "minimum_calendar_years_with_meaningful_verified_coverage": 5,
+    "minimum_formation_month_clusters": 48,
+    "minimum_instrument_clusters": 30,
+    "minimum_primary_eligible_observations": 5000,
+    "minimum_verified_coverage_of_otherwise_data_eligible_observations": 0.4,
+    "recommendation": "40% is a floor, not sufficient alone: it must pass all concentration, 48-month, and survivorship-reconciliation gates.",
+    "status": "requires_owner_approval"
+  },
+  "data_lineage": [
+    {
+      "identity": "as-published symbol",
+      "step": "Raw source",
+      "value": "official NGX PRICES1 archive ZIPs; DOL PDFs; LIST2 recovery"
+    },
+    {
+      "identity": "unchanged",
+      "step": "Provider",
+      "value": "ngx_pricelist_v2 (primary); ngx_dol_v1/list2_v1 gap recovery"
+    },
+    {
+      "identity": "unchanged",
+      "step": "Symbol handling",
+      "value": "parsed symbol copied to ticker"
+    },
+    {
+      "identity": "filtered only / partly unknown",
+      "step": "Filtering",
+      "value": "current code guards symbol/positive close/row confidence and has no current-security join; historic raw-to-DB exclusions remain partly unreconstructed"
+    },
+    {
+      "identity": "mapped downstream only",
+      "step": "Normalization",
+      "value": "none in primary row ingestion; rename_chain occurs only in IRU research grouping"
+    },
+    {
+      "identity": "unchanged",
+      "step": "Ingestion",
+      "value": "append-only equity_prices, source/confidence/as_of stamped"
+    }
+  ],
+  "entity_relationship_rename_edge_limits": {
+    "conclusion": "These legacy graph edges explain existing downstream normalization but are not Phase-1 evidence-grade historical aliases or series-ownership mappings.",
+    "edge_count": 4,
+    "missing_evidence_references": 4,
+    "missing_recorded_at": 4
+  },
+  "entity_relationship_rename_edges": [
+    {
+      "confidence": 1.0,
+      "newer_symbol": "ARDOVA",
+      "older_symbol": "FO",
+      "recorded_at": null,
+      "source_evidence_id": null,
+      "valid_from": "2020-02-24",
+      "valid_to": null
+    },
+    {
+      "confidence": 1.0,
+      "newer_symbol": "GTCO",
+      "older_symbol": "GUARANTY",
+      "recorded_at": null,
+      "source_evidence_id": null,
+      "valid_from": "2021-06-24",
+      "valid_to": null
+    },
+    {
+      "confidence": 1.0,
+      "newer_symbol": "ACCESSCORP",
+      "older_symbol": "ACCESS",
+      "recorded_at": null,
+      "source_evidence_id": null,
+      "valid_from": "2022-03-28",
+      "valid_to": null
+    },
+    {
+      "confidence": 1.0,
+      "newer_symbol": "FIRSTHOLDCO",
+      "older_symbol": "FBNH",
+      "recorded_at": null,
+      "source_evidence_id": null,
+      "valid_from": "2025-03-10",
+      "valid_to": null
+    }
+  ],
+  "h024_implication": "Remain blocked. Primary official rows retain historical symbols, so verified alias/series ownership evidence and historical-universe reconciliation are required before identity reconstruction can unlock H-024.",
+  "known_rename_diagnostics": [
+    {
+      "conclusion": "separate as-traded series; no alias promotion from this diagnostic",
+      "fund_alpha_row_relabeling_detected": false,
+      "new_first_observation": "2020-02-24",
+      "new_raw_and_ingested": true,
+      "new_symbol": "ARDOVA",
+      "old_last_observation": "2020-02-21",
+      "old_raw_and_ingested": true,
+      "old_symbol": "FO",
+      "review_file_status": "diagnostic_only_not_historical_alias_evidence",
+      "stored_under_separate_tickers": true
+    },
+    {
+      "conclusion": "separate as-traded series; no alias promotion from this diagnostic",
+      "fund_alpha_row_relabeling_detected": false,
+      "new_first_observation": "2021-06-24",
+      "new_raw_and_ingested": true,
+      "new_symbol": "GTCO",
+      "old_last_observation": "2021-06-17",
+      "old_raw_and_ingested": true,
+      "old_symbol": "GUARANTY",
+      "review_file_status": "diagnostic_only_not_historical_alias_evidence",
+      "stored_under_separate_tickers": true
+    },
+    {
+      "conclusion": "separate as-traded series; no alias promotion from this diagnostic",
+      "fund_alpha_row_relabeling_detected": false,
+      "new_first_observation": "2022-03-28",
+      "new_raw_and_ingested": true,
+      "new_symbol": "ACCESSCORP",
+      "old_last_observation": "2022-03-23",
+      "old_raw_and_ingested": true,
+      "old_symbol": "ACCESS",
+      "review_file_status": "diagnostic_only_not_historical_alias_evidence",
+      "stored_under_separate_tickers": true
+    },
+    {
+      "conclusion": "separate as-traded series; no alias promotion from this diagnostic",
+      "fund_alpha_row_relabeling_detected": false,
+      "new_first_observation": "2025-03-10",
+      "new_raw_and_ingested": true,
+      "new_symbol": "FIRSTHOLDCO",
+      "old_last_observation": "2025-03-04",
+      "old_raw_and_ingested": true,
+      "old_symbol": "FBNH",
+      "review_file_status": "diagnostic_only_not_historical_alias_evidence",
+      "stored_under_separate_tickers": true
+    }
+  ],
+  "market_series_ownership": {
+    "can_prove_for_each_series_independently_of_alias": false,
+    "current_evidence": "official source lineage supports as-traded series labels; current canonical InstrumentListing mappings do not prove historical issuer/instrument continuity.",
+    "guardrail": "must_not_create_identifier_alias_from_provider_or_fund_alpha_normalized_series_label",
+    "mapping_semantics": [
+      "historical_exchange_symbol",
+      "provider_normalized_symbol",
+      "fund_alpha_normalized_symbol"
+    ],
+    "proposed_type": "MarketSeriesIdentityMapping",
+    "separate_mapping_concept_justified": true
+  },
+  "next_action": "combination_ordered_phases: (1) normalized/as-traded MarketSeriesIdentityMapping lineage audit; (2) historical-universe reconstruction including delisted names; (3) Tier 1/2 alias evidence acquisition only for surviving verified series mappings.",
+  "outcome_access": "none",
+  "raw_artifacts": {
+    "ingested_symbol_field": "ticker",
+    "official_dol_pdf_count": 2843,
+    "official_pricelist_zip_count": 2856,
+    "parsed_pre_ingestion_csv_count": 2780,
+    "raw_symbol_field": "symbol"
+  },
+  "raw_to_ingested_lineage_limit": {
+    "conclusion": "Raw-only symbols are retained as explicit diagnostics. The checked-in current ingestion code has no current-security join, but it does not by itself explain every historic raw-to-DB exclusion; do not infer a historical filter policy.",
+    "exact_set_match_years": [
+      "2019",
+      "2020",
+      "2021",
+      "2022",
+      "2023",
+      "2024",
+      "2026"
+    ],
+    "mismatch_years": [
+      "2014",
+      "2015",
+      "2016",
+      "2017",
+      "2018",
+      "2025"
+    ]
+  },
+  "raw_vs_ingested_by_year": {
+    "2014": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 183,
+      "raw_ingested_exact_set_match": false,
+      "raw_only_symbols": [
+        "FG102016S1",
+        "FG112024S1",
+        "FG7B2030S3",
+        "FG9B2017S2",
+        "FG9B2019S3",
+        "FG9B2022S1",
+        "NEWGOLD",
+        "OSB2020S2",
+        "VETGRIF30"
+      ],
+      "raw_symbol_count": 192
+    },
+    "2015": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 189,
+      "raw_ingested_exact_set_match": false,
+      "raw_only_symbols": [
+        "FCM2021S1",
+        "FG102016S1",
+        "FG112024S1",
+        "FG112034S2",
+        "FG122020S1",
+        "FG7B2030S3",
+        "FG9B2017S2",
+        "FG9B2019S3",
+        "FG9B2022S1",
+        "LAB2019S1",
+        "LOTUSHAL15",
+        "OYB2022S1",
+        "STANBICETF30",
+        "VETGOODS",
+        "VETINDETF"
+      ],
+      "raw_symbol_count": 204
+    },
+    "2016": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 186,
+      "raw_ingested_exact_set_match": false,
+      "raw_only_symbols": [
+        "CRS2022S1",
+        "DANABNDS1",
+        "FBB2022S0",
+        "FG112024S1",
+        "FG112034S2",
+        "FG122020S1",
+        "FG132021S3",
+        "FG132026S1",
+        "FG9B2017S2",
+        "FG9B2019S3",
+        "FG9B2022S1",
+        "LOTUSHAL15",
+        "STANBICETF30",
+        "VETBANK",
+        "VETINDETF",
+        "VSPBONDETF"
+      ],
+      "raw_symbol_count": 202
+    },
+    "2017": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 180,
+      "raw_ingested_exact_set_match": false,
+      "raw_only_symbols": [
+        "FG112024S1",
+        "FG112034S2",
+        "FG122020S1",
+        "FG132021S3",
+        "FG132026S1",
+        "FG132036S2",
+        "FG5B2018S2",
+        "FG9B2019S3",
+        "FG9B2022S1",
+        "FGS201912",
+        "FGS2019S2",
+        "FGS2019S4",
+        "FGS2019S6",
+        "FGS2019S8",
+        "FGS202011",
+        "FGS202013",
+        "FGS2020S3",
+        "FGS2020S7",
+        "FGS2020S9",
+        "LOTUSHAL15",
+        "SIAMLETF40",
+        "VETGOODS",
+        "VETGRIF30",
+        "VSPBONDETF"
+      ],
+      "raw_symbol_count": 204
+    },
+    "2018": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 177,
+      "raw_ingested_exact_set_match": false,
+      "raw_only_symbols": [
+        "FG112024S1",
+        "FG112034S2",
+        "FG122020S1",
+        "FG132021S3",
+        "FG132026S1",
+        "FG142037S2",
+        "FG9B2019S3",
+        "FG9B2022S1",
+        "FGS201916",
+        "FGS2019S4",
+        "FGS2019S8",
+        "FGS202013",
+        "FGS202015",
+        "FGS202017",
+        "FGS202019",
+        "FGS202026",
+        "FGS202121",
+        "FGS202123",
+        "FGS202125",
+        "FGSUK2024S1",
+        "LAB2024T1",
+        "LOTUSHAL15",
+        "SIAMLETF40",
+        "STANBICETF30",
+        "VETBANK",
+        "VETGOODS",
+        "VETINDETF",
+        "ZAM2022S1"
+      ],
+      "raw_symbol_count": 205
+    },
+    "2019": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 169,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 169
+    },
+    "2020": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 161,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 161
+    },
+    "2021": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 161,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 161
+    },
+    "2022": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 155,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 155
+    },
+    "2023": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 162,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 162
+    },
+    "2024": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 168,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 168
+    },
+    "2025": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 170,
+      "raw_ingested_exact_set_match": false,
+      "raw_only_symbols": [
+        "UNITYBNK"
+      ],
+      "raw_symbol_count": 171
+    },
+    "2026": {
+      "ingested_only_symbols": [],
+      "ingested_symbol_count": 159,
+      "raw_ingested_exact_set_match": true,
+      "raw_only_symbols": [],
+      "raw_symbol_count": 159
+    }
+  },
+  "series_metrics": {
+    "active_series_by_year": {
+      "2014": 183,
+      "2015": 189,
+      "2016": 187,
+      "2017": 180,
+      "2018": 177,
+      "2019": 169,
+      "2020": 161,
+      "2021": 161,
+      "2022": 155,
+      "2023": 162,
+      "2024": 168,
+      "2025": 170,
+      "2026": 159
+    },
+    "average_years_observed": 7.1877022653721685,
+    "entries_by_year": {
+      "2014": 183,
+      "2015": 9,
+      "2016": 4,
+      "2017": 10,
+      "2018": 13,
+      "2019": 11,
+      "2020": 7,
+      "2021": 12,
+      "2022": 6,
+      "2023": 11,
+      "2024": 19,
+      "2025": 14,
+      "2026": 10
+    },
+    "exits_by_year": {
+      "2014": 2,
+      "2015": 5,
+      "2016": 14,
+      "2017": 12,
+      "2018": 20,
+      "2019": 17,
+      "2020": 10,
+      "2021": 13,
+      "2022": 5,
+      "2023": 15,
+      "2024": 14,
+      "2025": 23,
+      "2026": 159
+    },
+    "primary_official_tickers": 309,
+    "security_delisting_dates_known": 0,
+    "security_listing_dates_known": 0,
+    "share_ending_before_2026": 0.4854368932038835,
+    "share_starting_before_2016": 0.6213592233009708
+  },
+  "series_persistence_artifact": {
+    "path": "fixtures\\frozen\\historical_market_series_persistence.csv",
+    "sha256": "3b6549f0f68bacd40ed66c14e9579bd351d60c700ccdb075fbe0344bb6352f4a"
+  },
+  "survivorship_assessment": {
+    "classification": "high",
+    "identity_unresolved": 309,
+    "known_historical_symbols_missing_from_primary": null,
+    "known_historical_symbols_represented_by_primary": 309,
+    "reason": "primary official rows originate from historical daily lists, but raw-to-DB exclusions are not fully reconstructed, listing/delisting metadata are empty, historical universe completeness has not been independently reconciled, and a currentish vendor-backfill path exists."
+  },
+  "symbol_semantics": {
+    "fund_alpha_research_universe": [
+      "fund_alpha_normalized_symbol_for_grouping_only",
+      "classification_C_consumer_layer"
+    ],
+    "investing_backfill_code_path": [
+      "currentish_filing_universe_requested_symbols",
+      "classification_D_risk_if_used"
+    ],
+    "overall": [
+      "mixed",
+      "classification_E_at_combined_panel_level"
+    ],
+    "primary_official_pricelist": [
+      "as_traded_historical_symbol",
+      "classification_A"
+    ]
+  },
+  "universe_construction": {
+    "investing_backfill_evidence": "backfill_equities starts from the X-Issuer filing/corporate-action symbol universe and requests vendor history per resolved symbol.",
+    "investing_backfill_method_2_currentish_filing_universe": true,
+    "official_pricelist_evidence": "ingest_pricelists iterates parsed daily files and inserts their symbol rows; it does not start from securities.",
+    "official_pricelist_method_1_historical_exchange_universe": true,
+    "production_investing_rows": 0
+  }
+}
