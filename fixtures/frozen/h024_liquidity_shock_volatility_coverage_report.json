@@ -1,0 +1,153 @@
+{
+  "candidate_instrument_formations": 13620,
+  "cluster_adequacy": {
+    "adequate": false,
+    "instrument_clusters": 0,
+    "reason": "no PIT-safe historical canonical identities",
+    "time_clusters": 0
+  },
+  "coverage_by_year": {
+    "2014": {
+      "adtv60_coverage": 79,
+      "baseline_coverage": 0,
+      "candidate_observations": 79,
+      "forward_20d_window_available": 66,
+      "forward_5d_window_available": 73,
+      "forward_60d_window_available": 55,
+      "lagged_rv20_coverage": 79,
+      "primary_eligible": 0
+    },
+    "2015": {
+      "adtv60_coverage": 1158,
+      "baseline_coverage": 862,
+      "candidate_observations": 1158,
+      "forward_20d_window_available": 745,
+      "forward_5d_window_available": 870,
+      "forward_60d_window_available": 633,
+      "lagged_rv20_coverage": 1158,
+      "primary_eligible": 0
+    },
+    "2016": {
+      "adtv60_coverage": 946,
+      "baseline_coverage": 1096,
+      "candidate_observations": 1119,
+      "forward_20d_window_available": 672,
+      "forward_5d_window_available": 779,
+      "forward_60d_window_available": 560,
+      "lagged_rv20_coverage": 1119,
+      "primary_eligible": 0
+    },
+    "2017": {
+      "adtv60_coverage": 1148,
+      "baseline_coverage": 1136,
+      "candidate_observations": 1148,
+      "forward_20d_window_available": 735,
+      "forward_5d_window_available": 832,
+      "forward_60d_window_available": 658,
+      "lagged_rv20_coverage": 1148,
+      "primary_eligible": 0
+    },
+    "2018": {
+      "adtv60_coverage": 1200,
+      "baseline_coverage": 1192,
+      "candidate_observations": 1200,
+      "forward_20d_window_available": 799,
+      "forward_5d_window_available": 940,
+      "forward_60d_window_available": 662,
+      "lagged_rv20_coverage": 1200,
+      "primary_eligible": 0
+    },
+    "2019": {
+      "adtv60_coverage": 1195,
+      "baseline_coverage": 1179,
+      "candidate_observations": 1195,
+      "forward_20d_window_available": 749,
+      "forward_5d_window_available": 895,
+      "forward_60d_window_available": 631,
+      "lagged_rv20_coverage": 1195,
+      "primary_eligible": 0
+    },
+    "2020": {
+      "adtv60_coverage": 1138,
+      "baseline_coverage": 1126,
+      "candidate_observations": 1138,
+      "forward_20d_window_available": 788,
+      "forward_5d_window_available": 880,
+      "forward_60d_window_available": 708,
+      "lagged_rv20_coverage": 1138,
+      "primary_eligible": 0
+    },
+    "2021": {
+      "adtv60_coverage": 1183,
+      "baseline_coverage": 1179,
+      "candidate_observations": 1183,
+      "forward_20d_window_available": 896,
+      "forward_5d_window_available": 1011,
+      "forward_60d_window_available": 798,
+      "lagged_rv20_coverage": 1183,
+      "primary_eligible": 0
+    },
+    "2022": {
+      "adtv60_coverage": 1186,
+      "baseline_coverage": 1188,
+      "candidate_observations": 1200,
+      "forward_20d_window_available": 935,
+      "forward_5d_window_available": 1032,
+      "forward_60d_window_available": 814,
+      "lagged_rv20_coverage": 1200,
+      "primary_eligible": 0
+    },
+    "2023": {
+      "adtv60_coverage": 1200,
+      "baseline_coverage": 1194,
+      "candidate_observations": 1200,
+      "forward_20d_window_available": 942,
+      "forward_5d_window_available": 1108,
+      "forward_60d_window_available": 707,
+      "lagged_rv20_coverage": 1200,
+      "primary_eligible": 0
+    },
+    "2024": {
+      "adtv60_coverage": 1200,
+      "baseline_coverage": 1181,
+      "candidate_observations": 1200,
+      "forward_20d_window_available": 1120,
+      "forward_5d_window_available": 1170,
+      "forward_60d_window_available": 1043,
+      "lagged_rv20_coverage": 1200,
+      "primary_eligible": 0
+    },
+    "2025": {
+      "adtv60_coverage": 1200,
+      "baseline_coverage": 1191,
+      "candidate_observations": 1200,
+      "forward_20d_window_available": 1130,
+      "forward_5d_window_available": 1171,
+      "forward_60d_window_available": 1101,
+      "lagged_rv20_coverage": 1200,
+      "primary_eligible": 0
+    },
+    "2026": {
+      "adtv60_coverage": 600,
+      "baseline_coverage": 600,
+      "candidate_observations": 600,
+      "forward_20d_window_available": 477,
+      "forward_5d_window_available": 494,
+      "forward_60d_window_available": 180,
+      "lagged_rv20_coverage": 600,
+      "primary_eligible": 0
+    }
+  },
+  "exclusion_counts": {
+    "identity_temporally_unavailable": 13620
+  },
+  "legacy_security_count": 323,
+  "outcome_availability": {
+    "forward_20d_complete_price_window_count": 10054,
+    "forward_5d_complete_price_window_count": 11255,
+    "forward_60d_complete_price_window_count": 8550,
+    "values": "not_materialized_or_inspected_by_design"
+  },
+  "primary_eligible_instrument_formations": 0,
+  "total_canonical_instruments": 323
+}

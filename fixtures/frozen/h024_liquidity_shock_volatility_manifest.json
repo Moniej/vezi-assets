@@ -1,0 +1,231 @@
+{
+  "analysis_plan_checksum": "4c568de985b9ed6f524b2220e53dc9f9204bbbbfcdda5987dabca8bb933f8011",
+  "builder_sha256": "dc6b560b629e5b082b4e8007b4a2adde3c22a7a545dfa36ede743561e140c042",
+  "classification": "frozen_pre_outcome_research_dataset",
+  "code_commit": "b471a709564e58816cbf0c91ae6236ec90c7c8c2",
+  "config_sha256": "908882aec9519f33294fbf40d109e8763d6284244bb09afa09210397c3d65430",
+  "corporate_action_limitations": "Known recorded material actions are flagged; unrecorded actions remain residual risk; raw prices are not adjusted.",
+  "coverage_report_sha256": "8d780d54634118ff43e734e280998329753269b8306e7a6e5f758e814b5d004f",
+  "dataset_sha256": "454269f3e5487d7532ac65a41cf2dfbdf99525e16dd7b4ad8874d49d0d930a48",
+  "date_range": {
+    "end": "2026-06-30",
+    "start": "2014-06-30"
+  },
+  "deterministic_rebuild_required": true,
+  "eligibility_counts": {
+    "identity_temporally_unavailable": 13620
+  },
+  "evidence_eligibility": "research_protocol_only",
+  "fixture_version": "1",
+  "formation_count": 145,
+  "identity_resolution_policy": "strict_system_vintage canonical resolver; no historical alias inference or current ticker repair.",
+  "inference_specification": {
+    "cluster_dimensions": [
+      "instrument_id",
+      "formation_month"
+    ],
+    "estimator": "pooled_ols_two_way_clustered",
+    "maximum_single_year_observation_share": 0.4,
+    "minimum_instrument_clusters": 30,
+    "minimum_median_observations_per_instrument": 6,
+    "minimum_median_observations_per_time_cluster": 50,
+    "minimum_time_clusters": 24
+  },
+  "instrument_count": 168,
+  "multiple_testing_family": [
+    "forward_rv_5d",
+    "forward_rv_20d",
+    "forward_rv_60d"
+  ],
+  "observation_schema": [
+    {
+      "name": "instrument_id",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "legacy_ticker",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "formation_date",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "decision_time",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "system_vintage",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "availability_policy",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "identity_status",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "identity_exclusion_reason",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "iru_liquidity_rank",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "iru_avg_value",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "adtv60",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "adtv60_valid_count",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "historical_adtv_median_log",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "historical_adtv_valid_count",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "liquidity_shock",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "lagged_rv5",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "lagged_rv20",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "lagged_rv60",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "trailing_zero_return_fraction",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "trailing_positive_volume_zero_return_fraction",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "trailing_median_deals",
+      "nullable": true,
+      "type": "REAL"
+    },
+    {
+      "name": "forward_5d_window_available",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "forward_20d_window_available",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "forward_60d_window_available",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "action_in_lagged_vol_window",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "action_in_forward_5d_window",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "action_in_forward_20d_window",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "action_in_forward_60d_window",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "primary_action_excluded",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "higher_activity_subset",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "extreme_staleness",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "eligible_for_primary",
+      "nullable": true,
+      "type": "INTEGER"
+    },
+    {
+      "name": "exclusion_reason",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "source_vintage",
+      "nullable": true,
+      "type": "TEXT"
+    },
+    {
+      "name": "source_fixture",
+      "nullable": true,
+      "type": "TEXT"
+    }
+  ],
+  "outcome_materialization": "not_materialized",
+  "predictor_module_sha256": "6caf9bccb7a0050f82a7fffef31a0f5ca6d5975296705026d5457afe9f8f5c8e",
+  "protocol_sha256": "768e8636e5372e0ca1ccbcfc7e2519200d8a0a0289af1c00c14ec333135cce0b",
+  "row_count": 13620,
+  "source_data_vintage": "2026-07-21",
+  "source_fixture_sha256": "0707ccd87931207780e9f26109f540f333c486b6ec4a9cd2ce73b58507cec70e",
+  "source_identity_database_sha256": "bcf6bd56061c0f817013c8fa69b1cd11a720d31c1bc21c8f5de00d57b98dd9e5",
+  "staleness_limitations": "Zero returns are price-staleness proxies, not zero-trade counts; positive-volume zero-return remains separately retained.",
+  "tables": {
+    "corporate_action_exclusions": 13620,
+    "formation_schedule": 145,
+    "h024_observations": 13620,
+    "staleness_diagnostics": 13620
+  }
+}

@@ -1,0 +1,92 @@
+# H-024 — Liquidity shock and forward realized volatility.
+# Frozen before any predictor/outcome association is inspected.  Any material
+# change after this fixture is produced requires a new hypothesis/version.
+
+[experiment]
+name = "h024_liquidity_shock_volatility"
+hypothesis_id = "H-024"
+classification = "risk_market_structure"
+status = "frozen_pre_outcome"
+
+[data]
+source_fixture = "fixtures/frozen/h011_liquidity_comparison.sqlite"
+source_vintage = "2026-07-21"
+sample_start = "2014-06-30"
+sample_end = "2026-06-30"
+min_confidence = 0.9
+availability_policy = "strict_system_vintage"
+decision_time_precision = "date"
+system_vintage = "2026-07-21"
+price_basis = "raw_close_price_only"
+
+[formation]
+rule = "last_eligible_ngx_session_of_calendar_month"
+frequency = "monthly"
+
+[universe]
+method = "IRU_v2"
+identity_requirement = "canonical_instrument_pit_safe"
+min_price_observations = 60
+min_adtv60_valid_observations = 45
+historical_adtv_baseline_observations = 120
+
+[signal]
+primary_liquidity_metric = "ADTV60"
+adtv_window_sessions = 60
+adtv_min_positive_value_traded_observations = 45
+historical_median_window_sessions = 252
+historical_median_min_valid_adtv60_observations = 120
+formula = "log(ADTV60_current) - median(log(ADTV60_history_t_minus_252_to_t_minus_1))"
+expected_beta_sign = "negative"
+expected_sign_rationale = "negative shock means liquidity deterioration; lower shock is hypothesized to precede higher forward volatility"
+
+[staleness]
+lookback_sessions = 60
+extreme_zero_return_fraction = 0.80
+higher_activity_median_deals_minimum = 5.0
+controls = ["trailing_zero_return_fraction"]
+
+[corporate_actions]
+exclude_known_material_actions = true
+material_action_types = ["split", "stock_split", "bonus_issue", "rights_issue", "reconstruction", "consolidation", "other_price_mechanical"]
+flag_windows = ["lagged_vol", "forward_5d", "forward_20d", "forward_60d"]
+coverage_policy = "known_actions_only_unknown_actions_remain_residual_risk"
+
+[outcomes]
+primary_horizon_sessions = 20
+secondary_horizon_sessions = [5, 60]
+formula = "sqrt(252/h) * standard_deviation(raw_close_returns[t_plus_1_to_t_plus_h])"
+first_forward_return = "t_plus_1"
+lagged_volatility = { "5" = 5, "20" = 20, "60" = 60 }
+materialize_outcomes_after_config_checksum = true
+forbid_predictor_outcome_association_inspection = true
+
+[model]
+primary = "forward_rv_20d ~ liquidity_shock + lagged_rv_20d"
+secondary_5d = "forward_rv_5d ~ liquidity_shock + lagged_rv_5d"
+secondary_60d = "forward_rv_60d ~ liquidity_shock + lagged_rv_60d"
+controls_forbidden = ["macro", "size", "sector", "additional_factors"]
+
+[inference]
+estimator = "pooled_ols_two_way_clustered"
+cluster_dimensions = ["instrument_id", "formation_month"]
+minimum_instrument_clusters = 30
+minimum_time_clusters = 24
+minimum_median_observations_per_instrument = 6
+minimum_median_observations_per_time_cluster = 50
+maximum_single_year_observation_share = 0.40
+
+[validation]
+multiple_testing_method = "holm"
+multiple_testing_family = ["forward_rv_5d", "forward_rv_20d", "forward_rv_60d"]
+primary_endpoint = "forward_rv_20d"
+chronological_holdout_fraction = 0.20
+minimum_total_observations = 5000
+minimum_median_eligible_instruments_per_formation = 100
+minimum_economic_effect_annualized_rv_percentage_points = 2.0
+expected_sign_required = true
+
+[governance]
+evidence_eligibility = "research_protocol_only"
+alpha_recommendation_forbidden = true
+outcome_execution_authorization_required = true
