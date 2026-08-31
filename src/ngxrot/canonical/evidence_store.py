@@ -55,6 +55,7 @@ class EvidenceEligibilityFailure(str, Enum):
     UNRESOLVED_OR_CONFLICTING = "unresolved_or_conflicting_evidence"
     SYNTHETIC_SOURCE = "synthetic_source"
     PARSER_LOCATOR_INTEGRITY_FAILURE = "parser_locator_integrity_failure"
+    ASSERTION_TYPE_UNSUPPORTED = "assertion_type_unsupported"
     OS_UNAVAILABLE = "os_unavailable"
 
 
@@ -136,6 +137,7 @@ class CanonicalEvidenceStore:
     def import_evidence_document(self, local_path: Path, *, source_url: str, source_name: str,
                                  source_authority: SourceAuthorityTier, retrieved_at: TemporalValue,
                                  document_type: str, published_at: TemporalValue | None = None,
+                                 publication_time_verification: str | None = None,
                                  is_synthetic: bool = False) -> PersistedImport:
         """Archive exact operator bytes; retrieval always means operator import here."""
         raw = local_path.read_bytes()
@@ -147,8 +149,12 @@ class CanonicalEvidenceStore:
                                   recorded_at=retrieved_at)
         artifact = self.archive.put(raw, media_type="application/pdf" if local_path.suffix.lower() == ".pdf" else "text/plain",
                                     source_endpoint=endpoint, retrieved_at=retrieved_at, recorded_at=retrieved_at)
-        artifact_row = self.con.execute("SELECT artifact_id FROM canonical_document_artifacts WHERE content_sha256=?", (artifact.sha256,)).fetchone()
         retrieved_value, retrieved_precision = _temporal(retrieved_at)
+        self.con.execute("INSERT INTO canonical_retrieval_attempts VALUES (?,?,?,?,?,?,?)", (
+            str(uuid7()), source_url, "parsed", "manual_operator_import", None,
+            retrieved_value, retrieved_precision,
+        ))
+        artifact_row = self.con.execute("SELECT artifact_id FROM canonical_document_artifacts WHERE content_sha256=?", (artifact.sha256,)).fetchone()
         if artifact_row:
             artifact_id = artifact_row[0]
         else:
@@ -160,11 +166,12 @@ class CanonicalEvidenceStore:
             ))
         version_row = self.con.execute("SELECT document_version_id FROM canonical_document_versions WHERE artifact_id=?", (artifact_id,)).fetchone()
         if version_row:
+            self.con.commit()
             return PersistedImport(artifact_id, version_row[0], source_id, endpoint_id, artifact)
         version_id = str(uuid7())
         published_value, published_precision = (None, None) if published_at is None else _temporal(published_at)
         self.con.execute("INSERT INTO canonical_document_versions VALUES (?,?,?,?,?,?,?,?,?)", (
-            version_id, artifact_id, document_type, published_value, published_precision, None, None,
+            version_id, artifact_id, document_type, published_value, published_precision, publication_time_verification, None,
             retrieved_value, retrieved_precision,
         ))
         parser, parser_version, parsed = _parse(raw, artifact.media_type)
@@ -236,7 +243,7 @@ class CanonicalEvidenceStore:
     def validate_identity_evidence(self, evidence_id: str, use: EvidenceUse) -> EvidenceEligibility:
         try:
             row = self.con.execute("""SELECT da.artifact_id, ei.locator_id, cs.authority_tier, cs.is_synthetic,
-                dv.published_at_value, ei.verification_status, COUNT(c.citation_id)
+                dv.published_at_value, ei.verification_status, ei.evidence_type, COUNT(c.citation_id)
                 FROM canonical_evidence_items ei JOIN canonical_document_versions dv ON dv.document_version_id=ei.document_version_id
                 JOIN canonical_document_artifacts da ON da.artifact_id=dv.artifact_id
                 JOIN canonical_sources cs ON cs.source_id=ei.source_id LEFT JOIN canonical_citations c ON c.evidence_id=ei.evidence_id
@@ -245,7 +252,7 @@ class CanonicalEvidenceStore:
             return EvidenceEligibility(False, EvidenceEligibilityFailure.OS_UNAVAILABLE)
         if not row:
             return EvidenceEligibility(False, EvidenceEligibilityFailure.ARTIFACT_MISSING)
-        _, locator_id, authority, synthetic, published, verification, citations = row
+        _, locator_id, authority, synthetic, published, verification, evidence_type, citations = row
         if synthetic:
             return EvidenceEligibility(False, EvidenceEligibilityFailure.SYNTHETIC_SOURCE)
         if authority in {SourceAuthorityTier.INDEPENDENT_SECONDARY.value, SourceAuthorityTier.UNVERIFIED.value, SourceAuthorityTier.SYNTHETIC.value}:
@@ -259,6 +266,14 @@ class CanonicalEvidenceStore:
             return EvidenceEligibility(False, EvidenceEligibilityFailure.RETRIEVAL_ONLY)
         if verification in {"rejected", "conflicting", "unresolved"}:
             return EvidenceEligibility(False, EvidenceEligibilityFailure.UNRESOLVED_OR_CONFLICTING)
+        allowed_types = {
+            EvidenceUse.HISTORICAL_TICKER_VALIDITY: {"ticker_symbol"},
+            EvidenceUse.SERIES_OWNERSHIP: {"market_series_ownership"},
+            EvidenceUse.INSTRUMENT_CONTINUITY: {"same_security_continuity"},
+            EvidenceUse.CORPORATE_EVENT_ASSERTION: {"corporate_event"},
+        }
+        if evidence_type not in allowed_types[use]:
+            return EvidenceEligibility(False, EvidenceEligibilityFailure.ASSERTION_TYPE_UNSUPPORTED)
         if use is EvidenceUse.HISTORICAL_TICKER_VALIDITY and not published:
             return EvidenceEligibility(False, EvidenceEligibilityFailure.PUBLICATION_CONTEXT_MISSING)
         return EvidenceEligibility(True)

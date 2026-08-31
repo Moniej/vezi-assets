@@ -1,0 +1,13 @@
+{
+  "artifact": "historical_identity_evidence_qualification_batch1",
+  "canonical_identity_mutation": false,
+  "h024_outcome_access": "none",
+  "source_policy_version": "historical_identity_source_policy_v1",
+  "pre_import_ngx_sha256": "6635617d551327fe8eddf8e2355466c9c4ae7be73d64e5dd8d1547b643f7b1d3",
+  "post_import_ngx_sha256": "95f0216633b91fbb790a5ce6701770ac830886f38704b01782b2a51d1daef274",
+  "registry_sha256": "f3371fa03d7fa720f2b5e90fc8d1d4bc7135f246eba7274aa920c06e80c08106",
+  "live_database_context": {"migration_logical_version": 3, "historical_identity_assertions_applied": false},
+  "row_deltas": {"canonical_sources": 1, "canonical_source_endpoints": 2, "canonical_retrieval_attempts": 2, "canonical_document_artifacts": 2, "canonical_document_versions": 2, "canonical_parsed_document_representations": 2, "canonical_evidence_locators": 8, "canonical_evidence_items": 8, "canonical_citations": 8},
+  "identity_table_deltas": {"securities": 0, "company_issuers": 0, "instrument_listings": 0, "identifier_aliases": 0, "legacy_identity_mappings": 0, "historical_identifier_assertions": 0},
+  "source_checkpoint": "df5e2a57b470ec1fa2c5e0d6b3bcf7c1f1ef9993"
+}

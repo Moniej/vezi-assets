@@ -82,10 +82,27 @@ class CanonicalEvidencePersistenceTests(unittest.TestCase):
         row = self.con.execute("SELECT acquisition_mode, original_filename, retrieved_at_value FROM canonical_document_artifacts WHERE artifact_id=?", (imported.artifact_id,)).fetchone()
         self.assertEqual(row, ("manual_operator_import", "notice.txt", UTC_NOW.value.isoformat()))
 
+    def test_manual_import_records_explicit_parsed_acquisition_attempt(self) -> None:
+        self._import()
+        row = self.con.execute("SELECT status, acquisition_mode FROM canonical_retrieval_attempts").fetchone()
+        self.assertEqual(row, ("parsed", "manual_operator_import"))
+
     def test_date_only_publication_does_not_fabricate_time_of_day(self) -> None:
         imported = self._import()
         row = self.con.execute("SELECT published_at_value, published_at_precision FROM canonical_document_versions WHERE document_version_id=?", (imported.document_version_id,)).fetchone()
         self.assertEqual(row, ("2025-02-13", "date"))
+
+    def test_document_header_can_verify_date_only_publication_metadata(self) -> None:
+        supplied = self.root / "dated-notice.txt"
+        supplied.write_text("24 February 2020")
+        imported = self.store.import_evidence_document(
+            supplied, source_url="https://official.example/dated", source_name="Official Exchange",
+            source_authority=SourceAuthorityTier.OFFICIAL_EXCHANGE, retrieved_at=UTC_NOW,
+            document_type="market_bulletin", published_at=TemporalValue(date(2020, 2, 24), TemporalPrecision.DATE),
+            publication_time_verification="document_header_date",
+        )
+        row = self.con.execute("SELECT published_at_value, published_at_precision, publication_time_verification FROM canonical_document_versions WHERE document_version_id=?", (imported.document_version_id,)).fetchone()
+        self.assertEqual(row, ("2020-02-24", "date", "document_header_date"))
 
     def test_url_only_and_retrieval_failure_cannot_be_evidence_grade(self) -> None:
         self.assertEqual(self.store.validate_identity_evidence("missing", EvidenceUse.HISTORICAL_TICKER_VALIDITY).failure,
@@ -108,7 +125,7 @@ class CanonicalEvidencePersistenceTests(unittest.TestCase):
         locator_id = self.store.create_locator(imported.document_version_id, page_number=1,
                                                paragraph="Ticker change notice", quote="ticker changed", recorded_at=UTC_NOW)
         evidence_id = self.store.create_evidence_item(imported.document_version_id, locator_id=locator_id,
-                                                       evidence_type="identity", supporting_text="ticker changed",
+                                                       evidence_type="ticker_symbol", supporting_text="ticker changed",
                                                        extraction_method="manual", extraction_confidence=1.0,
                                                        verification_status="validated", recorded_at=UTC_NOW)
         citation_id = self.store.create_citation(evidence_id, source_url="https://official.example/notice",
@@ -116,6 +133,17 @@ class CanonicalEvidencePersistenceTests(unittest.TestCase):
         chain = self.store.load_evidence_chain(evidence_id)
         self.assertEqual(chain.citation_id, citation_id)
         self.assertTrue(self.store.validate_identity_evidence(evidence_id, EvidenceUse.HISTORICAL_TICKER_VALIDITY).eligible)
+
+    def test_ticker_evidence_cannot_silently_qualify_as_series_ownership(self) -> None:
+        imported = self._import()
+        locator = self.store.create_locator(imported.document_version_id, page_number=1, quote="ticker changed", recorded_at=UTC_NOW)
+        evidence = self.store.create_evidence_item(imported.document_version_id, locator_id=locator, evidence_type="ticker_symbol",
+            supporting_text="ticker changed", extraction_method="manual", extraction_confidence=1.0,
+            verification_status="validated", recorded_at=UTC_NOW)
+        self.store.create_citation(evidence, source_url="https://official.example/notice", authority_metadata={}, recorded_at=UTC_NOW)
+        result = self.store.validate_identity_evidence(evidence, EvidenceUse.SERIES_OWNERSHIP)
+        self.assertFalse(result.eligible)
+        self.assertEqual(result.failure, EvidenceEligibilityFailure.ASSERTION_TYPE_UNSUPPORTED)
 
     def test_tier_four_evidence_is_categorically_ineligible(self) -> None:
         supplied = self.root / "secondary.txt"
@@ -162,7 +190,7 @@ class CanonicalEvidencePersistenceTests(unittest.TestCase):
                 source_name="Issuer primary fixture", source_authority=SourceAuthorityTier.ISSUER_PRIMARY,
                 retrieved_at=UTC_NOW, document_type="issuer_notice")
             locator = self.store.create_locator(imported.document_version_id, page_number=1, quote="issuer notice", recorded_at=UTC_NOW)
-            evidence = self.store.create_evidence_item(imported.document_version_id, locator_id=locator, evidence_type="continuity",
+            evidence = self.store.create_evidence_item(imported.document_version_id, locator_id=locator, evidence_type="same_security_continuity",
                 supporting_text="issuer notice", extraction_method="deterministic_pdf_text", extraction_confidence=1.0,
                 verification_status="validated", recorded_at=UTC_NOW)
             self.store.create_citation(evidence, source_url=f"file-fixture:{path.name}", authority_metadata={"tier": "issuer_primary"}, recorded_at=UTC_NOW)
@@ -182,6 +210,17 @@ class CanonicalEvidencePersistenceTests(unittest.TestCase):
         self.assertEqual(batch["h024_outcome_access"], "none")
         for filename, expected_hash in batch["manual_import_manifests"].items():
             self.assertEqual(hashlib.sha256((root / filename).read_bytes()).hexdigest(), expected_hash)
+
+    def test_tier_one_qualification_package_preserves_identity_isolation(self) -> None:
+        root = Path(__file__).resolve().parents[2] / "fixtures" / "frozen" / "historical_identity_evidence_qualification_batch1"
+        manifest = json.loads((root / "evidence_chain_manifest.json").read_text(encoding="utf-8"))
+        self.assertFalse(manifest["canonical_identity_mutation"])
+        self.assertEqual(manifest["h024_outcome_access"], "none")
+        self.assertTrue(all(delta == 0 for delta in manifest["identity_table_deltas"].values()))
+        for filename in ("FO_ARDOVA_evidence_qualification.json", "FBNH_FIRSTHOLDCO_evidence_qualification.json"):
+            qualification = json.loads((root / filename).read_text(encoding="utf-8"))
+            self.assertFalse(qualification["canonical_identity_mutation"])
+            self.assertFalse(qualification["reconciliation_design_ready"])
 
 
 if __name__ == "__main__":

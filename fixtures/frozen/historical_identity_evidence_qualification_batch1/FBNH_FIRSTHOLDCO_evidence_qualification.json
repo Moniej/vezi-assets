@@ -1,0 +1,26 @@
+{
+  "case": "FBNH_to_FIRSTHOLDCO",
+  "source_checkpoint": "df5e2a57b470ec1fa2c5e0d6b3bcf7c1f1ef9993",
+  "canonical_identity_mutation": false,
+  "operator_filename": "Market Bulletin on the Change of Name of FBN Holdings Plc.pdf",
+  "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20on%20the%20Change%20of%20Name%20of%20FBN%20Holdings%20Plc.pdf",
+  "authority_tier": "official_exchange",
+  "artifact_sha256": "01f2371a70a7df4c68c881667a44548617102b91008ed1b1e725b5500fc11b17",
+  "artifact_id": "01a059f3-e43f-73f5-b13b-cafd3f16cb5d",
+  "document_version_id": "01a059f3-e43f-7123-a415-672cbb65d58a",
+  "parsed_representation_id": "01a059f3-e4f2-7f0c-bf41-b34053441397",
+  "parser": {"name": "pdfplumber", "version": "0.11.9", "status": "parsed"},
+  "published_at": {"value": "2025-03-05", "precision": "date", "verification": "document_header_date"},
+  "acquisition_mode": "manual_operator_import",
+  "evidence": [
+    {"claim": "prior_identity", "locator_id": "01a059f6-439d-7dd4-b265-8b8016fb1eb5", "evidence_id": "01a059f6-43a0-76f2-bff8-367a35966465", "citation_id": "01a059f6-43a0-7f8a-a47a-554f16dcabc1", "type": "ticker_symbol"},
+    {"claim": "new_name", "locator_id": "01a059f6-43a1-77f9-8fd6-c8438f3acc4b", "evidence_id": "01a059f6-43a2-75b8-82b1-d598a852b29f", "citation_id": "01a059f6-43a2-79f9-9dc1-76823b32c78e", "type": "corporate_event"},
+    {"claim": "ticker_transition", "locator_id": "01a059f6-43a3-76a5-8a6a-b937a13b0dfd", "evidence_id": "01a059f6-43a3-7254-bc02-398c58570227", "citation_id": "01a059f6-43b0-74fd-a5dd-d52279b3abd9", "type": "ticker_symbol"},
+    {"claim": "name_change_implemented", "locator_id": "01a059f6-43b1-741f-8bec-5ea577f0102f", "evidence_id": "01a059f6-43b1-765c-9191-92488a823f55", "citation_id": "01a059f6-43b2-73cd-b980-ca1691d02e4c", "type": "corporate_event"}
+  ],
+  "eligibility": {"historical_ticker_validity": "eligible", "market_series_ownership": "not_eligible_no_claim_specific_evidence", "same_security_continuity": "not_eligible_no_claim_specific_evidence", "corporate_event_assertion": "eligible"},
+  "review_impact": "strengthened",
+  "effective_time": "unknown_document_reports_implementation_but_no_distinct_effective_date",
+  "reconciliation_design_ready": false,
+  "missing_evidence": ["source-series ownership mapping evidence", "explicit same-security continuity evidence", "separately evidenced implementation-effective boundary"]
+}

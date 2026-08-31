@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import sqlite3
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +25,10 @@ def main() -> int:
     parser.add_argument("--source-name", required=True)
     parser.add_argument("--authority-tier", required=True, choices=[tier.value for tier in SourceAuthorityTier])
     parser.add_argument("--document-type", default="historical_identity_notice")
+    parser.add_argument("--published-date", type=date.fromisoformat,
+                        help="Document-supported publication date; stored with date precision.")
+    parser.add_argument("--publication-time-verification",
+                        help="How publication timing was evidenced, e.g. document_header_date.")
     parser.add_argument("--database", type=Path, default=ROOT / "data" / "ngx.sqlite")
     parser.add_argument("--archive-root", type=Path, default=ROOT / "data" / "archive" / "canonical_evidence")
     args = parser.parse_args()
@@ -40,6 +44,8 @@ def main() -> int:
             args.local_path, source_url=args.source_url, source_name=args.source_name,
             source_authority=SourceAuthorityTier(args.authority_tier), retrieved_at=now,
             document_type=args.document_type,
+            published_at=(TemporalValue(args.published_date, TemporalPrecision.DATE) if args.published_date else None),
+            publication_time_verification=args.publication_time_verification,
         )
         print(f"archived artifact_id={result.artifact_id} sha256={result.artifact.sha256}")
         print(f"document_version_id={result.document_version_id} acquisition_mode=manual_operator_import")

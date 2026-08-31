@@ -1,0 +1,26 @@
+{
+  "case": "FO_to_ARDOVA",
+  "source_checkpoint": "df5e2a57b470ec1fa2c5e0d6b3bcf7c1f1ef9993",
+  "canonical_identity_mutation": false,
+  "operator_filename": "Market Bulletin - Forte Oil Change of Name.pdf",
+  "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20-%20Forte%20Oil%20Change%20of%20Name.pdf",
+  "authority_tier": "official_exchange",
+  "artifact_sha256": "2b699c3950820d11f16ce902a42079c559294a01e1b780e3892d64b549b86237",
+  "artifact_id": "01a059f3-e2bd-7838-becf-e88a2fc0eadf",
+  "document_version_id": "01a059f3-e2bd-7009-90dd-aecd27c73518",
+  "parsed_representation_id": "01a059f3-e387-73e8-b01e-fe217be80c12",
+  "parser": {"name": "pdfplumber", "version": "0.11.9", "status": "parsed"},
+  "published_at": {"value": "2020-02-24", "precision": "date", "verification": "document_header_date"},
+  "acquisition_mode": "manual_operator_import",
+  "evidence": [
+    {"claim": "prior_identity", "locator_id": "01a059f5-917b-7ee4-bd3d-02256e305f12", "evidence_id": "01a059f5-917f-703e-8592-c93d5c7c57ae", "citation_id": "01a059f5-9180-7104-b4cd-e991c230b7c2", "type": "ticker_symbol"},
+    {"claim": "ticker_transition", "locator_id": "01a059f5-9181-72de-a23a-e9b1e64a39e0", "evidence_id": "01a059f5-9182-7b55-9467-9d0f6ff89409", "citation_id": "01a059f5-9182-7b50-8d0b-939d33319250", "type": "ticker_symbol"},
+    {"claim": "name_change", "locator_id": "01a059f5-e661-7acf-8d15-e06b13401e29", "evidence_id": "01a059f5-e665-73cb-95fc-faafb95966c3", "citation_id": "01a059f5-e666-7b73-a6bd-9bb24f598c4b", "type": "corporate_event"},
+    {"claim": "implementation", "locator_id": "01a059f5-e667-7c8e-86dd-a993d22c17ee", "evidence_id": "01a059f5-e667-7985-b2a3-a442f103e96a", "citation_id": "01a059f5-e668-795c-bc3b-6bdda0e59ab0", "type": "corporate_event"}
+  ],
+  "eligibility": {"historical_ticker_validity": "eligible", "market_series_ownership": "not_eligible_no_claim_specific_evidence", "same_security_continuity": "not_eligible_no_claim_specific_evidence", "corporate_event_assertion": "eligible"},
+  "review_impact": "strengthened",
+  "future_alias_semantics_review_only": {"ARDOVA_valid_from": {"value": "2020-02-24", "precision": "exact_date", "basis": "explicit implementation date"}, "FO_valid_to": "unknown_not_inferred"},
+  "reconciliation_design_ready": false,
+  "missing_evidence": ["source-series ownership mapping evidence", "explicit same-security continuity evidence"]
+}
