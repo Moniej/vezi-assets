@@ -1,0 +1,30 @@
+version = "1"
+purpose = "historical canonical instrument reconstruction"
+
+[tier1]
+label = "official_ngx"
+sources = ["historical official price/daily lists", "issuer directories", "listing/delisting notices", "ticker/name-change notices", "corporate-action notices"]
+verified_allowed = true
+
+[tier2]
+label = "regulator_or_issuer_primary"
+sources = ["SEC Nigeria records", "issuer annual reports", "issuer investor-relations archives"]
+verified_allowed = true
+
+[tier3]
+label = "auditable_historical_dataset"
+sources = ["dated dataset independently verifiable against an approved primary anchor"]
+verified_allowed = true
+
+[tier4]
+label = "secondary_corroboration_only"
+sources = ["news", "secondary dataset", "search result", "string/LLM candidate"]
+verified_allowed = false
+
+[rules]
+verified_requires_evidence_item = true
+verified_requires_citation = true
+verified_requires_known_interval_or_observed_date = true
+current_ticker_projection_forbidden = true
+string_inference_promotion_forbidden = true
+recorded_at_backdating_forbidden = true

@@ -39,6 +39,8 @@ def main() -> int:
         ("Stage 2D Research OS canonical-preferred reads", [sys.executable, "-m", "unittest", "tests.stage2.test_research_identity_preferred_reads"]),
         ("H-011 frozen liquidity comparison fixture", [sys.executable, "-m", "unittest", "tests.stage2.test_h011_liquidity_fixture"]),
         ("H-024 frozen pre-outcome dataset guards", [sys.executable, "-m", "unittest", "tests.stage2.test_h024_dataset"]),
+        ("Historical identity reconstruction assertions", [sys.executable, "-m", "unittest", "tests.stage2.test_historical_identity"]),
+        ("Historical identity Phase 1 evidence/coverage fixture", [sys.executable, "-m", "unittest", "tests.stage2.test_historical_identity_phase1_fixture"]),
         ("FRE frozen financial-ratio regression", [sys.executable, "scripts/fre/test_financial_ratios.py", "--temp-dir", str(runtime)]),
         ("Research OS frozen regression", [sys.executable, "scripts/test_research_memory.py"]),
         ("Alpha governance regression", [sys.executable, "-m", "unittest", "tests.stage1.test_stage1_contracts"]),

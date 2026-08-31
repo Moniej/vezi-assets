@@ -1,0 +1,826 @@
+{
+  "assertion_counts": {
+    "candidate": 0,
+    "conflicting": 0,
+    "corroborated_review_candidates": 8,
+    "unresolved": 323,
+    "verified": 0
+  },
+  "current_identity_state": {
+    "aliases_valid_from": 0,
+    "aliases_valid_to": 0,
+    "aliases_without_historical_bounds": 323,
+    "duplicate_ticker_namespaces": 0,
+    "historically_unresolved_securities": 323,
+    "identifier_aliases": 323,
+    "instrument_listings": 323,
+    "known_delisting_dates": 0,
+    "known_verified_rename_rows": 4,
+    "legacy_identity_mappings": 323
+  },
+  "h024_coverage_simulation": {
+    "candidate_instrument_formations": 13620,
+    "eligible_observations": 0,
+    "formation_clusters": 0,
+    "instrument_clusters": 0,
+    "instrument_formations_unlocked": 0,
+    "note": "No candidate is promoted to verified; no H-024 outcome data was opened.",
+    "verified_identities": 0
+  },
+  "h024_identity_evidence_priority": {
+    "method": "descending count of existing candidate instrument-formations; no predictor/outcome values inspected",
+    "priority_1": [
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "ACCESSCORP"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "AFRIPRUD"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "AIICO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "BERGER"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "CADBURY"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "CAP"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "CAVERTON"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "CHAMPION"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "CONOIL"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "CUTIX"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "DANGCEM"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "DANGSUGAR"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "ETERNA"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "ETI"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "FCMB"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "FIDELITYBK"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "FIDSON"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "FIRSTHOLDCO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "GTCO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "GUINNESS"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "HONYFLOUR"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "INTBREW"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "JBERGER"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "LIVESTOCK"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "MANSARD"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "MAYBAKER"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "NAHCO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "NASCON"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "NB"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "NEIMETH"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "NEM"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "NESTLE"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "OANDO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "OKOMUOIL"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "PRESCO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "PZ"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "SEPLAT"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "STANBIC"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "TOTAL"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "TRANSCORP"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "UACN"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "UBA"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "UNILEVER"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "VITAFOAM"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "WAPCO"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "WAPIC"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "WEMABANK"
+      },
+      {
+        "candidate_instrument_formations": 139,
+        "legacy_ticker": "ZENITHBANK"
+      },
+      {
+        "candidate_instrument_formations": 138,
+        "legacy_ticker": "BETAGLAS"
+      },
+      {
+        "candidate_instrument_formations": 138,
+        "legacy_ticker": "NPFMCRFBK"
+      },
+      {
+        "candidate_instrument_formations": 136,
+        "legacy_ticker": "CILEASING"
+      },
+      {
+        "candidate_instrument_formations": 127,
+        "legacy_ticker": "MRS"
+      },
+      {
+        "candidate_instrument_formations": 127,
+        "legacy_ticker": "TRANSCOHOT"
+      },
+      {
+        "candidate_instrument_formations": 124,
+        "legacy_ticker": "CORNERST"
+      },
+      {
+        "candidate_instrument_formations": 123,
+        "legacy_ticker": "NNFM"
+      },
+      {
+        "candidate_instrument_formations": 123,
+        "legacy_ticker": "UCAP"
+      },
+      {
+        "candidate_instrument_formations": 121,
+        "legacy_ticker": "FLOURMILL"
+      },
+      {
+        "candidate_instrument_formations": 121,
+        "legacy_ticker": "REDSTAREX"
+      },
+      {
+        "candidate_instrument_formations": 121,
+        "legacy_ticker": "UPL"
+      },
+      {
+        "candidate_instrument_formations": 119,
+        "legacy_ticker": "ROYALEX"
+      },
+      {
+        "candidate_instrument_formations": 118,
+        "legacy_ticker": "MBENEFIT"
+      },
+      {
+        "candidate_instrument_formations": 116,
+        "legacy_ticker": "IKEJAHOTEL"
+      },
+      {
+        "candidate_instrument_formations": 116,
+        "legacy_ticker": "LASACO"
+      },
+      {
+        "candidate_instrument_formations": 116,
+        "legacy_ticker": "LINKASSURE"
+      },
+      {
+        "candidate_instrument_formations": 116,
+        "legacy_ticker": "UNITYBNK"
+      },
+      {
+        "candidate_instrument_formations": 114,
+        "legacy_ticker": "CHAMS"
+      },
+      {
+        "candidate_instrument_formations": 114,
+        "legacy_ticker": "LEARNAFRCA"
+      },
+      {
+        "candidate_instrument_formations": 111,
+        "legacy_ticker": "PRESTIGE"
+      },
+      {
+        "candidate_instrument_formations": 110,
+        "legacy_ticker": "GLAXOSMITH"
+      },
+      {
+        "candidate_instrument_formations": 108,
+        "legacy_ticker": "JAIZBANK"
+      },
+      {
+        "candidate_instrument_formations": 108,
+        "legacy_ticker": "UBN"
+      },
+      {
+        "candidate_instrument_formations": 105,
+        "legacy_ticker": "ETRANZACT"
+      },
+      {
+        "candidate_instrument_formations": 104,
+        "legacy_ticker": "ARDOVA"
+      },
+      {
+        "candidate_instrument_formations": 101,
+        "legacy_ticker": "STERLNBANK"
+      },
+      {
+        "candidate_instrument_formations": 99,
+        "legacy_ticker": "REGALINS"
+      },
+      {
+        "candidate_instrument_formations": 99,
+        "legacy_ticker": "SOVRENINS"
+      },
+      {
+        "candidate_instrument_formations": 98,
+        "legacy_ticker": "CUSTODIAN"
+      },
+      {
+        "candidate_instrument_formations": 87,
+        "legacy_ticker": "RTBRISCOE"
+      },
+      {
+        "candidate_instrument_formations": 84,
+        "legacy_ticker": "COURTVILLE"
+      },
+      {
+        "candidate_instrument_formations": 82,
+        "legacy_ticker": "FTNCOCOA"
+      },
+      {
+        "candidate_instrument_formations": 82,
+        "legacy_ticker": "VERITASKAP"
+      },
+      {
+        "candidate_instrument_formations": 81,
+        "legacy_ticker": "MTNN"
+      },
+      {
+        "candidate_instrument_formations": 80,
+        "legacy_ticker": "UAC-PROP"
+      },
+      {
+        "candidate_instrument_formations": 78,
+        "legacy_ticker": "AIRTELAFRI"
+      },
+      {
+        "candidate_instrument_formations": 77,
+        "legacy_ticker": "MOBIL"
+      },
+      {
+        "candidate_instrument_formations": 76,
+        "legacy_ticker": "ACADEMY"
+      },
+      {
+        "candidate_instrument_formations": 76,
+        "legacy_ticker": "SKYAVN"
+      },
+      {
+        "candidate_instrument_formations": 73,
+        "legacy_ticker": "BUACEMENT"
+      },
+      {
+        "candidate_instrument_formations": 72,
+        "legacy_ticker": "JAPAULOIL"
+      },
+      {
+        "candidate_instrument_formations": 71,
+        "legacy_ticker": "BOCGAS"
+      },
+      {
+        "candidate_instrument_formations": 70,
+        "legacy_ticker": "ABCTRANS"
+      },
+      {
+        "candidate_instrument_formations": 70,
+        "legacy_ticker": "MULTIVERSE"
+      },
+      {
+        "candidate_instrument_formations": 70,
+        "legacy_ticker": "TRANSEXPR"
+      },
+      {
+        "candidate_instrument_formations": 66,
+        "legacy_ticker": "MCNICHOLS"
+      },
+      {
+        "candidate_instrument_formations": 64,
+        "legacy_ticker": "SUNUASSUR"
+      },
+      {
+        "candidate_instrument_formations": 62,
+        "legacy_ticker": "JAPAULGOLD"
+      },
+      {
+        "candidate_instrument_formations": 62,
+        "legacy_ticker": "NIGERINS"
+      },
+      {
+        "candidate_instrument_formations": 61,
+        "legacy_ticker": "CCNN"
+      },
+      {
+        "candidate_instrument_formations": 60,
+        "legacy_ticker": "JOHNHOLT"
+      },
+      {
+        "candidate_instrument_formations": 60,
+        "legacy_ticker": "UNIVINSURE"
+      },
+      {
+        "candidate_instrument_formations": 58,
+        "legacy_ticker": "CWG"
+      },
+      {
+        "candidate_instrument_formations": 57,
+        "legacy_ticker": "TRIPPLEG"
+      },
+      {
+        "candidate_instrument_formations": 55,
+        "legacy_ticker": "AGLEVENT"
+      },
+      {
+        "candidate_instrument_formations": 55,
+        "legacy_ticker": "CHIPLC"
+      },
+      {
+        "candidate_instrument_formations": 55,
+        "legacy_ticker": "LAWUNION"
+      },
+      {
+        "candidate_instrument_formations": 55,
+        "legacy_ticker": "UPDC"
+      },
+      {
+        "candidate_instrument_formations": 54,
+        "legacy_ticker": "CONTINSURE"
+      },
+      {
+        "candidate_instrument_formations": 52,
+        "legacy_ticker": "DIAMONDBNK"
+      },
+      {
+        "candidate_instrument_formations": 52,
+        "legacy_ticker": "ELLAHLAKES"
+      },
+      {
+        "candidate_instrument_formations": 52,
+        "legacy_ticker": "NGXGROUP"
+      },
+      {
+        "candidate_instrument_formations": 51,
+        "legacy_ticker": "AIRSERVICE"
+      },
+      {
+        "candidate_instrument_formations": 51,
+        "legacy_ticker": "PORTPAINT"
+      },
+      {
+        "candidate_instrument_formations": 50,
+        "legacy_ticker": "BUAFOODS"
+      },
+      {
+        "candidate_instrument_formations": 48,
+        "legacy_ticker": "NCR"
+      },
+      {
+        "candidate_instrument_formations": 47,
+        "legacy_ticker": "DANGFLOUR"
+      },
+      {
+        "candidate_instrument_formations": 46,
+        "legacy_ticker": "SKYEBANK"
+      },
+      {
+        "candidate_instrument_formations": 45,
+        "legacy_ticker": "ABBEYBDS"
+      },
+      {
+        "candidate_instrument_formations": 43,
+        "legacy_ticker": "DUNLOP"
+      },
+      {
+        "candidate_instrument_formations": 40,
+        "legacy_ticker": "GEREGU"
+      },
+      {
+        "candidate_instrument_formations": 38,
+        "legacy_ticker": "7UP"
+      },
+      {
+        "candidate_instrument_formations": 37,
+        "legacy_ticker": "CUSTODYINS"
+      },
+      {
+        "candidate_instrument_formations": 35,
+        "legacy_ticker": "MEYER"
+      },
+      {
+        "candidate_instrument_formations": 35,
+        "legacy_ticker": "PHARMDEKO"
+      },
+      {
+        "candidate_instrument_formations": 34,
+        "legacy_ticker": "STERLINGNG"
+      },
+      {
+        "candidate_instrument_formations": 33,
+        "legacy_ticker": "GUINEAINS"
+      },
+      {
+        "candidate_instrument_formations": 33,
+        "legacy_ticker": "IMG"
+      },
+      {
+        "candidate_instrument_formations": 32,
+        "legacy_ticker": "ASHAKACEM"
+      },
+      {
+        "candidate_instrument_formations": 31,
+        "legacy_ticker": "EVANSMED"
+      },
+      {
+        "candidate_instrument_formations": 31,
+        "legacy_ticker": "UNIONDAC"
+      },
+      {
+        "candidate_instrument_formations": 30,
+        "legacy_ticker": "DAARCOMM"
+      },
+      {
+        "candidate_instrument_formations": 30,
+        "legacy_ticker": "TIP"
+      },
+      {
+        "candidate_instrument_formations": 28,
+        "legacy_ticker": "NIDF"
+      },
+      {
+        "candidate_instrument_formations": 28,
+        "legacy_ticker": "VFDGROUP"
+      },
+      {
+        "candidate_instrument_formations": 26,
+        "legacy_ticker": "CONHALLPLC"
+      },
+      {
+        "candidate_instrument_formations": 26,
+        "legacy_ticker": "LIVINGTRUST"
+      },
+      {
+        "candidate_instrument_formations": 26,
+        "legacy_ticker": "MECURE"
+      },
+      {
+        "candidate_instrument_formations": 25,
+        "legacy_ticker": "STDINSURE"
+      },
+      {
+        "candidate_instrument_formations": 24,
+        "legacy_ticker": "MEDVIEWAIR"
+      },
+      {
+        "candidate_instrument_formations": 24,
+        "legacy_ticker": "NSLTECH"
+      },
+      {
+        "candidate_instrument_formations": 23,
+        "legacy_ticker": "TANTALIZER"
+      },
+      {
+        "candidate_instrument_formations": 23,
+        "legacy_ticker": "TRANSPOWER"
+      },
+      {
+        "candidate_instrument_formations": 21,
+        "legacy_ticker": "COSTAIN"
+      },
+      {
+        "candidate_instrument_formations": 20,
+        "legacy_ticker": "OMATEK"
+      },
+      {
+        "candidate_instrument_formations": 19,
+        "legacy_ticker": "DEAPCAP"
+      },
+      {
+        "candidate_instrument_formations": 19,
+        "legacy_ticker": "FIRSTALUM"
+      },
+      {
+        "candidate_instrument_formations": 19,
+        "legacy_ticker": "INTENEGINS"
+      },
+      {
+        "candidate_instrument_formations": 16,
+        "legacy_ticker": "ARADEL"
+      },
+      {
+        "candidate_instrument_formations": 16,
+        "legacy_ticker": "MORISON"
+      },
+      {
+        "candidate_instrument_formations": 15,
+        "legacy_ticker": "EUNISELL"
+      },
+      {
+        "candidate_instrument_formations": 14,
+        "legacy_ticker": "VONO"
+      },
+      {
+        "candidate_instrument_formations": 12,
+        "legacy_ticker": "STACO"
+      },
+      {
+        "candidate_instrument_formations": 12,
+        "legacy_ticker": "UBCAP"
+      },
+      {
+        "candidate_instrument_formations": 11,
+        "legacy_ticker": "CAPHOTEL"
+      },
+      {
+        "candidate_instrument_formations": 11,
+        "legacy_ticker": "EQUITYASUR"
+      },
+      {
+        "candidate_instrument_formations": 10,
+        "legacy_ticker": "LEGENDINT"
+      },
+      {
+        "candidate_instrument_formations": 9,
+        "legacy_ticker": "AFRINSURE"
+      },
+      {
+        "candidate_instrument_formations": 9,
+        "legacy_ticker": "HMARKINS"
+      },
+      {
+        "candidate_instrument_formations": 9,
+        "legacy_ticker": "SCOA"
+      },
+      {
+        "candidate_instrument_formations": 8,
+        "legacy_ticker": "HMCALL"
+      },
+      {
+        "candidate_instrument_formations": 8,
+        "legacy_ticker": "THOMASWY"
+      },
+      {
+        "candidate_instrument_formations": 7,
+        "legacy_ticker": "NOTORE"
+      },
+      {
+        "candidate_instrument_formations": 6,
+        "legacy_ticker": "CAPOIL"
+      },
+      {
+        "candidate_instrument_formations": 5,
+        "legacy_ticker": "DNMEYER"
+      },
+      {
+        "candidate_instrument_formations": 5,
+        "legacy_ticker": "UNIC"
+      },
+      {
+        "candidate_instrument_formations": 5,
+        "legacy_ticker": "UTC"
+      },
+      {
+        "candidate_instrument_formations": 4,
+        "legacy_ticker": "PREMBREW"
+      },
+      {
+        "candidate_instrument_formations": 4,
+        "legacy_ticker": "TIGERBRANDS"
+      },
+      {
+        "candidate_instrument_formations": 1,
+        "legacy_ticker": "GSPECPLC"
+      }
+    ]
+  },
+  "historical_resolution_coverage_by_year": {
+    "2014": {
+      "ambiguous": 0,
+      "candidate_tickers": 183,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 183
+    },
+    "2015": {
+      "ambiguous": 0,
+      "candidate_tickers": 189,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 189
+    },
+    "2016": {
+      "ambiguous": 0,
+      "candidate_tickers": 199,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 199
+    },
+    "2017": {
+      "ambiguous": 0,
+      "candidate_tickers": 192,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 192
+    },
+    "2018": {
+      "ambiguous": 0,
+      "candidate_tickers": 189,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 189
+    },
+    "2019": {
+      "ambiguous": 0,
+      "candidate_tickers": 181,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 181
+    },
+    "2020": {
+      "ambiguous": 0,
+      "candidate_tickers": 173,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 173
+    },
+    "2021": {
+      "ambiguous": 0,
+      "candidate_tickers": 173,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 173
+    },
+    "2022": {
+      "ambiguous": 0,
+      "candidate_tickers": 167,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 167
+    },
+    "2023": {
+      "ambiguous": 0,
+      "candidate_tickers": 174,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 174
+    },
+    "2024": {
+      "ambiguous": 0,
+      "candidate_tickers": 180,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 180
+    },
+    "2025": {
+      "ambiguous": 0,
+      "candidate_tickers": 182,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 182
+    },
+    "2026": {
+      "ambiguous": 0,
+      "candidate_tickers": 181,
+      "coverage_pct": 0.0,
+      "historically_resolvable_verified": 0,
+      "unresolved_or_current_only": 181
+    }
+  },
+  "historical_universe_audit": {
+    "current_canonical_instruments": 323,
+    "delisting_dates_recorded": 0,
+    "historical_only_names": [],
+    "historical_price_tickers": 323,
+    "survivorship_risk": "High: zero delisting dates are recorded; historical symbols remain legacy records but are not evidence-backed canonical history.",
+    "unmatched_historical_symbols": []
+  },
+  "proposed_pre_outcome_coverage_gate": {
+    "maximum_single_instrument_observation_share": 0.1,
+    "maximum_single_year_observation_share": 0.4,
+    "minimum_verified_formation_clusters": 24,
+    "minimum_verified_instrument_clusters": 30,
+    "minimum_verified_primary_observations": 5000,
+    "minimum_years_with_at_least_50_verified_observations": 5,
+    "status": "requires_owner_approval_before_H024_outcome_testing"
+  },
+  "source_availability": {
+    "tier1_local_artifacts": [],
+    "tier2_local_artifacts": [],
+    "tier3_local_artifacts": [
+      "data/reference/symbol_renames.csv (four internally marked verified rows; no EvidenceItem/Citation chain)"
+    ],
+    "tier4_used": []
+  },
+  "temporal_governance": "valid_from/valid_to describe real-world evidence; recorded_at is actual capture only. Strict system vintage remains unchanged; verified historical reconstruction is identity-only and explicitly disclosed."
+}
