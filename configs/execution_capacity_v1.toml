@@ -1,0 +1,128 @@
+# Execution & Capacity Study v1. Immutable after the first result artifact.
+
+[study]
+study_id = "execution_capacity_v1"
+classification = "MODEL-BASED HISTORICAL EXECUTION REPLAY"
+headline_period = "full_registered_evaluation_period"
+currency = "NGN"
+
+[inputs]
+h011_config = "configs/h011_size.toml"
+h011_fixture_manifest = "fixtures/frozen/h011_liquidity_comparison_manifest.json"
+h011_fixture_database = "fixtures/frozen/h011_liquidity_comparison.sqlite"
+h013_config = "configs/h013_size_x_liquidity_high.toml"
+h013_result = "experiments/size_interaction_H-013_high_2026-08-03.json"
+
+[capital]
+aum_ngn = [10000000, 50000000, 100000000, 250000000, 500000000, 1000000000]
+
+[execution]
+order_lifecycle = ["TARGET", "SUBMITTED", "PARTIALLY_FILLED", "FILLED", "EXPIRED", "CANCELLED"]
+order_expiry = "no_automatic_carry_forward"
+rebalance_required_trade = "new_target_position_minus_actual_executed_portfolio_position"
+zero_liquidity_fill = 0.0
+use_observed_close_for_delay_diagnostic = true
+deduct_unfilled_opportunity_cost = false
+explicit_fee_schedule = "existing_frozen_schedule_unchanged"
+settlement_convention = "same_session_net_sell_proceeds_available_for_buys"
+sell_orders_before_buy_orders = true
+buy_cash_allocation = "pro_rata_eligible_desired_fill_notionals"
+allow_negative_cash = false
+allow_leverage = false
+
+[fees]
+schedule_source = "fixtures/frozen/h011_liquidity_comparison.sqlite:modeled_cost_schedule"
+schedule_version = "h011_liquidity_comparison_fixture_v1"
+require_manifest_digest = true
+
+[impact]
+sigma20_annualized_definition = "annualized_20_session_realized_volatility_decimal"
+impact_sigma_daily_definition = "sigma20_annualized / sqrt(252)"
+formula = "k * impact_sigma_daily * sqrt(participation)"
+cap_per_fill = 0.05
+cap_hit_is_severe_liquidity_diagnostic = true
+label = "MODEL-BASED V1 / NOT NGX-CALIBRATED"
+spread_source = "MODEL-BASED V1 / NOT NGX-CALIBRATED"
+one_way_spread_semantics = "penalty_relative_to_observed_execution_session_close"
+buy_price = "reference_close * (1 + modeled_spread + modeled_impact)"
+sell_price = "reference_close * (1 - modeled_spread - modeled_impact)"
+explicit_fees_accounted_separately = true
+
+[scenarios.optimistic]
+headline = true
+participation = 0.10
+maximum_horizon_sessions = 5
+one_way_spread_bps = 25
+impact_k = 0.10
+
+[scenarios.base]
+headline = true
+primary = true
+participation = 0.05
+maximum_horizon_sessions = 3
+one_way_spread_bps = 50
+impact_k = 0.25
+
+[scenarios.conservative]
+headline = true
+participation = 0.025
+maximum_horizon_sessions = 1
+one_way_spread_bps = 100
+impact_k = 0.50
+
+[scenarios.stress_1pct]
+headline = false
+participation = 0.01
+maximum_horizon_sessions = 3
+one_way_spread_bps = 50
+impact_k = 0.25
+
+[corporate_actions]
+unhandled_material_intersection = "INSUFFICIENT_DATA"
+invent_adjustment = false
+materiality = "affected_instrument_has_nonzero_executed_holding_or_target_position_or_active_order_and_no_deterministic_valid_treatment"
+
+[acceptance]
+headline_return = "annualized_compounded_return_full_registered_evaluation_period"
+historical_gross_excess = "frozen_target_portfolio_annualized_gross_return_minus_same_benchmark_annualized_return"
+executed_net_excess = "executed_net_annualized_return_minus_same_benchmark_annualized_return"
+alpha_capture = "executed_net_excess_divided_by_historical_gross_excess"
+sharpe_retention = "executed_net_full_period_sharpe_divided_by_frozen_target_full_period_sharpe"
+alpha_capture_denominator = "headline_historical_gross_excess_must_be_positive_and_economically_valid"
+alpha_capture_invalid_value = "N/A"
+alpha_capture_nonpositive_denominator_status = "FAIL"
+alpha_capture_missing_data_status = "INSUFFICIENT_DATA"
+pass_net_excess_positive = true
+pass_alpha_capture_min = 0.50
+pass_target_notional_completion_min = 0.80
+pass_sharpe_retention_min = 0.70
+pass_hhi_multiple_max = 1.50
+pass_median_execution_duration_max_sessions = 3
+marginal_net_excess_positive = true
+marginal_alpha_capture_min = 0.25
+marginal_target_notional_completion_min = 0.60
+marginal_sharpe_retention_min = 0.40
+marginal_hhi_multiple_max = 2.00
+integrity_failure = "disqualifying"
+
+[concentration]
+target_hhi = "median_daily_equity_hhi_frozen_target_full_registered_evaluation_period"
+executed_hhi = "median_daily_equity_hhi_executed_portfolio_same_sessions"
+hhi_multiple = "executed_hhi_divided_by_target_hhi"
+cash_excluded_from_equity_hhi = true
+report_cash_weight = true
+diagnostics = ["mean_hhi", "p95_hhi", "max_hhi"]
+
+[duration]
+filled_order = "execution_sessions_submission_through_final_fill_inclusive"
+partial_expired_order = "execution_sessions_submission_through_expiry"
+zero_fill_expired_order = "frozen_maximum_execution_horizon"
+headline_median_includes_all_submitted_orders = true
+
+[governance]
+modify_hypothesis_records = false
+access_h024 = false
+write_live_databases = false
+change_execution_realism = false
+couple_portfolio_engine = false
+post_result_change_requires = "execution_capacity_v2"
