@@ -1,0 +1,42 @@
+{
+  "canonical_mutation": false,
+  "case": "ACCESS -> ACCESSCORP",
+  "conclusion": "The local issuer scheme is archived and review-parsed; the official NGX bulletin remains URL-only and no canonical evidence chain exists.",
+  "retention_gap_closed": false,
+  "tier1": {
+    "archive_status": "not_archived",
+    "claim": "NGX reported the Access Bank delisting and Access HoldCo listing on 2022-03-28 under a court-sanctioned scheme.",
+    "content_sha256": null,
+    "evidence_grade_eligible": false,
+    "evidence_locator_status": "not_created",
+    "locator": "New Listing / Delisting of Access Bank Plc and listing of Access Holdings Plc",
+    "parsed_status": "not_parsed",
+    "publication_date": "2022-04-01",
+    "retrieval_attempted_at": "2026-08-31T17:15:23+00:00",
+    "retrieval_error_class": "ProxyError",
+    "retrieval_status": "retrieval_failed",
+    "source_accessible_in_browser": true,
+    "source_authority": "Nigerian Exchange",
+    "source_authority_tier": "tier_1",
+    "source_discovered": true,
+    "source_download_blocked_in_environment": true,
+    "source_name": "ACCESS_ACCESSCORP",
+    "source_url": "https://doclib.ngxgroup.com/market_data-site/other-market-information-site/Week%20Market%20Report/Weekly%20Market%20Report%20for%20the%20Week%20Ended%2001-04-2022.pdf"
+  },
+  "tier2": {
+    "archive_status": "archived_original_source",
+    "artifact_path": "data/archive/xissuer_docs/15197_34667_ACCESS_BANK_PLC_SCHEME_OF_ARRANGEMENT_BETWEEN_ACCESS_.pdf",
+    "byte_size": 3000183,
+    "content_sha256": "236badfaba26292d0dda457cd80eead15f713e6097122918049e0608bc786b79",
+    "evidence_grade_eligible": false,
+    "evidence_locator_status": "review_locator_only: pp. 1, 4-5",
+    "parsed_status": "native_text_available",
+    "reason_not_evidence_grade": "No canonical DocumentVersion, EvidenceLocator, EvidenceItem, or Citation is persisted in this review-only batch.",
+    "retrieval_status": "archived_parsed",
+    "source_authority_tier": "tier_2",
+    "source_discovered": true,
+    "source_name": "ACCESS_scheme_issuer_document",
+    "source_retrieved": true,
+    "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/34667_ACCESS_BANK_PLC%20SCHEME_OF_ARRANGEMENT_BETWEEN_ACCESS_.pdf"
+  }
+}

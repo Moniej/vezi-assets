@@ -1,0 +1,26 @@
+{
+  "canonical_mutation": false,
+  "case": "GUARANTY -> GTCO",
+  "conclusion": "The decisive official NGX bulletin remains URL-only; this case is not locally evidence-grade.",
+  "retention_gap_closed": false,
+  "tier1": {
+    "archive_status": "not_archived",
+    "claim": "NGX reported GTB delisting and GT HoldCo listing on 2021-06-24 under a court-sanctioned scheme.",
+    "content_sha256": null,
+    "evidence_grade_eligible": false,
+    "evidence_locator_status": "not_created",
+    "locator": "Other News / Delisting of Guaranty Trust Bank Plc and Listing of Guaranty Trust Holding Company Plc",
+    "parsed_status": "not_parsed",
+    "publication_date": "2021-06-25",
+    "retrieval_attempted_at": "2026-08-31T17:15:23+00:00",
+    "retrieval_error_class": "ProxyError",
+    "retrieval_status": "retrieval_failed",
+    "source_accessible_in_browser": true,
+    "source_authority": "Nigerian Exchange",
+    "source_authority_tier": "tier_1",
+    "source_discovered": true,
+    "source_download_blocked_in_environment": true,
+    "source_name": "GUARANTY_GTCO",
+    "source_url": "https://doclib.ngxgroup.com/market_data-site/other-market-information-site/Week%20Market%20Report/Weekly%20Market%20Report%20for%20the%20Week%20Ended%2025-06-2021.pdf"
+  }
+}

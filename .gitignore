@@ -29,6 +29,7 @@ data/staging/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.test-runtime/
 .venv/
 venv/
 

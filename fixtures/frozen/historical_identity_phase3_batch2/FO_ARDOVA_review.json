@@ -1,0 +1,84 @@
+{
+  "canonical_assertion_authorized": false,
+  "canonical_mutation": false,
+  "case": "FO -> ARDOVA",
+  "effective_date": {
+    "basis": "official exchange bulletin",
+    "precision": "date",
+    "value": "2020-02-24"
+  },
+  "event_classification": "company_name_and_ticker_change",
+  "evidence_support": "strong_for_review; not_evidence_grade_for_canonical_assertion",
+  "future_design_supported": "one InstrumentListing with FO historical alias and ARDOVA successor/current alias, only after the Tier 1 original is archived and a canonical evidence chain is persisted.",
+  "h024_outcome_access": "none",
+  "issuer_continuity": "same",
+  "market_series_ownership": {
+    "ARDOVA": {
+      "instrument_continuity_confidence": "strong_but_not_canonical_evidence_grade",
+      "series_ownership_confidence": "moderate",
+      "ticker_validity_confidence": "tier1_discovered_but_not_retained"
+    },
+    "FO": {
+      "instrument_continuity_confidence": "strong_but_not_canonical_evidence_grade",
+      "series_ownership_confidence": "moderate",
+      "ticker_validity_confidence": "tier1_discovered_but_not_retained"
+    }
+  },
+  "observed_bound_policy": "These are observations in available official source artifacts, not alias validity or legal transition dates.",
+  "observed_handoff_bounds": {
+    "first_ARDOVA_observed": "2020-02-24",
+    "last_FO_observed": "2020-02-21"
+  },
+  "predecessor_canonical_instrument_id": "01a054a7-4be7-70e0-bf5c-0b608ad36718",
+  "predecessor_source_series": {
+    "first_observed_in_available_source": "2014-06-30",
+    "last_observed_in_available_source": "2020-02-21",
+    "observation_count": 1314,
+    "published_names": [
+      "FO"
+    ],
+    "published_symbol": "FO",
+    "source_file_first": "2014-06-30_42.csv",
+    "source_file_last": "2020-02-21_17739.csv",
+    "source_series_id": "ngx_pricelist_v2:FO"
+  },
+  "recommended_canonical_treatment": "future_forward_reconciliation_candidate",
+  "review_kind": "historical_identity_continuity_review",
+  "security_continuity": "same_security",
+  "successor_canonical_instrument_id": "01a054a7-4be2-70c4-8847-3bf0a7619c8d",
+  "successor_source_series": {
+    "first_observed_in_available_source": "2020-02-24",
+    "last_observed_in_available_source": "2023-07-10",
+    "observation_count": 768,
+    "published_names": [
+      "ARDOVA"
+    ],
+    "published_symbol": "ARDOVA",
+    "source_file_first": "2020-02-24_17756.csv",
+    "source_file_last": "2023-07-10_27551.csv",
+    "source_series_id": "ngx_pricelist_v2:ARDOVA"
+  },
+  "supporting_evidence": [
+    {
+      "archive_status": "not_archived",
+      "claim": "NSE implemented the company name and trading-symbol change from FO to ARDOVA on 2020-02-24.",
+      "content_sha256": null,
+      "evidence_grade_eligible": false,
+      "evidence_locator_status": "not_created",
+      "locator": "NSE/RD/LRD/MB15/20/02/24",
+      "parsed_status": "not_parsed",
+      "publication_date": "2020-02-24",
+      "retrieval_attempted_at": "2026-08-31T17:15:23+00:00",
+      "retrieval_error_class": "ProxyError",
+      "retrieval_status": "retrieval_failed",
+      "source_accessible_in_browser": true,
+      "source_authority": "Nigerian Exchange",
+      "source_authority_tier": "tier_1",
+      "source_discovered": true,
+      "source_download_blocked_in_environment": true,
+      "source_name": "FO_ARDOVA",
+      "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20-%20Forte%20Oil%20Change%20of%20Name.pdf"
+    }
+  ],
+  "ticker_continuity": "simple_ticker_name_change"
+}

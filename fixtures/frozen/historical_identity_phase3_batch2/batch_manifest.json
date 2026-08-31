@@ -1,0 +1,35 @@
+{
+  "batch": "historical_identity_phase3_batch2",
+  "batch3_scaleup_readiness": {
+    "excluded_false_candidate": "FLOURMILL->FGS202669 is excluded because the successor is a debt series, not a plausible ordinary-equity continuity case.",
+    "ready": true,
+    "recommended_cases": [
+      "WAPCO->HBMNG",
+      "UBCAP->UCAP",
+      "OASISINS->LINKASSURE",
+      "STERLNBANK->STERLINGNG",
+      "CUSTODYINS->CUSTODIAN"
+    ],
+    "selection_basis": "candidate-formation count, observable-universe relevance, unresolved continuity, and source availability only"
+  },
+  "canonical_mutation": false,
+  "evidence_policy_version": "historical_identity_source_policy_v1",
+  "h024_outcome_access": "none",
+  "h024_potential_impact": {
+    "ARDOVA_candidate_formations": 104,
+    "FO_candidate_formations": 0,
+    "hypothetical_unlocked_if_future_assertion_approved": 104,
+    "outcome_access": "none",
+    "remaining_blocked_without_future_assertion": 13620
+  },
+  "live_identity_mutation": "none",
+  "review_artifact_hashes": {
+    "ACCESS_ACCESSCORP_retention_review.json": "1dba1e66eda7f3e4c7d213420d0da13bffb2bcd9ee5194ea01596dea7eb26f57",
+    "FBNH_FIRSTHOLDCO_retention_review.json": "f523e51c7cbe55fb8ee66f368ad12062034c0b131948c7bea0cbffb0cf9ef18e",
+    "FO_ARDOVA_review.json": "c784c680a3a1c2f8b0912b8490c4fd9d37affc55d6b73c64f4761e57666dff75",
+    "GUARANTY_GTCO_retention_review.json": "551df2f8be71382584a7aa1125e580d53bf33f62b371abe6935137d39bcb31ef",
+    "evidence_retention_status.json": "63648ae341892e53694be7d1055204420738645ea131617c5be7dc6b3c917d48"
+  },
+  "source_baseline_commit": "1d48f95290ccb51073980a9eb4ef166e58a429de",
+  "source_policy_sha256": "2607ae6450e8893b85619b1f117a155d6ad150c6ce672d57013434c8fcbde9cf"
+}

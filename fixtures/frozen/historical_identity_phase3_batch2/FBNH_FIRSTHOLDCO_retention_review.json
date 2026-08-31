@@ -1,0 +1,42 @@
+{
+  "canonical_mutation": false,
+  "case": "FBNH -> FIRSTHOLDCO",
+  "conclusion": "Issuer-primary material is archived and review-parsed, but the Tier 1 NGX bulletin remains unarchived and no canonical evidence chain exists.",
+  "retention_gap_closed": false,
+  "tier1": {
+    "archive_status": "not_archived",
+    "claim": "NGX implemented the FBN Holdings name change and changed the trading symbol from FBNH to FirstHoldCo.",
+    "content_sha256": null,
+    "evidence_grade_eligible": false,
+    "evidence_locator_status": "not_created",
+    "locator": "NGXREG/IRD/MB15/25/03/5",
+    "parsed_status": "not_parsed",
+    "publication_date": "2025-03-05",
+    "retrieval_attempted_at": "2026-08-31T17:15:23+00:00",
+    "retrieval_error_class": "ProxyError",
+    "retrieval_status": "retrieval_failed",
+    "source_accessible_in_browser": true,
+    "source_authority": "Nigerian Exchange",
+    "source_authority_tier": "tier_1",
+    "source_discovered": true,
+    "source_download_blocked_in_environment": true,
+    "source_name": "FBNH_FIRSTHOLDCO",
+    "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20on%20the%20Change%20of%20Name%20of%20FBN%20Holdings%20Plc.pdf"
+  },
+  "tier2": {
+    "archive_status": "archived_original_source",
+    "artifact_path": "data/archive/xissuer_docs/25784_43129_FBN_HOLDINGS_PLC-FIRST_HOLDCO_PLC_-_CHANGE_OF_NAME_NOTIFICATION_CORPORATE_ACTIONS_FEBRUARY_2025.pdf",
+    "byte_size": 133901,
+    "content_sha256": "c68d19788314631086c79afb70fee2db1bb69fbbab71b4f493b2f34341b6525f",
+    "evidence_grade_eligible": false,
+    "evidence_locator_status": "review_locator_only: pp. 1-2",
+    "parsed_status": "native_text_available",
+    "reason_not_evidence_grade": "No canonical DocumentVersion, EvidenceLocator, EvidenceItem, or Citation is persisted in this review-only batch.",
+    "retrieval_status": "archived_parsed",
+    "source_authority_tier": "tier_2",
+    "source_discovered": true,
+    "source_name": "FBNH_issuer_change_notice",
+    "source_retrieved": true,
+    "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43129_FBN_HOLDINGS_PLC-FIRST_HOLDCO_PLC_-_CHANGE_OF_NAME_NOTIFICATION_CORPORATE_ACTIONS_FEBRUARY_2025.pdf"
+  }
+}
