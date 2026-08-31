@@ -1,0 +1,77 @@
+{
+  "canonical_mutation": false,
+  "case": "GUARANTY -> GTCO",
+  "confidence": {
+    "authority": "tier_1_primary",
+    "continuity": "strong",
+    "locator_completeness": "partial_external_artifact_not_retained"
+  },
+  "effective_date": {
+    "basis": "official NGX bulletin reports GTB delisting and GT HoldCo listing on this date",
+    "precision": "date",
+    "value": "2021-06-24"
+  },
+  "event_type": "holding_company_reorganization_scheme_of_arrangement",
+  "evidence_policy_version": "historical_identity_source_policy_v1",
+  "evidence_support": "strong",
+  "h024_outcome_access": "none",
+  "issuer_continuity": "different",
+  "market_series_ownership": {
+    "instrument_continuity": "replacement_security",
+    "predecessor": "supported_as_traded_series_for_predecessor_instrument",
+    "successor": "supported_as_traded_series_for_successor_instrument",
+    "ticker_validity": "future_assertion_requires_locally_retained_or_canonical_evidence_item"
+  },
+  "missing_evidence": [
+    "locally retained original of the cited NGX bulletin before canonical assertion ingestion",
+    "canonical EvidenceItem creation is intentionally deferred"
+  ],
+  "observation_bound_policy": "first/last source observation dates are not listing, delisting, alias valid_from, or alias valid_to dates.",
+  "observed_handoff_bounds": {
+    "first_new_symbol_observed": "2021-06-24",
+    "last_old_symbol_observed": "2021-06-17"
+  },
+  "predecessor_canonical_instrument_id": "01a054a7-4be7-791e-ae11-d28ccf5e0601",
+  "predecessor_source_series": {
+    "first_observed_in_available_source": "2014-06-30",
+    "last_observed_in_available_source": "2021-06-17",
+    "published_names": [
+      "GUARANTY"
+    ],
+    "published_symbol": "GUARANTY",
+    "source_file_first": "2014-06-30_42.csv",
+    "source_file_last": "2021-06-17_21713.csv",
+    "source_series_id": "ngx_pricelist_v2:GUARANTY"
+  },
+  "recommended_canonical_treatment": "retain_two_instruments",
+  "recorded_at_policy": "No historical validity or canonical record timestamp is backdated; this review is a frozen artifact, not an IdentifierAlias assertion.",
+  "review_kind": "historical_identity_continuity_review",
+  "security_continuity": "replacement_security",
+  "successor_canonical_instrument_id": "01a054a7-4be7-7f40-aafe-952473422b07",
+  "successor_source_series": {
+    "first_observed_in_available_source": "2021-06-24",
+    "last_observed_in_available_source": "2026-08-07",
+    "published_names": [
+      "GTCO"
+    ],
+    "published_symbol": "GTCO",
+    "source_file_first": "2021-06-24_21773.csv",
+    "source_file_last": "2026-08-07_35664.csv",
+    "source_series_id": "ngx_pricelist_v2:GTCO"
+  },
+  "supporting_evidence": [
+    {
+      "artifact_retention": "external_url_only; direct download was unavailable in the managed environment",
+      "authority_tier": "tier_1",
+      "content_sha256": null,
+      "document_type": "weekly_market_report_market_bulletin",
+      "locator": "Other News / Delisting of Guaranty Trust Bank Plc and Listing of Guaranty Trust Holding Company Plc",
+      "publication_date": "2021-06-25",
+      "publication_precision": "date",
+      "source_authority": "Nigerian Exchange Limited",
+      "source_url": "https://doclib.ngxgroup.com/market_data-site/other-market-information-site/Week%20Market%20Report/Weekly%20Market%20Report%20for%20the%20Week%20Ended%2025-06-2021.pdf",
+      "supported_claim": "GTB was delisted and GT HoldCo was listed on 2021-06-24 pursuant to a court-sanctioned scheme."
+    }
+  ],
+  "ticker_continuity": "replacement_successor_symbol"
+}

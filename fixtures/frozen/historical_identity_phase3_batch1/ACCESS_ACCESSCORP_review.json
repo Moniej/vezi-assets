@@ -1,0 +1,97 @@
+{
+  "canonical_mutation": false,
+  "case": "ACCESS -> ACCESSCORP",
+  "confidence": {
+    "authority": "tier_2_primary",
+    "continuity": "strong",
+    "locator_completeness": "partial"
+  },
+  "effective_date": {
+    "basis": "the retained scheme defines effectiveness but this review does not infer the effective date from observed handoff dates",
+    "precision": "unknown",
+    "value": null
+  },
+  "event_type": "holding_company_reorganization_scheme_of_arrangement",
+  "evidence_policy_version": "historical_identity_source_policy_v1",
+  "evidence_support": "strong",
+  "h024_outcome_access": "none",
+  "issuer_continuity": "different",
+  "market_series_ownership": {
+    "instrument_continuity": "replacement_security",
+    "predecessor": "supported_as_traded_series_for_predecessor_instrument",
+    "successor": "supported_as_traded_series_for_successor_instrument",
+    "ticker_validity": "separate_future_assertion_required"
+  },
+  "missing_evidence": [
+    "exact exchange effective transition date if a future temporal alias/event assertion is proposed",
+    "canonical EvidenceItem creation is intentionally deferred"
+  ],
+  "observation_bound_policy": "first/last source observation dates are not listing, delisting, alias valid_from, or alias valid_to dates.",
+  "observed_handoff_bounds": {
+    "first_new_symbol_observed": "2022-03-28",
+    "last_old_symbol_observed": "2022-03-23"
+  },
+  "predecessor_canonical_instrument_id": "01a054a7-4be1-7014-b34c-a0d3d694194b",
+  "predecessor_source_series": {
+    "first_observed_in_available_source": "2014-06-30",
+    "last_observed_in_available_source": "2022-03-23",
+    "published_names": [
+      "ACCESS"
+    ],
+    "published_symbol": "ACCESS",
+    "source_file_first": "2014-06-30_42.csv",
+    "source_file_last": "2022-03-23_23993.csv",
+    "source_series_id": "ngx_pricelist_v2:ACCESS"
+  },
+  "recommended_canonical_treatment": "retain_two_instruments",
+  "recorded_at_policy": "No historical validity or canonical record timestamp is backdated; this review is a frozen artifact, not an IdentifierAlias assertion.",
+  "review_kind": "historical_identity_continuity_review",
+  "security_continuity": "replacement_security",
+  "successor_canonical_instrument_id": "01a054a7-4be1-7b1e-bd60-7900da0b3394",
+  "successor_source_series": {
+    "first_observed_in_available_source": "2022-03-28",
+    "last_observed_in_available_source": "2026-08-07",
+    "published_names": [
+      "ACCESSCORP"
+    ],
+    "published_symbol": "ACCESSCORP",
+    "source_file_first": "2022-03-28_24028.csv",
+    "source_file_last": "2026-08-07_35664.csv",
+    "source_series_id": "ngx_pricelist_v2:ACCESSCORP"
+  },
+  "supporting_evidence": [
+    {
+      "artifact_path": "data/archive/xissuer_docs/15197_34667_ACCESS_BANK_PLC_SCHEME_OF_ARRANGEMENT_BETWEEN_ACCESS_.pdf",
+      "artifact_retention": "locally_retained_original_pdf",
+      "authority_tier": "tier_2",
+      "byte_size": 3000183,
+      "content_sha256": "236badfaba26292d0dda457cd80eead15f713e6097122918049e0608bc786b79",
+      "document_id": 5530,
+      "locator": "pp. 1, 4-5",
+      "metadata_filing_date": "2021-12-09",
+      "retrieved_at": "2026-07-18",
+      "source_authority": "issuer scheme document",
+      "source_confidence": 0.85,
+      "source_id": 14,
+      "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/34667_ACCESS_BANK_PLC SCHEME_OF_ARRANGEMENT_BETWEEN_ACCESS_.pdf",
+      "supported_claim": "Access Holdings Plc was a new non-operating holding company intended to become the listed parent/entity owner; the existing Access Bank shares were scheme shares."
+    },
+    {
+      "artifact_path": "data/archive/xissuer_docs/15877_35271_ACCESS_BANK_PLC_COURT_SANCTION_OF_SCHEME_OF_ARRANGEME.pdf",
+      "artifact_retention": "locally_retained_original_pdf",
+      "authority_tier": "tier_2",
+      "byte_size": 129362,
+      "content_sha256": "2b492ce667a0b8db6c654d73324b7b62dab40fc01e10e010609b7f388ab68f4e",
+      "document_id": 5807,
+      "locator": "document-level (scanned original; no reliable text locator)",
+      "metadata_filing_date": "2022-03-10",
+      "retrieved_at": "2026-07-18",
+      "source_authority": "issuer court-sanction notice",
+      "source_confidence": 0.0,
+      "source_id": 14,
+      "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/35271_ACCESS_BANK_PLC COURT_SANCTION_OF_SCHEME_OF_ARRANGEME.pdf",
+      "supported_claim": "court sanction notice retained for the scheme; locator completeness is limited by scan extraction."
+    }
+  ],
+  "ticker_continuity": "replacement_successor_symbol"
+}

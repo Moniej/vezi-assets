@@ -1,0 +1,109 @@
+{
+  "canonical_mutation": false,
+  "case": "FBNH -> FIRSTHOLDCO",
+  "confidence": {
+    "authority": "tier_1_plus_tier_2",
+    "continuity": "strong",
+    "locator_completeness": "partial_external_artifact_not_retained"
+  },
+  "effective_date": {
+    "basis": "official NGX market bulletin reports implementation and the symbol change",
+    "precision": "date",
+    "value": "2025-03-05"
+  },
+  "event_type": "company_name_and_ticker_change",
+  "evidence_policy_version": "historical_identity_source_policy_v1",
+  "evidence_support": "strong",
+  "h024_outcome_access": "none",
+  "issuer_continuity": "same",
+  "market_series_ownership": {
+    "instrument_continuity": "same_security",
+    "predecessor": "supported_as_traded_series_for_same_continuing_security_pending_canonical_review",
+    "successor": "supported_as_traded_series_for_same_continuing_security_pending_canonical_review",
+    "ticker_validity": "review_qualified_but_no_alias_assertion_created"
+  },
+  "missing_evidence": [
+    "locally retained original of the cited NGX bulletin before canonical assertion ingestion",
+    "referential-impact analysis before any forward reconciliation"
+  ],
+  "observation_bound_policy": "first/last source observation dates are not listing, delisting, alias valid_from, or alias valid_to dates.",
+  "observed_handoff_bounds": {
+    "first_new_symbol_observed": "2025-03-10",
+    "last_old_symbol_observed": "2025-03-04"
+  },
+  "predecessor_canonical_instrument_id": "01a054a7-4be4-715b-9d60-489740811271",
+  "predecessor_source_series": {
+    "first_observed_in_available_source": "2014-06-30",
+    "last_observed_in_available_source": "2025-03-04",
+    "published_names": [
+      "FBNH"
+    ],
+    "published_symbol": "FBNH",
+    "source_file_first": "2014-06-30_42.csv",
+    "source_file_last": "2025-03-04_31814.csv",
+    "source_series_id": "ngx_pricelist_v2:FBNH"
+  },
+  "recommended_canonical_treatment": "future_forward_reconciliation_candidate",
+  "recorded_at_policy": "No historical validity or canonical record timestamp is backdated; this review is a frozen artifact, not an IdentifierAlias assertion.",
+  "review_kind": "historical_identity_continuity_review",
+  "security_continuity": "same_security",
+  "successor_canonical_instrument_id": "01a054a7-4be7-708b-a36f-a76d5130c378",
+  "successor_source_series": {
+    "first_observed_in_available_source": "2025-03-10",
+    "last_observed_in_available_source": "2026-08-07",
+    "published_names": [
+      "FIRSTHOLDCO"
+    ],
+    "published_symbol": "FIRSTHOLDCO",
+    "source_file_first": "2025-03-10_31861.csv",
+    "source_file_last": "2026-08-07_35664.csv",
+    "source_series_id": "ngx_pricelist_v2:FIRSTHOLDCO"
+  },
+  "supporting_evidence": [
+    {
+      "artifact_path": "data/archive/xissuer_docs/25784_43129_FBN_HOLDINGS_PLC-FIRST_HOLDCO_PLC_-_CHANGE_OF_NAME_NOTIFICATION_CORPORATE_ACTIONS_FEBRUARY_2025.pdf",
+      "artifact_retention": "locally_retained_original_pdf",
+      "authority_tier": "tier_2",
+      "byte_size": 133901,
+      "content_sha256": "c68d19788314631086c79afb70fee2db1bb69fbbab71b4f493b2f34341b6525f",
+      "document_id": 9379,
+      "locator": "pp. 1-2",
+      "metadata_filing_date": "2025-02-13",
+      "retrieved_at": "2026-07-21",
+      "source_authority": "issuer notification",
+      "source_confidence": 0.85,
+      "source_id": 14,
+      "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43129_FBN_HOLDINGS_PLC-FIRST_HOLDCO_PLC_-_CHANGE_OF_NAME_NOTIFICATION_CORPORATE_ACTIONS_FEBRUARY_2025.pdf",
+      "supported_claim": "FBN Holdings announced its change of name to First HoldCo; the retained document identifies First HoldCo as formerly FBN Holdings."
+    },
+    {
+      "artifact_path": "data/archive/xissuer_docs/25077_42626_FBN_HOLDINGS_PLC-FBN_HOLDINGS_PLC_-_RESOLUTIONS_PASSED_AT_THE_12TH_AGM_CORPORATE_ACTIONS_NOVEMBER_2024.pdf",
+      "artifact_retention": "locally_retained_original_pdf",
+      "authority_tier": "tier_2",
+      "byte_size": 115168,
+      "content_sha256": "3bcfe021d16146fd2d96d11df50975c3e76fda317aa656caada7ab8f07069b78",
+      "document_id": 9127,
+      "locator": "resolution 9a",
+      "metadata_filing_date": "2024-11-15",
+      "retrieved_at": "2026-07-21",
+      "source_authority": "issuer AGM resolution",
+      "source_confidence": 0.0,
+      "source_id": 14,
+      "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/42626_FBN_HOLDINGS_PLC-FBN_HOLDINGS_PLC_-_RESOLUTIONS_PASSED_AT_THE_12TH_AGM_CORPORATE_ACTIONS_NOVEMBER_2024.pdf",
+      "supported_claim": "shareholders approved change of legal and brand names from FBN Holdings/FBNHoldings to First Holdco/FirstHoldco."
+    },
+    {
+      "artifact_retention": "external_url_only; direct download was unavailable in the managed environment",
+      "authority_tier": "tier_1",
+      "content_sha256": null,
+      "document_type": "market_bulletin",
+      "locator": "Market Bulletin NGXREG/IRD/MB15/25/03/5",
+      "publication_date": "2025-03-05",
+      "publication_precision": "date",
+      "source_authority": "Nigerian Exchange Limited",
+      "source_url": "https://doclib.ngxgroup.com/Listings-site/corporate-disclosure-site/Documents/Market%20Bulletin%20on%20the%20Change%20of%20Name%20of%20FBN%20Holdings%20Plc.pdf",
+      "supported_claim": "NGX implemented the change of name FBN Holdings Plc to First HoldCo Plc and changed the trading symbol from FBNH to FirstHoldCo."
+    }
+  ],
+  "ticker_continuity": "simple_alias_change"
+}

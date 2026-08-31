@@ -1,0 +1,57 @@
+{
+  "canonical_mutation": false,
+  "case": "FirstHoldCo <-> FIRSTHOLDCO",
+  "evidence_policy_version": "historical_identity_source_policy_v1",
+  "evidence_support": "moderate",
+  "h024_outcome_access": "none",
+  "historical_alias_assertion_created": false,
+  "missing_evidence": [
+    "a canonical IdentifierAlias assertion, which is intentionally out of scope",
+    "a claim that case presentation by itself proves any historical legal interval"
+  ],
+  "observation_bound_policy": "first/last source observation dates are not listing, delisting, alias valid_from, or alias valid_to dates.",
+  "parser_behavior": "the official-price-list parser preserves the published symbol string; it does not case-normalize this field",
+  "raw_source_observations": [
+    {
+      "source_file": "2025-03-04_31814.csv",
+      "symbols": [
+        {
+          "company": "FBNH",
+          "symbol": "FBNH"
+        }
+      ]
+    },
+    {
+      "source_file": "2025-03-06_31839.csv",
+      "symbols": [
+        {
+          "company": "FirstHoldCo",
+          "symbol": "FirstHoldCo"
+        }
+      ]
+    },
+    {
+      "source_file": "2025-03-07_31845.csv",
+      "symbols": [
+        {
+          "company": "FirstHoldCo",
+          "symbol": "FirstHoldCo"
+        }
+      ]
+    },
+    {
+      "source_file": "2025-03-10_31861.csv",
+      "symbols": [
+        {
+          "company": "FIRSTHOLDCO",
+          "symbol": "FIRSTHOLDCO"
+        }
+      ]
+    }
+  ],
+  "recommended_canonical_treatment": "source_normalization_only",
+  "recorded_at_policy": "No historical validity or canonical record timestamp is backdated; this review is a frozen artifact, not an IdentifierAlias assertion.",
+  "review_kind": "source_series_normalization_review",
+  "source_normalization_equivalent": true,
+  "supported_claim": "available official source parses show FirstHoldCo on 2025-03-06/07 and FIRSTHOLDCO on 2025-03-10; this review treats casing/presentation as a source normalization equivalence only."
+}
