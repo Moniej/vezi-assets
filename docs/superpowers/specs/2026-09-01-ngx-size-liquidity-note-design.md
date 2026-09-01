@@ -2,9 +2,12 @@
 
 ## Purpose
 
-Create a two-to-four page static quant research note for technical readers. It
+Create a two-to-four page static PDF quant research note for technical readers. It
 summarises the frozen H-011 Size evidence, H-016 standalone ADTV results, and the
 current H-013 semantic-integrity limitation without changing any research record.
+It also describes the positive controls and architecture of both the Investment OS
+and Alpha research process: frozen fixtures, point-in-time policy, evidence
+lineage, governance gates, reproducibility, and paper-only portfolio isolation.
 
 ## Evidence treatment
 
